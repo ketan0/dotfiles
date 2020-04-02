@@ -4,12 +4,10 @@
         relink: true
 - clean: ['~']
 - link:
-    ~/.emacs.d:
+    ~/.emacs.d/:
     ~/.gitconfig:
     ~/.config/karabiner.edn:
-        force: true
-    ~/.ssh/config:
-        path: ssh/config
+    ~/.ssh/config: sshconfig
     ~/.zshrc:
 - shell:
     - [git submodule update --init --recursive, Installing submodules]
