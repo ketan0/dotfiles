@@ -627,6 +627,16 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 
    #+end_src 
    
+** markdown-mode
+   #+begin_src emacs-lisp
+     (use-package markdown-mode
+       :ensure t
+       :mode (("README\\.md\\'" . gfm-mode)
+              ("\\.md\\'" . markdown-mode)
+              ("\\.markdown\\'" . markdown-mode))
+       :init (setq markdown-command "multimarkdown"))
+   #+end_src
+
 ** magit
    #+begin_src emacs-lisp
      (use-package magit)
