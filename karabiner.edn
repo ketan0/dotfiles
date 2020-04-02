@@ -1,0 +1,103 @@
+{
+;; Created by: Ketan Agrawal
+;; inspiration taken from https://github.com/nikitavoloboev/dotfiles/blob/master/karabiner/karabiner.edn
+;; inspiration also taken from https://gist.github.com/kaushikgopal/ff7a92bbc887e59699c804b59074a126
+
+:profiles {
+    :Default {  :default true
+                :sim     50    ;; simultaneous_threshold_milliseconds (def: 50)
+                                ;; keys need to be pressed within this threshold to be considered simultaneous
+                :delay   80    ;; to_delayed_action_delay_milliseconds (def: 500)
+                                ;; basically it means time after which the key press is count delayed
+                :alone   300    ;; to_if_alone_timeout_milliseconds (def: 1000)
+                                ;; hold for 995s and single tap registered; hold for 1005s and seen as modifier
+                :held    50   ;; to_if_held_down_threshold_milliseconds (def: 500)
+                                ;; key is fired twice when 500 ms is elapsed (otherwise seen as a hold command)
+             }
+} ;; profiles
+
+:templates {
+    :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\"'"
+    :open "open \"%s\""
+} ;; templates
+
+:layers {
+    :open-mode {:key :tab}
+    :ctrl-mode {:key :caps_lock}
+}
+
+:simlayers {
+    :jupyter-mode {:key :j}
+}
+
+:main [
+
+    {:des "use caps key as control (keeps single caps keypress as escape)",
+    :rules [:ctrl-mode
+                 [:open_bracket :!Topen_bracket]
+                 [:close_bracket :!Tclose_bracket]
+                 [:semicolon :!Tsemicolon]
+                 [:quote :!Tquote]
+                 [:comma :!Tcomma]
+                 [:period :!Tperiod]
+                 [:slash :!Tslash]
+                 [:a :!Ta]
+                 [:b :!Tb]
+                 [:c :!Tc]
+                 [:d :!Td]
+                 [:e :!Te]
+                 [:f :!Tf]
+                 [:g :!Tg]
+                 [:h :!Th]
+                 [:i :!Ti]
+                 [:j :!Tj]
+                 [:k :!Tk]
+                 [:l :!Tl]
+                 [:m :!Tm]
+                 [:n :!Tn]
+                 [:o :!To]
+                 [:p :!Tp]
+                 [:q :!Tq]
+                 [:r :!Tr]
+                 [:s :!Ts]
+                 [:t :!Tt]
+                 [:u :!Tu]
+                 [:v :!Tv]
+                 [:w :!Tw]
+                 [:x :!Tx]
+                 [:y :!Ty]
+                 [:z :!Tz]
+                 [:1 :!T1]
+                 [:2 :!T2]
+                 [:3 :!T3]
+                 [:4 :!T4]
+                 [:5 :!T5]
+                 [:6 :!T6]
+                 [:7 :!T7]
+                 [:8 :!T8]
+                 [:9 :!T9]
+                 [:0 :!T0]]}
+
+;;todo: if application is already active, another press switches windows
+    {:des "open mode (tab): quickly open applications",
+    :rules [:open-mode
+                 [:c [:km "Open Chrome"]]
+                 [:e [:km "Open Emacs"]]
+                 [:i [:km "Open iTerm"]]
+                 [:k [:km "Open Keyboard Maestro"]]
+                 [:m [:km "Open Messages"]]
+                 [:n [:km "Open Notes"]]
+                 [:q [:km "Open Qutebrowser"]]
+                 [:s [:km "Open Spotify"]]
+                 [:x [:km "Open Xcode"]]
+                 [:z [:km "Open Zoom"]]
+    ]}
+
+    {:des "jupyter mode (j): various jupyter shortcuts",
+    :rules [:jupyter-mode
+                 [:l [:km "Start or Go to Existing Jupyter Lab Server"]]
+    ]}
+
+]
+
+}

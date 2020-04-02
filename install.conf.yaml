@@ -5,13 +5,11 @@
 - clean: ['~']
 - link:
     ~/.emacs.d:
-        force: true
     ~/.gitconfig:
+    ~/.config/karabiner.edn:
         force: true
-    ~/.ssh/config: 
-        force: true
+    ~/.ssh/config:
         path: ssh/config
     ~/.zshrc:
-        force: true
 - shell:
     - [git submodule update --init --recursive, Installing submodules]
