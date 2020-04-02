@@ -1,0 +1,12 @@
+Host sherlock
+    User agrawalk
+    Hostname sh01-ln02.stanford.edu
+    GSSAPIDelegateCredentials yes
+    GSSAPIAuthentication yes
+    ControlMaster auto
+    ControlPersist yes
+    ControlPath ~/.ssh/%l%r@%h:%p
+
+Host azure
+    User agrawalk
+    Hostname 13.72.70.146

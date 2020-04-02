@@ -1,3 +1,17 @@
-- clean: []
-- link: {}
-- shell: []
+- defaults:
+    link:
+        create: true
+        relink: true
+- clean: ['~']
+- link:
+    ~/.emacs.d:
+        force: true
+    ~/.gitconfig:
+        force: true
+    ~/.ssh/config: 
+        force: true
+        path: ssh/config
+    ~/.zshrc:
+        force: true
+- shell:
+    - [git submodule update --init --recursive, Installing submodules]
