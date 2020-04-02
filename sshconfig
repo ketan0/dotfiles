@@ -1,3 +1,5 @@
+# -*- mode: ssh-config -*-
+
 Host sherlock
     User agrawalk
     Hostname sh01-ln02.stanford.edu

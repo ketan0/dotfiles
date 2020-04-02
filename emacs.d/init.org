@@ -650,3 +650,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
        (mac-pseudo-daemon-mode t))
    #+end_src 
    
+** ssh-config-mode
+   #+begin_src emacs-lisp
+     (use-package ssh-config-mode)
+   #+end_src 
+   
