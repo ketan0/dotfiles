@@ -88,6 +88,7 @@ plugins=(git)
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
+# Only press enter once to (1) exit autocomplete menu and (2) execute command
 bindkey -M menuselect '^M' .accept-line
 
 
