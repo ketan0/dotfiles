@@ -88,6 +88,8 @@ plugins=(git)
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
+bindkey -M menuselect '^M' .accept-line
+
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
