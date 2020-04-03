@@ -1,5 +1,6 @@
 emacs.d/auto-save-list/
 emacs.d/backups/
+emacs.d/bookmarks/
 emacs.d/custom.el
 emacs.d/org-journal.cache
 emacs.d/projectile-bookmarks.eld
