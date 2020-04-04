@@ -90,6 +90,7 @@
                  [:q [:km "Open Qutebrowser"]]
                  [:s [:km "Open Spotify"]]
                  [:x [:km "Open Xcode"]]
+                 [:w [:km "Open Word"]]
                  [:z [:km "Open Zoom"]]
     ]}
 
