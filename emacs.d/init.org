@@ -625,6 +625,12 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 
    #+end_src 
    
+** flycheck
+   #+begin_src emacs-lisp
+     (use-package flycheck
+       :init (global-flycheck-mode))
+   #+end_src
+   
 ** TRAMP
    #+begin_src emacs-lisp
 
@@ -661,7 +667,6 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 ** markdown-mode
    #+begin_src emacs-lisp
      (use-package markdown-mode
-       :ensure t
        :mode (("README\\.md\\'" . gfm-mode)
               ("\\.md\\'" . markdown-mode)
               ("\\.markdown\\'" . markdown-mode))
