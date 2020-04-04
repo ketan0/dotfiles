@@ -6,8 +6,9 @@
 #+LATEX_HEADER: \usepackage[utf8]{inputenc}
 #+PROPERTY: header-args :tangle yes
 ^above line tangles code blocks by default
-Here's a change
+
 Inspirations for this org-based setup comes from [[https://github.com/larstvei/dot-emacs][larstvei]] and [[https://github.com/danielmai/.emacs.d/blob/master/config.org][danielmai]].
+
 
 * TODOs
 ** TODO Remove modeline clutter (delight/diminish??)
@@ -213,6 +214,11 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
   #+begin_src emacs-lisp 
     (setq inhibit-splash-screen t) ;don't show default emacs startup screen
     (setq visible-bell t) ;Instead of shell bell, visual flash
+    (setq ring-bell-function ; don't ring (flash) the bell on C-g
+          (lambda ()
+            (unless (memq this-command
+                          '(isearch-abort abort-recursive-edit exit-minibuffer keyboard-quit))
+              (ding))))
     (electric-pair-mode t) ;;auto-pairs, eg () [] {}
     (when window-system
       (menu-bar-mode -1)
@@ -338,6 +344,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
                                                              "\n"
                                                              (org-agenda-format-date-aligned date))))
          (setq org-agenda-start-with-follow-mode t)
+         (setq org-agenda-window-setup 'only-window)
          ;;don't show warnings for deadlines
          (setq org-deadline-warning-days 0)
 
@@ -359,6 +366,12 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
                   "* %^{Heading}")
                  ("k" "CS 520: Knowledge Graphs" entry (file+datetree 
                                            "~/org/20200331194240-cs520_knowledge_graphs.org")
+                  "* %^{Heading}")
+                 ("m" "CS 229: Machine Learning" entry (file+datetree 
+                                           "~/org/20200403043734-cs229_machine_learning.org")
+                  "* %^{Heading}")
+                 ("p" "CS 110: Principles of Computer Systems" entry (file+datetree 
+                                           "~/org/20200403044116-cs110_principles_of_computer_systems.org")
                   "* %^{Heading}")
                  ;; other entries
                  ))
@@ -390,7 +403,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       (use-package company-org-roam
         :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master")
         :config
-        (push 'company-org-roam company-backends))
+        (push '(company-org-roam company-capf company-files) company-backends))
     #+end_src 
     
 *** org-journal
@@ -590,7 +603,16 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    #+begin_src emacs-lisp
      (use-package elpy
        :init
-       (elpy-enable))
+       (elpy-enable)
+       :config
+       (setq elpy-rpc-virtualenv-path 'current)
+       (setenv "WORKON_HOME" (concat (getenv "CONDA_PREFIX") "/envs")) ;; use conda envs
+       (pyvenv-mode 1))
+   #+end_src
+   
+** ein
+   #+begin_src emacs-lisp
+     (use-package ein)
    #+end_src
    
 ** company
@@ -626,6 +648,15 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
                  TeX-run-TeX nil (latex-mode doctex-mode) :help "Run LaTeX")))
 
    #+end_src 
+   
+** pdf-tools
+   #+begin_src emacs-lisp
+     (use-package pdf-tools
+       :config
+       (setq pdf-tools-handle-upgrades nil) ; Use brew upgrade pdf-tools instead.
+       (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
+       (pdf-tools-install))
+   #+end_src
    
 ** markdown-mode
    #+begin_src emacs-lisp
