@@ -9,7 +9,7 @@
 
 Inspirations for this org-based setup comes from [[https://github.com/larstvei/dot-emacs][larstvei]] and [[https://github.com/danielmai/.emacs.d/blob/master/config.org][danielmai]].
 
-
+  
 * TODOs
 ** TODO Remove modeline clutter (delight/diminish??)
 ** TODO Refactor bindings code
@@ -628,7 +628,9 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 ** flycheck
    #+begin_src emacs-lisp
      (use-package flycheck
-       :init (global-flycheck-mode))
+       :init
+       (global-flycheck-mode)
+       (setq flycheck-indication-mode nil))
    #+end_src
    
 ** TRAMP
