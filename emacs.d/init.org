@@ -4,7 +4,7 @@
 #+LATEX_HEADER: \usepackage{parskip}
 #+LATEX_HEADER: \usepackage{inconsolata}
 #+LATEX_HEADER: \usepackage[utf8]{inputenc}
-#+PROPERTY: header-args
+#+PROPERTY: header-args :tangle ~/.dotfiles/emacs.d/init.el
 ^above line tangles code blocks by default
 
 Inspirations for this org-based setup comes from [[https://github.com/larstvei/dot-emacs][larstvei]] and [[https://github.com/danielmai/.emacs.d/blob/master/config.org][danielmai]].
@@ -71,13 +71,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
                 (let ((prog-mode-hook nil))
                   (org-babel-tangle-file
                    (expand-file-name (concat ketan0/dotfiles-dir "karabiner.org"))
-                   (expand-file-name (concat ketan0/dotfiles-dir "karabiner.clojure"))))
-                ;;totally unsure how this works but....it tangles to karabiner.edn?!
-                  ;; (rename-file
-                  ;;  (expand-file-name (concat ketan0/dotfiles-dir "karabiner.clojure"))
-                  ;;  (expand-file-name (concat ketan0/dotfiles-dir "karabiner.edn")) t)
-                  ;;ok to overwrite if exists
-                   (message (shell-command-to-string "goku"))))
+                   (expand-file-name (concat ketan0/dotfiles-dir "karabiner.edn"))))
+                   (message (concat "Goku output: " (shell-command-to-string "goku")))))
             ;;TODO: add dotfiles variable and stuffs
 
             (add-hook 'after-save-hook 'tangle-init)
@@ -267,6 +262,14 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
                           '(isearch-abort abort-recursive-edit exit-minibuffer keyboard-quit))
               (ding))))
     (electric-pair-mode t) ;;auto-pairs, eg () [] {}
+    (setq electric-pair-pairs
+          '(
+            (?\" . ?\")
+            (?\( . ?\))
+            (?\[ . ?\])
+            (?\$ . ?\$)
+            (?\{ . ?\})))
+
     (when window-system
       (menu-bar-mode -1)
       (tool-bar-mode -1)
@@ -288,10 +291,10 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
     (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
 
     ;; TRAMP: disable version control to avoid delays:
-     (setq vc-ignore-dir-regexp
-           (format "\\(%s\\)\\|\\(%s\\)"
-                   vc-ignore-dir-regexp
-                   tramp-file-name-regexp))
+    (setq vc-ignore-dir-regexp
+          (format "\\(%s\\)\\|\\(%s\\)"
+                  vc-ignore-dir-regexp
+                  tramp-file-name-regexp))
 
     ;; UTF-8 please
     (setq locale-coding-system 'utf-8) ; pretty
@@ -337,14 +340,15 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 ** diminish
    #+begin_src emacs-lisp
      (use-package diminish)
+     (diminish 'auto-revert-mode)
    #+end_src 
    
 ** Org
 *** org
      #+begin_src emacs-lisp
        ;;______________________________________________________________________
-                 ;;;;  Installing Org with straight.el
-                 ;;; https://github.com/raxod502/straight.el/blob/develop/README.md#installing-org-with-straightel
+       ;;;;  Installing Org with straight.el
+       ;;; https://github.com/raxod502/straight.el/blob/develop/README.md#installing-org-with-straightel
        (require 'subr-x)
        (use-package git)
 
@@ -517,6 +521,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
     #+begin_src emacs-lisp
       (use-package ox-pandoc)
     #+end_src
+    
 ** Evil
 *** evil
     #+begin_src emacs-lisp

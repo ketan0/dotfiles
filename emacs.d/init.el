@@ -41,13 +41,8 @@ tangled, and the tangled file is compiled."
     (let ((prog-mode-hook nil))
       (org-babel-tangle-file
        (expand-file-name (concat ketan0/dotfiles-dir "karabiner.org"))
-       (expand-file-name (concat ketan0/dotfiles-dir "karabiner.clojure"))))
-    ;;totally unsure how this works but....it tangles to karabiner.edn?!
-      ;; (rename-file
-      ;;  (expand-file-name (concat ketan0/dotfiles-dir "karabiner.clojure"))
-      ;;  (expand-file-name (concat ketan0/dotfiles-dir "karabiner.edn")) t)
-      ;;ok to overwrite if exists
-       (message (shell-command-to-string "goku"))))
+       (expand-file-name (concat ketan0/dotfiles-dir "karabiner.edn"))))
+       (message (concat "Goku output: " (shell-command-to-string "goku")))))
 ;;TODO: add dotfiles variable and stuffs
 
 (add-hook 'after-save-hook 'tangle-init)
@@ -209,6 +204,14 @@ tangled, and the tangled file is compiled."
                       '(isearch-abort abort-recursive-edit exit-minibuffer keyboard-quit))
           (ding))))
 (electric-pair-mode t) ;;auto-pairs, eg () [] {}
+(setq electric-pair-pairs
+      '(
+        (?\" . ?\")
+        (?\( . ?\))
+        (?\[ . ?\])
+        (?\$ . ?\$)
+        (?\{ . ?\})))
+
 (when window-system
   (menu-bar-mode -1)
   (tool-bar-mode -1)
@@ -230,10 +233,10 @@ tangled, and the tangled file is compiled."
 (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
 
 ;; TRAMP: disable version control to avoid delays:
- (setq vc-ignore-dir-regexp
-       (format "\\(%s\\)\\|\\(%s\\)"
-               vc-ignore-dir-regexp
-               tramp-file-name-regexp))
+(setq vc-ignore-dir-regexp
+      (format "\\(%s\\)\\|\\(%s\\)"
+              vc-ignore-dir-regexp
+              tramp-file-name-regexp))
 
 ;; UTF-8 please
 (setq locale-coding-system 'utf-8) ; pretty
@@ -269,10 +272,11 @@ tangled, and the tangled file is compiled."
 (require 'bind-key)
 
 (use-package diminish)
+(diminish 'auto-revert-mode)
 
 ;;______________________________________________________________________
-          ;;;;  Installing Org with straight.el
-          ;;; https://github.com/raxod502/straight.el/blob/develop/README.md#installing-org-with-straightel
+;;;;  Installing Org with straight.el
+;;; https://github.com/raxod502/straight.el/blob/develop/README.md#installing-org-with-straightel
 (require 'subr-x)
 (use-package git)
 
