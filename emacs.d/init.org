@@ -11,7 +11,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 
   
 * TODOs
-** TODO Remove modeline clutter (delight/diminish??)
+** DONE Remove modeline clutter (delight/diminish??)
+   CLOSED: [2020-04-09 Thu 04:49]
 ** TODO Refactor bindings code
 ** DONE deal with the warnings from tangling 
    CLOSED: [2020-03-25 Wed 15:49]
@@ -91,14 +92,22 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    #+end_src
    
 * General Convenience
+  Because of the vim-mode modifications in [[file:~/.dotfiles/karabiner.edn][karabiner.edn]]...
+   #+begin_src emacs-lisp
+     (define-key key-translation-map (kbd "<left>") (kbd "C-h")) 
+     (define-key key-translation-map (kbd "<down>") (kbd "C-j")) 
+     (define-key key-translation-map (kbd "<up>") (kbd "C-k")) 
+     (define-key key-translation-map (kbd "<right>") (kbd "C-l")) 
+   #+end_src
    #+begin_src emacs-lisp
      (global-set-key (kbd "A-<backspace>") 'backward-kill-word)
      (global-set-key (kbd "M-m") 'suspend-frame)
      (global-set-key (kbd "M-q") 'save-buffers-kill-emacs)
      (global-set-key (kbd "C-M-f") 'toggle-frame-fullscreen)
-
      (global-set-key (kbd "˙") 'switch-to-prev-buffer) ;; A-h
      (global-set-key (kbd "¬") 'switch-to-next-buffer) ;; A-l
+
+
 
      (defun find-todo-file ()
        "Edit the todo.org file, in *this* window."
@@ -132,12 +141,12 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 
      (defun xah-new-empty-buffer ()
        "Create a new empty buffer.
-          New buffer will be named “untitled” or “untitled<2>”, “untitled<3>”, etc.
+               New buffer will be named “untitled” or “untitled<2>”, “untitled<3>”, etc.
 
-          It returns the buffer (for elisp programing).
+               It returns the buffer (for elisp programing).
 
-          URL `http://ergoemacs.org/emacs/emacs_new_empty_buffer.html'
-          Version 2017-11-01"
+               URL `http://ergoemacs.org/emacs/emacs_new_empty_buffer.html'
+               Version 2017-11-01"
        (interactive)
        (let (($buf (generate-new-buffer "untitled")))
          (switch-to-buffer-other-window $buf)
@@ -177,6 +186,10 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       (interactive)
       (mapc #'disable-theme custom-enabled-themes))
 
+    (use-package doom-themes
+      :defer t
+      :no-require t)
+
     (use-package apropospriate-theme
       :defer t
       :no-require t)
@@ -191,8 +204,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 
     (use-package spacemacs-theme
       :defer t
-      :no-require t
-      :init (load-theme 'spacemacs-dark))
+      :no-require t)
 
     (use-package leuven-theme
       :defer t
@@ -222,6 +234,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       :config (load-theme 'airline-luna))
 
 
+    (switch-theme 'doom-acario-dark)
   #+end_src
   
 * Defaults
@@ -307,7 +320,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      (use-package diminish)
    #+end_src 
    
-** Org
+k* Org
 *** org
      #+begin_src emacs-lisp
        ;;______________________________________________________________________
@@ -679,6 +692,11 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 
    #+end_src 
    
+** clojure-mode
+   currently, only use this to fontify [[file:~/.dotfiles/karabiner.edn][karabiner.edn]]
+   #+begin_src emacs-lisp
+     (use-package clojure-mode)
+   #+end_src
 ** flycheck
    #+begin_src emacs-lisp
      (use-package flycheck

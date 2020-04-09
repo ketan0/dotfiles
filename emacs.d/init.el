@@ -50,13 +50,19 @@ tangled, and the tangled file is compiled."
 (setq custom-file (concat user-emacs-directory "custom.el"))
 (load custom-file)
 
+(define-key key-translation-map (kbd "<left>") (kbd "C-h")) 
+(define-key key-translation-map (kbd "<down>") (kbd "C-j")) 
+(define-key key-translation-map (kbd "<up>") (kbd "C-k")) 
+(define-key key-translation-map (kbd "<right>") (kbd "C-l"))
+
 (global-set-key (kbd "A-<backspace>") 'backward-kill-word)
 (global-set-key (kbd "M-m") 'suspend-frame)
 (global-set-key (kbd "M-q") 'save-buffers-kill-emacs)
 (global-set-key (kbd "C-M-f") 'toggle-frame-fullscreen)
-
 (global-set-key (kbd "˙") 'switch-to-prev-buffer) ;; A-h
 (global-set-key (kbd "¬") 'switch-to-next-buffer) ;; A-l
+
+
 
 (defun find-todo-file ()
   "Edit the todo.org file, in *this* window."
@@ -90,12 +96,12 @@ tangled, and the tangled file is compiled."
 
 (defun xah-new-empty-buffer ()
   "Create a new empty buffer.
-     New buffer will be named “untitled” or “untitled<2>”, “untitled<3>”, etc.
+          New buffer will be named “untitled” or “untitled<2>”, “untitled<3>”, etc.
 
-     It returns the buffer (for elisp programing).
+          It returns the buffer (for elisp programing).
 
-     URL `http://ergoemacs.org/emacs/emacs_new_empty_buffer.html'
-     Version 2017-11-01"
+          URL `http://ergoemacs.org/emacs/emacs_new_empty_buffer.html'
+          Version 2017-11-01"
   (interactive)
   (let (($buf (generate-new-buffer "untitled")))
     (switch-to-buffer-other-window $buf)
@@ -126,6 +132,10 @@ tangled, and the tangled file is compiled."
   (interactive)
   (mapc #'disable-theme custom-enabled-themes))
 
+(use-package doom-themes
+  :defer t
+  :no-require t)
+
 (use-package apropospriate-theme
   :defer t
   :no-require t)
@@ -140,8 +150,7 @@ tangled, and the tangled file is compiled."
 
 (use-package spacemacs-theme
   :defer t
-  :no-require t
-  :init (load-theme 'spacemacs-dark))
+  :no-require t)
 
 (use-package leuven-theme
   :defer t
@@ -169,6 +178,9 @@ tangled, and the tangled file is compiled."
 
 (use-package airline-themes
   :config (load-theme 'airline-luna))
+
+
+(switch-theme 'doom-acario-dark)
 
 (setq inhibit-splash-screen t) ;don't show default emacs startup screen
 (setq visible-bell t) ;Instead of shell bell, visual flash
@@ -536,6 +548,8 @@ tangled, and the tangled file is compiled."
   :config
   (define-key company-active-map (kbd "C-w") 'evil-delete-backward-word)
   (global-company-mode t))
+
+(use-package clojure-mode)
 
 (use-package flycheck
   :diminish flycheck-mode
