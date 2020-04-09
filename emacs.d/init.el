@@ -198,6 +198,12 @@ tangled, and the tangled file is compiled."
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
 (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
 
+;; TRAMP: disable version control to avoid delays:
+ (setq vc-ignore-dir-regexp
+       (format "\\(%s\\)\\|\\(%s\\)"
+               vc-ignore-dir-regexp
+               tramp-file-name-regexp))
+
 ;; UTF-8 please
 (setq locale-coding-system 'utf-8) ; pretty
 (set-terminal-coding-system 'utf-8) ; pretty
@@ -383,6 +389,8 @@ tangled, and the tangled file is compiled."
 (use-package org-bullets
   :hook (org-mode . (lambda () (org-bullets-mode t))))
 
+(use-package ox-pandoc)
+
 (use-package evil
   :init
   (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
@@ -530,19 +538,15 @@ tangled, and the tangled file is compiled."
   (global-company-mode t))
 
 (use-package flycheck
+  :diminish flycheck-mode
   :init
   (global-flycheck-mode)
   (setq flycheck-indication-mode nil))
 
 (use-package google-this
+  :diminish google-this-mode
   :config
   (google-this-mode t))
-
-;; TRAMP: disable version control to avoid delays:
-(setq vc-ignore-dir-regexp
-      (format "\\(%s\\)\\|\\(%s\\)"
-              vc-ignore-dir-regexp
-              tramp-file-name-regexp))
 
 (use-package auctex
   :defer t
@@ -556,7 +560,6 @@ tangled, and the tangled file is compiled."
 
 (use-package pdf-tools
   :config
-  (setq pdf-tools-handle-upgrades nil) ; Use brew upgrade pdf-tools instead.
   (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
   (pdf-tools-install))
 

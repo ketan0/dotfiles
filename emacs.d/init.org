@@ -255,6 +255,12 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
     (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
     (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
 
+    ;; TRAMP: disable version control to avoid delays:
+     (setq vc-ignore-dir-regexp
+           (format "\\(%s\\)\\|\\(%s\\)"
+                   vc-ignore-dir-regexp
+                   tramp-file-name-regexp))
+
     ;; UTF-8 please
     (setq locale-coding-system 'utf-8) ; pretty
     (set-terminal-coding-system 'utf-8) ; pretty
@@ -469,12 +475,17 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
                                  :export #'org-pdftools-export)
         (add-hook 'org-store-link-functions 'org-pdftools-store-link))
     #+end_src
+    
 *** org-bullets
     #+begin_src emacs-lisp
       (use-package org-bullets
         :hook (org-mode . (lambda () (org-bullets-mode t))))
     #+end_src 
     
+*** ox-pandoc
+    #+begin_src emacs-lisp
+      (use-package ox-pandoc)
+    #+end_src
 ** Evil
 *** evil
     #+begin_src emacs-lisp
@@ -671,6 +682,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 ** flycheck
    #+begin_src emacs-lisp
      (use-package flycheck
+       :diminish flycheck-mode
        :init
        (global-flycheck-mode)
        (setq flycheck-indication-mode nil))
@@ -679,20 +691,12 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 ** google-this
    #+begin_src emacs-lisp
      (use-package google-this
+       :diminish google-this-mode
        :config
        (google-this-mode t))
    #+end_src
-** TRAMP
-   #+begin_src emacs-lisp
-
-     ;; TRAMP: disable version control to avoid delays:
-     (setq vc-ignore-dir-regexp
-           (format "\\(%s\\)\\|\\(%s\\)"
-                   vc-ignore-dir-regexp
-                   tramp-file-name-regexp))
-   #+end_src 
    
-** LaTeX
+** auctex
    #+begin_src emacs-lisp
      (use-package auctex
        :defer t
@@ -710,10 +714,10 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    #+begin_src emacs-lisp
      (use-package pdf-tools
        :config
-       (setq pdf-tools-handle-upgrades nil) ; Use brew upgrade pdf-tools instead.
        (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
        (pdf-tools-install))
    #+end_src
+   
 ** markdown-mode
    #+begin_src emacs-lisp
      (use-package markdown-mode
