@@ -1,60 +1,61 @@
 {
-;; !  | means mandatory
-;; #  | means optional
-;; !! | mandatory command + control + optional + shift (hyper)
-;; ## | optional any
+ ;; !  | means mandatory
+ ;; #  | means optional
+ ;; !! | mandatory command + control + optional + shift (hyper)
+ ;; ## | optional any
 
-;; to understand better how modifiers work in karabiner
-;; karabiner definition of mandatory and optional
-;; https://pqrs.org/osx/karabiner/json.html#from-event-definition-modifiers
+ ;; to understand better how modifiers work in karabiner
+ ;; karabiner definition of mandatory and optional
+ ;; https://pqrs.org/osx/karabiner/json.html#from-event-definition-modifiers
 
-;; C  | left_command
-;; T  | left_control
-;; O  | left_option
-;; S  | left_shift
-;; F  | fn
-;; Q  | right_command
-;; W  | right_control
-;; E  | right_option
-;; R  | right_shift
-;;
-;; need to prefix C T O S F with ! or #
-;;
-;; Created by: Ketan Agrawal
-;; inspiration taken from https://github.com/nikitavoloboev/dotfiles/blob/master/karabiner/karabiner.edn
-;; inspiration also taken from https://gist.github.com/kaushikgopal/ff7a92bbc887e59699c804b59074a126
+ ;; C  | left_command
+ ;; T  | left_control
+ ;; O  | left_option
+ ;; S  | left_shift
+ ;; F  | fn
+ ;; Q  | right_command
+ ;; W  | right_control
+ ;; E  | right_option
+ ;; R  | right_shift
+ ;;
+ ;; need to prefix C T O S F with ! or #
+ ;;
+ ;; Created by: Ketan Agrawal
+ ;; inspiration taken from https://github.com/nikitavoloboev/dotfiles/blob/master/karabiner/karabiner.edn
+ ;; inspiration also taken from https://gist.github.com/kaushikgopal/ff7a92bbc887e59699c804b59074a126
+ ;; inspiration also taken from https://github.com/yqrashawn/yqdotfiles/blob/master/.config/karabiner.edn
 
-:profiles {
-    :Default {  :default true
-                :sim     50    ;; simultaneous_threshold_milliseconds (def: 50)
-                                ;; keys need to be pressed within this threshold to be considered simultaneous
-                :delay   80    ;; to_delayed_action_delay_milliseconds (def: 500)
-                                ;; basically it means time after which the key press is count delayed
-                :alone   300    ;; to_if_alone_timeout_milliseconds (def: 1000)
-                                ;; hold for 995s and single tap registered; hold for 1005s and seen as modifier
-                :held    50   ;; to_if_held_down_threshold_milliseconds (def: 500)
-                                ;; key is fired twice when 500 ms is elapsed (otherwise seen as a hold command)
+ :profiles {
+            :Default {  :default true
+                      :sim     50    ;; simultaneous_threshold_milliseconds (def: 50)
+                      ;; keys need to be pressed within this threshold to be considered simultaneous
+                      :delay   80    ;; to_delayed_action_delay_milliseconds (def: 500)
+                      ;; basically it means time after which the key press is count delayed
+                      :alone   300    ;; to_if_alone_timeout_milliseconds (def: 1000)
+                      ;; hold for 995s and single tap registered; hold for 1005s and seen as modifier
+                      :held    50   ;; to_if_held_down_threshold_milliseconds (def: 500)
+                      ;; key is fired twice when 500 ms is elapsed (otherwise seen as a hold command)
+                      }
+            } ;; profiles
+
+ :templates {
+             :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\"'"
+             :open "open \"%s\""
+             } ;; templates
+
+ :layers {
+          :open-mode {:key :tab}
+          :ctrl-mode {:key :caps_lock}
+          }
+
+ :simlayers {
+             :jupyter-mode {:key :j}
              }
-} ;; profiles
 
-:templates {
-    :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\"'"
-    :open "open \"%s\""
-} ;; templates
+ :main [
 
-:layers {
-    :open-mode {:key :tab}
-    :ctrl-mode {:key :caps_lock}
-}
-
-:simlayers {
-    :jupyter-mode {:key :j}
-}
-
-:main [
-
-    {:des "use caps key as control (keeps single caps keypress as escape)",
-    :rules [:ctrl-mode
+        {:des "use caps key as control (keeps single caps keypress as escape)",
+         :rules [:ctrl-mode
                  [:open_bracket :!Topen_bracket]
                  [:close_bracket :!Tclose_bracket]
                  [:semicolon :!Tsemicolon]
@@ -69,8 +70,8 @@
                  [:e :!Te]
                  [:f :!Tf]
                  [:g :!Tg]
-                 [:h :left_arrow]
                  [:i :!Ti]
+                 [:h :left_arrow]
                  [:j :down_arrow]
                  [:k :up_arrow]
                  [:l :right_arrow]
@@ -99,9 +100,9 @@
                  [:9 :!T9]
                  [:0 :!T0]]}
 
-;;todo: if application is already active, another press switches windows
-    {:des "open mode (tab): quickly open applications",
-    :rules [:open-mode
+        ;;todo: if application is already active, another press switches windows
+        {:des "open mode (tab): quickly open applications",
+         :rules [:open-mode
                  [:c [:km "Open Chrome"]]
                  [:e [:km "Open Emacs"]]
                  [:i [:km "Open iTerm"]]
@@ -114,10 +115,14 @@
                  [:w [:km "Open Word"]]
                  [:z [:km "Open Zoom"]]]}
 
-    {:des "jupyter mode (j): various jupyter shortcuts",
-    :rules [:jupyter-mode
+        {:des "jupyter mode (j): various jupyter shortcuts",
+         :rules [:jupyter-mode
                  [:l [:km "Start or Go to Existing Jupyter Lab Server"]]]}
 
-]
+        ]
 
-}
+ :applications [
+                :Emacs ["^org\\.gnu\\.Emacs$"]
+                ]
+
+ }
