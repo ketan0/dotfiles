@@ -1,3 +1,8 @@
+(defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
+  "Personal dotfiles directory.")
+
+(setq user-emacs-directory (file-truename "~/.emacs.d/"))
+
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -20,9 +25,12 @@ tangled, and the tangled file is compiled."
                 (expand-file-name (concat user-emacs-directory "init.org")))
     ;; Avoid running hooks when tangling.
     (let ((prog-mode-hook nil))
-        (org-babel-tangle)
-        (byte-compile-file (concat user-emacs-directory "init.el")))))
-
+      (org-babel-tangle-file
+       (expand-file-name (concat user-emacs-directory "init.org"))
+       (expand-file-name (concat user-emacs-directory "init.el")) 
+       "emacs-lisp")
+      (byte-compile-file (concat user-emacs-directory "init.el")))))
+;;TODO: add dotfiles variable and stuffs
 
 (add-hook 'after-save-hook 'tangle-init)
 
@@ -53,7 +61,12 @@ tangled, and the tangled file is compiled."
 (defun find-todo-file ()
   "Edit the todo.org file, in *this* window."
   (interactive)
-  (find-file (concat org-directory "todo.org")))
+  (find-file (concat org-directory "/todo.org")))
+
+(defun find-vision-file ()
+  "Edit the vision.org file, in *this* window."
+  (interactive)
+  (find-file (concat org-directory "/20200407061957-vision.org")))
 
 (defun er-find-user-init-file ()
   "Edit the `user-init-file', in *this* window."
@@ -159,6 +172,11 @@ tangled, and the tangled file is compiled."
 
 (setq inhibit-splash-screen t) ;don't show default emacs startup screen
 (setq visible-bell t) ;Instead of shell bell, visual flash
+(setq ring-bell-function ; don't ring (flash) the bell on C-g
+      (lambda ()
+        (unless (memq this-command
+                      '(isearch-abort abort-recursive-edit exit-minibuffer keyboard-quit))
+          (ding))))
 (electric-pair-mode t) ;;auto-pairs, eg () [] {}
 (when window-system
   (menu-bar-mode -1)
@@ -216,14 +234,14 @@ tangled, and the tangled file is compiled."
 (use-package diminish)
 
 ;;______________________________________________________________________
-;;;;  Installing Org with straight.el
-;;; https://github.com/raxod502/straight.el/blob/develop/README.md#installing-org-with-straightel
+       ;;;;  Installing Org with straight.el
+       ;;; https://github.com/raxod502/straight.el/blob/develop/README.md#installing-org-with-straightel
 (require 'subr-x)
 (use-package git)
 
 (defun org-git-version ()
   "The Git version of 'org-mode'.
-Inserted by installing 'org-mode' or when a release is made."
+       Inserted by installing 'org-mode' or when a release is made."
   (require 'git)
   (let ((git-repo (expand-file-name
                    "straight/repos/org/" user-emacs-directory)))
@@ -235,7 +253,7 @@ Inserted by installing 'org-mode' or when a release is made."
 
 (defun org-release ()
   "The release version of 'org-mode'.
-Inserted by installing 'org-mode' or when a release is made."
+       Inserted by installing 'org-mode' or when a release is made."
   (require 'git)
   (let ((git-repo (expand-file-name
                    "straight/repos/org/" user-emacs-directory)))
@@ -257,6 +275,17 @@ Inserted by installing 'org-mode' or when a release is made."
   (setq org-log-done t)
   (setq org-directory "~/org")
 
+
+  (setq org-emphasis-alist ;;different ways to emphasize text
+        '(("!"  (:foreground "red") )
+          ("*" (bold :foreground "Orange" ))
+          ("/" italic "<i>" "</i>") 
+          ("_" underline "<span style=\"text-decoration:underline;\">" "</span>")
+          ("-" (:overline t) "<span style=\"text-decoration:overline;\">" "</span>")
+          ("~" org-code "<code>" "</code>" verbatim)
+          ("=" org-verbatim "<code>" "</code>" verbatim) 
+          ("+" (:strike-through t) "<del>" "</del>")))
+
   ;;stores changes from dropbox
   (setq org-mobile-inbox-for-pull "~/org/flagged.org")
 
@@ -270,6 +299,7 @@ Inserted by installing 'org-mode' or when a release is made."
                                                       "\n"
                                                       (org-agenda-format-date-aligned date))))
   (setq org-agenda-start-with-follow-mode t)
+  (setq org-agenda-window-setup 'only-window)
   ;;don't show warnings for deadlines
   (setq org-deadline-warning-days 0)
 
@@ -290,10 +320,17 @@ Inserted by installing 'org-mode' or when a release is made."
                                     "~/org/20200314210447_coronavirus.org")
            "* %^{Heading}")
           ("k" "CS 520: Knowledge Graphs" entry (file+datetree 
-                                    "~/org/20200331194240-cs520_knowledge_graphs.org")
+                                                 "~/org/20200331194240-cs520_knowledge_graphs.org")
            "* %^{Heading}")
-          ;; other entries
-          ))
+          ("l" "Linguist 167: Languages of the World" entry (file+datetree 
+                                                 "~/org/20200406225041-linguist_167_languages_of_the_world.org")
+           "* %^{Heading}")
+          ("m" "CS 229: Machine Learning" entry (file+datetree 
+                                                 "~/org/20200403043734-cs229_machine_learning.org")
+           "* %^{Heading}")
+          ("p" "CS 110: Principles of Computer Systems" entry (file+datetree 
+                                                               "~/org/20200403044116-cs110_principles_of_computer_systems.org")
+           "* %^{Heading}")))
   ;;open links in same window
   (delete '(file . find-file-other-window) org-link-frame-setup)
   (add-to-list 'org-link-frame-setup '(file . find-file))
@@ -315,7 +352,7 @@ Inserted by installing 'org-mode' or when a release is made."
 (use-package company-org-roam
   :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master")
   :config
-  (push 'company-org-roam company-backends))
+  (push '(company-org-roam company-capf company-files) company-backends))
 
 (use-package org-journal
   :custom
@@ -329,6 +366,19 @@ Inserted by installing 'org-mode' or when a release is made."
   (setq org-super-agenda-header-separator "\n")
   (setq org-super-agenda-groups '((:auto-category t)))
   (setq org-super-agenda-header-map (make-sparse-keymap))) ;;the header keymaps conflict w/ evil-org keymaps
+
+(use-package org-pdftools
+  :init
+  (setq org-pdftools-root-dir "~/Dropbox/Apps/GoodNotes 5/GoodNotes/"
+        org-pdftools-search-string-separator "??")
+  :after org
+  :config
+  (org-link-set-parameters "pdftools"
+                           :follow #'org-pdftools-open
+                           :complete #'org-pdftools-complete-link
+                           :store #'org-pdftools-store-link
+                           :export #'org-pdftools-export)
+  (add-hook 'org-store-link-functions 'org-pdftools-store-link))
 
 (use-package org-bullets
   :hook (org-mode . (lambda () (org-bullets-mode t))))
@@ -423,7 +473,8 @@ Inserted by installing 'org-mode' or when a release is made."
     "r g" 'org-roam-show-graph
     "r i" 'org-roam-insert
     "r l" 'org-roam
-    "r o" 'org-open-at-point)
+    "r o" 'org-open-at-point
+    "v" 'find-vision-file)
   (evil-leader/set-key-for-mode 'LaTeX-mode
     "c a" 'LaTeX-command-run-all 
     "c c" 'LaTeX-command-master
@@ -464,13 +515,28 @@ Inserted by installing 'org-mode' or when a release is made."
 
 (use-package elpy
   :init
-  (elpy-enable))
+  (elpy-enable)
+  :config
+  (setq elpy-rpc-virtualenv-path 'current)
+  (setenv "WORKON_HOME" (concat (getenv "CONDA_PREFIX") "/envs")) ;; use conda envs
+  (pyvenv-mode 1))
+
+(use-package ein)
 
 (use-package company
   :diminish company-mode
   :config
   (define-key company-active-map (kbd "C-w") 'evil-delete-backward-word)
   (global-company-mode t))
+
+(use-package flycheck
+  :init
+  (global-flycheck-mode)
+  (setq flycheck-indication-mode nil))
+
+(use-package google-this
+  :config
+  (google-this-mode t))
 
 ;; TRAMP: disable version control to avoid delays:
 (setq vc-ignore-dir-regexp
@@ -488,9 +554,23 @@ Inserted by installing 'org-mode' or when a release is made."
           '("%`%l%(mode) -shell-escape%' %t"
             TeX-run-TeX nil (latex-mode doctex-mode) :help "Run LaTeX")))
 
+(use-package pdf-tools
+  :config
+  (setq pdf-tools-handle-upgrades nil) ; Use brew upgrade pdf-tools instead.
+  (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
+  (pdf-tools-install))
+
+(use-package markdown-mode
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown"))
+
 (use-package magit)
 
 (use-package mac-pseudo-daemon
   :straight (mac-pseudo-daemon :type git :host github :repo "DarwinAwardWinner/mac-pseudo-daemon")
   :config
   (mac-pseudo-daemon-mode t))
+
+(use-package ssh-config-mode)

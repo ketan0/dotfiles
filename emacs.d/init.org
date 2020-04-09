@@ -20,6 +20,13 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 ** DONE Get rid of custom.el 🤮
    CLOSED: [2020-03-25 Wed 15:41]
 * Setup
+** My Variables
+   #+begin_src emacs-lisp
+     (defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
+       "Personal dotfiles directory.")
+
+     (setq user-emacs-directory (file-truename "~/.emacs.d/"))
+   #+end_src
 ** Straight.el bootstrap
    #+begin_src emacs-lisp
      (defvar bootstrap-version)
@@ -40,18 +47,21 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
     
 ** Tangle source code
     #+begin_src emacs-lisp
-    (defun tangle-init ()
-        "If the current buffer is 'init.org' the code-blocks are
-    tangled, and the tangled file is compiled."
-        (when (equal (buffer-file-name)
-                    (expand-file-name (concat user-emacs-directory "init.org")))
-        ;; Avoid running hooks when tangling.
-        (let ((prog-mode-hook nil))
-            (org-babel-tangle)
-            (byte-compile-file (concat user-emacs-directory "init.el")))))
+            (defun tangle-init ()
+                "If the current buffer is 'init.org' the code-blocks are
+            tangled, and the tangled file is compiled."
+                (when (equal (buffer-file-name)
+                            (expand-file-name (concat user-emacs-directory "init.org")))
+                ;; Avoid running hooks when tangling.
+                (let ((prog-mode-hook nil))
+                  (org-babel-tangle-file
+                   (expand-file-name (concat user-emacs-directory "init.org"))
+                   (expand-file-name (concat user-emacs-directory "init.el")) 
+                   "emacs-lisp")
+                  (byte-compile-file (concat user-emacs-directory "init.el")))))
+            ;;TODO: add dotfiles variable and stuffs
 
-
-    (add-hook 'after-save-hook 'tangle-init)
+            (add-hook 'after-save-hook 'tangle-init)
 
     #+end_src
     
@@ -71,7 +81,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
                    (get-string-from-file "~/Documents/rightalign.txt")))))
 #+end_src
 
-** Variable customizations
+** Custom
    See [[file:custom.el][custom.el]] for variables edited via customization buffer.
    EDIT: not using custom.el, at the moment. Keep in case other packages need to add custom stuff.
    #+begin_src emacs-lisp
@@ -93,7 +103,12 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      (defun find-todo-file ()
        "Edit the todo.org file, in *this* window."
        (interactive)
-       (find-file (concat org-directory "todo.org")))
+       (find-file (concat org-directory "/todo.org")))
+
+     (defun find-vision-file ()
+       "Edit the vision.org file, in *this* window."
+       (interactive)
+       (find-file (concat org-directory "/20200407061957-vision.org")))
 
      (defun er-find-user-init-file ()
        "Edit the `user-init-file', in *this* window."
@@ -290,14 +305,14 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 *** org
      #+begin_src emacs-lisp
        ;;______________________________________________________________________
-       ;;;;  Installing Org with straight.el
-       ;;; https://github.com/raxod502/straight.el/blob/develop/README.md#installing-org-with-straightel
+              ;;;;  Installing Org with straight.el
+              ;;; https://github.com/raxod502/straight.el/blob/develop/README.md#installing-org-with-straightel
        (require 'subr-x)
        (use-package git)
 
        (defun org-git-version ()
          "The Git version of 'org-mode'.
-       Inserted by installing 'org-mode' or when a release is made."
+              Inserted by installing 'org-mode' or when a release is made."
          (require 'git)
          (let ((git-repo (expand-file-name
                           "straight/repos/org/" user-emacs-directory)))
@@ -309,7 +324,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 
        (defun org-release ()
          "The release version of 'org-mode'.
-       Inserted by installing 'org-mode' or when a release is made."
+              Inserted by installing 'org-mode' or when a release is made."
          (require 'git)
          (let ((git-repo (expand-file-name
                           "straight/repos/org/" user-emacs-directory)))
@@ -330,6 +345,17 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
          (setq org-ellipsis "…")
          (setq org-log-done t)
          (setq org-directory "~/org")
+
+
+         (setq org-emphasis-alist ;;different ways to emphasize text
+               '(("!"  (:foreground "red") )
+                 ("*" (bold :foreground "Orange" ))
+                 ("/" italic "<i>" "</i>") 
+                 ("_" underline "<span style=\"text-decoration:underline;\">" "</span>")
+                 ("-" (:overline t) "<span style=\"text-decoration:overline;\">" "</span>")
+                 ("~" org-code "<code>" "</code>" verbatim)
+                 ("=" org-verbatim "<code>" "</code>" verbatim) 
+                 ("+" (:strike-through t) "<del>" "</del>")))
 
          ;;stores changes from dropbox
          (setq org-mobile-inbox-for-pull "~/org/flagged.org")
@@ -365,16 +391,17 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
                                            "~/org/20200314210447_coronavirus.org")
                   "* %^{Heading}")
                  ("k" "CS 520: Knowledge Graphs" entry (file+datetree 
-                                           "~/org/20200331194240-cs520_knowledge_graphs.org")
+                                                        "~/org/20200331194240-cs520_knowledge_graphs.org")
+                  "* %^{Heading}")
+                 ("l" "Linguist 167: Languages of the World" entry (file+datetree 
+                                                        "~/org/20200406225041-linguist_167_languages_of_the_world.org")
                   "* %^{Heading}")
                  ("m" "CS 229: Machine Learning" entry (file+datetree 
-                                           "~/org/20200403043734-cs229_machine_learning.org")
+                                                        "~/org/20200403043734-cs229_machine_learning.org")
                   "* %^{Heading}")
                  ("p" "CS 110: Principles of Computer Systems" entry (file+datetree 
-                                           "~/org/20200403044116-cs110_principles_of_computer_systems.org")
-                  "* %^{Heading}")
-                 ;; other entries
-                 ))
+                                                                      "~/org/20200403044116-cs110_principles_of_computer_systems.org")
+                  "* %^{Heading}")))
          ;;open links in same window
          (delete '(file . find-file-other-window) org-link-frame-setup)
          (add-to-list 'org-link-frame-setup '(file . find-file))
@@ -427,6 +454,21 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
         (setq org-super-agenda-header-map (make-sparse-keymap))) ;;the header keymaps conflict w/ evil-org keymaps
     #+end_src
     
+*** org-pdftools
+    #+begin_src emacs-lisp
+      (use-package org-pdftools
+        :init
+        (setq org-pdftools-root-dir "~/Dropbox/Apps/GoodNotes 5/GoodNotes/"
+              org-pdftools-search-string-separator "??")
+        :after org
+        :config
+        (org-link-set-parameters "pdftools"
+                                 :follow #'org-pdftools-open
+                                 :complete #'org-pdftools-complete-link
+                                 :store #'org-pdftools-store-link
+                                 :export #'org-pdftools-export)
+        (add-hook 'org-store-link-functions 'org-pdftools-store-link))
+    #+end_src
 *** org-bullets
     #+begin_src emacs-lisp
       (use-package org-bullets
@@ -550,7 +592,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
           "r g" 'org-roam-show-graph
           "r i" 'org-roam-insert
           "r l" 'org-roam
-          "r o" 'org-open-at-point)
+          "r o" 'org-open-at-point
+          "v" 'find-vision-file)
         (evil-leader/set-key-for-mode 'LaTeX-mode
           "c a" 'LaTeX-command-run-all 
           "c c" 'LaTeX-command-master
@@ -633,6 +676,12 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
        (setq flycheck-indication-mode nil))
    #+end_src
    
+** google-this
+   #+begin_src emacs-lisp
+     (use-package google-this
+       :config
+       (google-this-mode t))
+   #+end_src
 ** TRAMP
    #+begin_src emacs-lisp
 
@@ -665,7 +714,6 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
        (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
        (pdf-tools-install))
    #+end_src
-   
 ** markdown-mode
    #+begin_src emacs-lisp
      (use-package markdown-mode

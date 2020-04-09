@@ -8,3 +8,6 @@ emacs.d/straight/
 emacs.d/transient/
 /emacs.d/bookmarks
 /emacs.d/request/
+/emacs.d/thumbs/
+*.elc
+/emacs.d/games/
