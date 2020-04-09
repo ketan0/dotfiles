@@ -19,20 +19,39 @@
    (setq straight-use-package-by-default t)
 
 (defun tangle-init ()
-    "If the current buffer is 'init.org' the code-blocks are
+        "If the current buffer is 'init.org' the code-blocks are
+    tangled, and the tangled file is compiled."
+        (when (equal (buffer-file-name)
+                    (expand-file-name (concat user-emacs-directory "init.org")))
+        ;; Avoid running hooks when tangling.
+        (let ((prog-mode-hook nil))
+            (org-babel-tangle-file
+            (expand-file-name (concat user-emacs-directory "init.org"))
+            (expand-file-name (concat user-emacs-directory "init.el")) 
+            "emacs-lisp")
+            (byte-compile-file (concat user-emacs-directory "init.el")))))
+    ;;TODO: add dotfiles variable and stuffs
+
+(defun tangle-karabiner ()
+  "If the current buffer is 'karabiner.org' the code-blocks are
 tangled, and the tangled file is compiled."
-    (when (equal (buffer-file-name)
-                (expand-file-name (concat user-emacs-directory "init.org")))
+  (when (equal (buffer-file-name)
+               (expand-file-name (concat ketan0/dotfiles-dir "karabiner.org")))
     ;; Avoid running hooks when tangling.
     (let ((prog-mode-hook nil))
       (org-babel-tangle-file
-       (expand-file-name (concat user-emacs-directory "init.org"))
-       (expand-file-name (concat user-emacs-directory "init.el")) 
-       "emacs-lisp")
-      (byte-compile-file (concat user-emacs-directory "init.el")))))
+       (expand-file-name (concat ketan0/dotfiles-dir "karabiner.org"))
+       (expand-file-name (concat ketan0/dotfiles-dir "karabiner.clojure"))))
+    ;;totally unsure how this works but....it tangles to karabiner.edn?!
+      ;; (rename-file
+      ;;  (expand-file-name (concat ketan0/dotfiles-dir "karabiner.clojure"))
+      ;;  (expand-file-name (concat ketan0/dotfiles-dir "karabiner.edn")) t)
+      ;;ok to overwrite if exists
+       (message (shell-command-to-string "goku"))))
 ;;TODO: add dotfiles variable and stuffs
 
 (add-hook 'after-save-hook 'tangle-init)
+(add-hook 'after-save-hook 'tangle-karabiner)
 
 (defun get-string-from-file (filePath)
   "Return filePath's file content."
@@ -285,10 +304,6 @@ tangled, and the tangled file is compiled."
 
 (provide 'org-version)
 
-(when (version<= "9.2" org-version)
-  (require 'org-tempo))
-
-;; (straight-use-package 'org) ; or org-plus-contrib if desired
 
 (use-package org
   :config
