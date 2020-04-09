@@ -1,16 +1,16 @@
 {;;beginning bracket for whole data structure!
-    :profiles {
-               :Default {  :default true
-                         :sim     60    ;; simultaneous_threshold_milliseconds (def: 50)
-                         ;; keys need to be pressed within this threshold to be considered simultaneous
-                         :delay   80    ;; to_delayed_action_delay_milliseconds (def: 500)
-                         ;; basically it means time after which the key press is count delayed
-                         :alone   300    ;; to_if_alone_timeout_milliseconds (def: 1000)
-                         ;; hold for 995s and single tap registered; hold for 1005s and seen as modifier
-                         :held    50   ;; to_if_held_down_threshold_milliseconds (def: 500)
-                         ;; key is fired twice when 500 ms is elapsed (otherwise seen as a hold command)
-                         }
-               } ;; profiles
+ :profiles {
+            :Default {  :default true
+                      :sim     60    ;; simultaneous_threshold_milliseconds (def: 50)
+                      ;; keys need to be pressed within this threshold to be considered simultaneous
+                      :delay   80    ;; to_delayed_action_delay_milliseconds (def: 500)
+                      ;; basically it means time after which the key press is count delayed
+                      :alone   300    ;; to_if_alone_timeout_milliseconds (def: 1000)
+                      ;; hold for 995s and single tap registered; hold for 1005s and seen as modifier
+                      :held    50   ;; to_if_held_down_threshold_milliseconds (def: 500)
+                      ;; key is fired twice when 500 ms is elapsed (otherwise seen as a hold command)
+                      }
+            } ;; profiles
 
 :templates {
             :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\"'"
@@ -96,6 +96,6 @@
 ]
 
 :applications [
-                   :Emacs ["^org\\.gnu\\.Emacs$"]
-                   ]
+               :Emacs ["^org\\.gnu\\.Emacs$"]
+               ]
 };;ending bracket for whole data structure!
