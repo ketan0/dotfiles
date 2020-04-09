@@ -252,14 +252,14 @@ tangled, and the tangled file is compiled."
 (use-package diminish)
 
 ;;______________________________________________________________________
-       ;;;;  Installing Org with straight.el
-       ;;; https://github.com/raxod502/straight.el/blob/develop/README.md#installing-org-with-straightel
+          ;;;;  Installing Org with straight.el
+          ;;; https://github.com/raxod502/straight.el/blob/develop/README.md#installing-org-with-straightel
 (require 'subr-x)
 (use-package git)
 
 (defun org-git-version ()
   "The Git version of 'org-mode'.
-       Inserted by installing 'org-mode' or when a release is made."
+          Inserted by installing 'org-mode' or when a release is made."
   (require 'git)
   (let ((git-repo (expand-file-name
                    "straight/repos/org/" user-emacs-directory)))
@@ -271,7 +271,7 @@ tangled, and the tangled file is compiled."
 
 (defun org-release ()
   "The release version of 'org-mode'.
-       Inserted by installing 'org-mode' or when a release is made."
+          Inserted by installing 'org-mode' or when a release is made."
   (require 'git)
   (let ((git-repo (expand-file-name
                    "straight/repos/org/" user-emacs-directory)))
@@ -284,6 +284,9 @@ tangled, and the tangled file is compiled."
                "HEAD")))))
 
 (provide 'org-version)
+
+(when (version<= "9.2" org-version)
+  (require 'org-tempo))
 
 ;; (straight-use-package 'org) ; or org-plus-contrib if desired
 
@@ -341,7 +344,7 @@ tangled, and the tangled file is compiled."
                                                  "~/org/20200331194240-cs520_knowledge_graphs.org")
            "* %^{Heading}")
           ("l" "Linguist 167: Languages of the World" entry (file+datetree 
-                                                 "~/org/20200406225041-linguist_167_languages_of_the_world.org")
+                                                             "~/org/20200406225041-linguist_167_languages_of_the_world.org")
            "* %^{Heading}")
           ("m" "CS 229: Machine Learning" entry (file+datetree 
                                                  "~/org/20200403043734-cs229_machine_learning.org")
