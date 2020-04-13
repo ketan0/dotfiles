@@ -45,6 +45,15 @@ tangled, and the tangled file is compiled."
        (message (concat "Goku output: " (shell-command-to-string "goku")))))
 ;;TODO: add dotfiles variable and stuffs
 
+(defun source-yabairc ()
+  "If the current buffer is 'karabiner.org' the code-blocks are
+tangled, and the tangled file is compiled."
+  (when (equal (buffer-file-name)
+               (expand-file-name (concat ketan0/dotfiles-dir "yabairc")))
+    ;; Avoid running hooks when tangling.
+       (message (concat "Yabairc has been sourced" (shell-command-to-string "launchctl kickstart -k \"gui/${UID}/homebrew.mxcl.yabai\"")))))
+;;TODO: add dotfiles variable and stuffs
+
 (add-hook 'after-save-hook 'tangle-init)
 (add-hook 'after-save-hook 'tangle-karabiner)
 
@@ -76,6 +85,12 @@ tangled, and the tangled file is compiled."
 (global-set-key (kbd "˙") 'switch-to-prev-buffer) ;; A-h
 (global-set-key (kbd "¬") 'switch-to-next-buffer) ;; A-l
 
+;;TODO: work on making this work
+;; (defun ketan0/find-certain-file (filepath)
+;;   "here's a function"
+;;   `(lambda (filepath)
+;;      (interactive)
+;;      (find-file filepath)))
 
 
 (defun find-todo-file ()
@@ -196,6 +211,7 @@ tangled, and the tangled file is compiled."
 
 (switch-theme 'doom-acario-dark)
 
+(setq frame-title-format "%b") ; show buffer name in title bar
 (setq inhibit-splash-screen t) ;don't show default emacs startup screen
 (setq visible-bell t) ;Instead of shell bell, visual flash
 (setq ring-bell-function ; don't ring (flash) the bell on C-g
@@ -271,8 +287,9 @@ tangled, and the tangled file is compiled."
 
 (require 'bind-key)
 
-(use-package diminish)
-(diminish 'auto-revert-mode)
+(use-package diminish
+  :config
+  (diminish 'auto-revert-mode))
 
 ;;______________________________________________________________________
 ;;;;  Installing Org with straight.el
@@ -314,7 +331,7 @@ tangled, and the tangled file is compiled."
   (setq org-ellipsis "…")
   (setq org-log-done t)
   (setq org-directory "~/org")
-
+  (setq org-return-follows-link t)
 
   (setq org-emphasis-alist ;;different ways to emphasize text
         '(("!"  (:foreground "red") )
@@ -338,12 +355,12 @@ tangled, and the tangled file is compiled."
                                                       (make-string (/ (window-width) 2) 9472)
                                                       "\n"
                                                       (org-agenda-format-date-aligned date))))
-  (setq org-agenda-start-with-follow-mode t)
   (setq org-agenda-window-setup 'only-window)
   ;;don't show warnings for deadlines
   (setq org-deadline-warning-days 0)
 
   ;;refile headlines to any other agenda files
+  (setq org-refile-use-cache t) ;;speeds up loading refile targets
   (setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
   (setq org-refile-allow-creating-parent-nodes 'confirm)
   (setq org-refile-use-outline-path 'file)
@@ -434,6 +451,7 @@ tangled, and the tangled file is compiled."
   (evil-mode t)
   (define-key evil-normal-state-map "Q" (kbd "@q"))
   (define-key evil-motion-state-map "j" 'evil-next-visual-line)
+  (define-key evil-motion-state-map (kbd "RET") nil)
   (define-key evil-motion-state-map "k" 'evil-previous-visual-line)
   ;; Also in visual mode
   (define-key evil-visual-state-map "j" 'evil-next-visual-line)
@@ -478,6 +496,7 @@ tangled, and the tangled file is compiled."
   (evil-leader/set-leader "<SPC>")
   (evil-leader/set-key ;active in all modes
     "<SPC>" 'helm-M-x
+    ";" 'bookmark-jump
     "a" 'org-agenda
     "b" 'switch-to-buffer
     "c" 'org-capture
@@ -494,6 +513,7 @@ tangled, and the tangled file is compiled."
     "j" 'org-journal-new-entry
     "k" 'kill-this-buffer
     "K" 'kill-buffer-and-window
+    "l" 'link-hint-open-link
     "n" 'switch-to-next-buffer
     ;; "o" 'xah-new-empty-buffer
     "o f" 'open-dir-in-finder
@@ -577,6 +597,7 @@ tangled, and the tangled file is compiled."
   :diminish flycheck-mode
   :init
   (global-flycheck-mode)
+  (setq flycheck-global-modes '(not org-src-mode)) ;; no flycheck when doing code snippets
   (setq flycheck-indication-mode nil))
 
 (use-package google-this
@@ -613,3 +634,8 @@ tangled, and the tangled file is compiled."
   (mac-pseudo-daemon-mode t))
 
 (use-package ssh-config-mode)
+
+(use-package link-hint)
+
+(use-package adaptive-wrap
+  :hook (org-mode . adaptive-wrap-prefix-mode))
