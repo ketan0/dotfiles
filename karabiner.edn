@@ -1,6 +1,7 @@
 {;;beginning bracket for whole data structure!
+
  :profiles {
-            :Default {  :default true
+            :Ketan {:default true
                       :sim     60    ;; simultaneous_threshold_milliseconds (def: 50)
                       ;; keys need to be pressed within this threshold to be considered simultaneous
                       :delay   80    ;; to_delayed_action_delay_milliseconds (def: 500)
@@ -18,7 +19,18 @@
             } ;; templates
 
 :layers {
-         :open-mode {:key :tab}
+         :tab-mode {:key :tab
+                    :afterup [{:set ["yabai-move-mode" 0]}
+                              {:set ["yabai-focus-mode" 0]}
+                              {:set ["chrome-movement-mode" 0]}
+                              {:set ["chrome-rearrange-tab-mode" 0]}
+                              ]}
+
+
+         :yabai-move-mode {:key :w :condi :tab-mode}
+         :yabai-focus-mode {:key :f :condi :tab-mode}
+         :chrome-movement-mode {:key :t :condi :tab-mode} ;;TODO make this work
+         :chrome-rearrange-tab-mode {:key :r :condi :tab-mode}
          :ctrl-mode {:key :caps_lock}
          }
 
@@ -26,10 +38,11 @@
             :jupyter-mode {:key :j}
             }
 
-:main [
+:main [ ;;begin main
 
 {:des "use caps key as control (keeps single caps keypress as escape)",
  :rules [:ctrl-mode
+         [:delete_or_backspace :!Odelete_or_backspace] ;;caps+delete to delete a word
          [:open_bracket :!Topen_bracket]
          [:close_bracket :!Tclose_bracket]
          [:semicolon :!Tsemicolon]
@@ -74,28 +87,82 @@
          [:9 :!T9]
          [:0 :!T0]]}
 
-;;todo: if application is already active, another press switches windows
-{:des "open mode (tab): quickly open applications",
- :rules [:open-mode
+{:des   "yabai mode"
+ :rules [
+         ;; :yabai-insert-mode
+         ;; [:h "/usr/local/bin/yabai -m window --insert west"]
+         ;; [:j "/usr/local/bin/yabai -m window --insert south"]
+         ;; [:k "/usr/local/bin/yabai -m window --insert north"]
+         ;; [:l "/usr/local/bin/yabai -m window --insert east"]
+
+         ;; move windows
+         :yabai-move-mode
+         [:h "/usr/local/bin/yabai -m window --warp west"]
+         [:j "/usr/local/bin/yabai -m window --warp south"]
+         [:k "/usr/local/bin/yabai -m window --warp north"]
+         [:l "/usr/local/bin/yabai -m window --warp east"]
+         [:p "/usr/local/bin/yabai -m window --toggle float"]
+         [:t "/usr/local/bin/yabai -m window --toggle split"]
+
+         ;; ;; ;; scale windows
+         ;; :yabai-scale-mode
+         ;; [:h "/usr/local/bin/yabai -m window --resize left"]
+         ;; [:j "/usr/local/bin/yabai -m window --resize down"]
+         ;; [:k "/usr/local/bin/yabai -m window --resize up"]
+         ;; [:l "/usr/local/bin/yabai -m window --resize right"]
+
+         ;; directionally scale windows
+         :yabai-focus-mode
+         [:h "/usr/local/bin/yabai -m window --focus west"]
+         [:j "/usr/local/bin/yabai -m window --focus south"]
+         [:k "/usr/local/bin/yabai -m window --focus north"]
+         [:l "/usr/local/bin/yabai -m window --focus east"]
+
+         ]
+ }
+
+{:des   "chrome tabs mode"
+ :rules [
+         :chrome-movement-mode
+         [:h :!Copen_bracket]
+         [:j :!TStab]
+         [:k :!Ttab]
+         [:l :!Cclose_bracket]
+
+         ;;NOTE: need this extension 
+         ;;
+         :chrome-rearrange-tab-mode
+         ;; [:h :!COdown_arrow]
+
+         [:j :!TSleft_arrow]
+         [:k :!TSright_arrow]
+         ;; [:l :!COup_arrow]
+         ]
+ }
+
+{:des "tab mode (tab): quickly open applications",
+ :rules [:tab-mode
+         [:f8 [:km "Open Spotify"]]
          [:c [:km "Open Chrome"]]
          [:e [:km "Open Emacs"]]
          [:i [:km "Open iTerm"]]
-         [:k [:km "Open Keyboard Maestro"]]
          [:m [:km "Open Messages"]]
          [:n [:km "Open Notes"]]
          [:q [:km "Open Qutebrowser"]]
-         [:s [:km "Open Spotify"]]
          [:x [:km "Open Xcode"]]
          [:w [:km "Open Word"]]
+         [:y [:km "Open Keyboard Maestro"]]
          [:z [:km "Open Zoom"]]]}
 
 {:des "jupyter mode (j): various jupyter shortcuts",
  :rules [:jupyter-mode
          [:l [:km "Start or Go to Existing Jupyter Lab Server"]]]}
 
-]
+] ;;end main
 
 :applications [
                :Emacs ["^org\\.gnu\\.Emacs$"]
+               :Chrome ["^com\\.google\\.Chrome$", "^org\\.chromium\\.Chromium$", "^com\\.google\\.Chrome\\.canary$"]
                ]
+
 };;ending bracket for whole data structure!
