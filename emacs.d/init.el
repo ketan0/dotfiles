@@ -51,11 +51,12 @@ tangled, and the tangled file is compiled."
   (when (equal (buffer-file-name)
                (expand-file-name (concat ketan0/dotfiles-dir "yabairc")))
     ;; Avoid running hooks when tangling.
-       (message (concat "Yabairc has been sourced" (shell-command-to-string "launchctl kickstart -k \"gui/${UID}/homebrew.mxcl.yabai\"")))))
+       (message (concat "yabairc has been sourced" (shell-command-to-string "launchctl kickstart -k \"gui/${UID}/homebrew.mxcl.yabai\"")))))
 ;;TODO: add dotfiles variable and stuffs
 
 (add-hook 'after-save-hook 'tangle-init)
 (add-hook 'after-save-hook 'tangle-karabiner)
+(add-hook 'after-save-hook 'source-yabairc)
 
 (defun get-string-from-file (filePath)
   "Return filePath's file content."
