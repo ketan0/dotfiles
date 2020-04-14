@@ -30,6 +30,7 @@
          :yabai-move-mode {:key :w :condi :tab-mode}
          :yabai-focus-mode {:key :f :condi :tab-mode}
          :chrome-movement-mode {:key :t :condi :tab-mode} ;;TODO make this work
+         :chrome-history-mode {:key :g :condi :tab-mode} ;;TODO make this work
          :chrome-rearrange-tab-mode {:key :r :condi :tab-mode}
          :ctrl-mode {:key :caps_lock}
          }
@@ -97,12 +98,13 @@
 
          ;; move windows
          :yabai-move-mode
+         [:b "/usr/local/bin/yabai -m space --balance"]
          [:h "/usr/local/bin/yabai -m window --warp west"]
          [:j "/usr/local/bin/yabai -m window --warp south"]
          [:k "/usr/local/bin/yabai -m window --warp north"]
          [:l "/usr/local/bin/yabai -m window --warp east"]
          [:p "/usr/local/bin/yabai -m window --toggle float"]
-         [:t "/usr/local/bin/yabai -m window --toggle split"]
+         [:s "/usr/local/bin/yabai -m window --toggle split"]
 
          ;; ;; ;; scale windows
          ;; :yabai-scale-mode
@@ -111,31 +113,35 @@
          ;; [:k "/usr/local/bin/yabai -m window --resize up"]
          ;; [:l "/usr/local/bin/yabai -m window --resize right"]
 
-         ;; directionally scale windows
+         ;; directionally navigate windows/spaces
+         ;; space<=="g", {"h" "j" "k" "l"}, ";"==>space
          :yabai-focus-mode
+         [:g "/usr/local/bin/yabai -m space --focus prev"]
          [:h "/usr/local/bin/yabai -m window --focus west"]
          [:j "/usr/local/bin/yabai -m window --focus south"]
          [:k "/usr/local/bin/yabai -m window --focus north"]
          [:l "/usr/local/bin/yabai -m window --focus east"]
+         [:semicolon "/usr/local/bin/yabai -m space --focus next"]
 
          ]
  }
 
 {:des   "chrome tabs mode"
  :rules [
-         :chrome-movement-mode
+         :chrome-history-mode
          [:h :!Copen_bracket]
-         [:j :!TStab]
-         [:k :!Ttab]
          [:l :!Cclose_bracket]
+         :chrome-movement-mode
+         [:h :!TStab]
+         [:l :!Ttab]
 
          ;;NOTE: need this extension 
          ;;
          :chrome-rearrange-tab-mode
          ;; [:h :!COdown_arrow]
 
-         [:j :!TSleft_arrow]
-         [:k :!TSright_arrow]
+         [:h :!TSleft_arrow]
+         [:l :!TSright_arrow]
          ;; [:l :!COup_arrow]
          ]
  }
