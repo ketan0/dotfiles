@@ -4,7 +4,8 @@
         relink: true
 - clean: ['~']
 - link:
-    ~/.emacs.d/: emacs.d
+    ~/.emacs.d/init.el: init.el
+    ~/.emacs.d/init.org: init.org
     ~/.gitconfig:
     ~/.yabairc:
     ~/.config/karabiner.edn: karabiner.edn
