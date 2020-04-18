@@ -1,8 +1,6 @@
 (defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
   "Personal dotfiles directory.")
 
-(setq user-emacs-directory (file-truename "~/.emacs.d/"))
-
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -107,7 +105,7 @@ tangled, and the tangled file is compiled."
 (defun er-find-user-init-file ()
   "Edit the `user-init-file', in *this* window."
   (interactive)
-  (find-file (concat user-emacs-directory "init.org")))
+  (find-file (concat ketan0/dotfiles-dir "init.org")))
 
 (defun open-dir-in-finder ()
   "Open a new Finder window to the path of the current buffer"
@@ -212,6 +210,10 @@ tangled, and the tangled file is compiled."
 
 (switch-theme 'doom-acario-dark)
 
+(setq gc-cons-threshold 100000000) ;;100mb; default setting is too low for lsp-mode et al.
+(setq read-process-output-max (* 1024 1024)) ;; 1mb
+
+
 (setq frame-title-format "%b") ; show buffer name in title bar
 (setq inhibit-splash-screen t) ;don't show default emacs startup screen
 (setq visible-bell t) ;Instead of shell bell, visual flash
@@ -249,6 +251,7 @@ tangled, and the tangled file is compiled."
 (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
 (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
 
+(setq vc-follow-symlinks 'ask)
 ;; TRAMP: disable version control to avoid delays:
 (setq vc-ignore-dir-regexp
       (format "\\(%s\\)\\|\\(%s\\)"
@@ -300,7 +303,7 @@ tangled, and the tangled file is compiled."
 
 (defun org-git-version ()
   "The Git version of 'org-mode'.
-          Inserted by installing 'org-mode' or when a release is made."
+                 Inserted by installing 'org-mode' or when a release is made."
   (require 'git)
   (let ((git-repo (expand-file-name
                    "straight/repos/org/" user-emacs-directory)))
@@ -312,7 +315,7 @@ tangled, and the tangled file is compiled."
 
 (defun org-release ()
   "The release version of 'org-mode'.
-          Inserted by installing 'org-mode' or when a release is made."
+                 Inserted by installing 'org-mode' or when a release is made."
   (require 'git)
   (let ((git-repo (expand-file-name
                    "straight/repos/org/" user-emacs-directory)))
@@ -356,19 +359,25 @@ tangled, and the tangled file is compiled."
                                                       (make-string (/ (window-width) 2) 9472)
                                                       "\n"
                                                       (org-agenda-format-date-aligned date))))
-  (setq org-agenda-window-setup 'only-window)
+  (setq org-agenda-window-setup 'only-window) ;;agenda take up whole frame
   ;;don't show warnings for deadlines
-  (setq org-deadline-warning-days 0)
+  (setq org-deadline-warning-days 0) ;;don't show upcoming tasks in today view
+
+  (setq org-edit-src-content-indentation 0) ;;don't indent src blocks further
 
   ;;refile headlines to any other agenda files
   (setq org-refile-use-cache t) ;;speeds up loading refile targets
-  (setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
+  (setq org-refile-targets '((org-agenda-files :maxlevel . 3))) 
   (setq org-refile-allow-creating-parent-nodes 'confirm)
-  (setq org-refile-use-outline-path 'file)
-  (setq org-outline-path-complete-in-steps nil)
 
-  (setq org-catch-invisible-edits (quote show-and-error))
-  (setq org-default-notes-file (concat org-directory "/capture.org"))
+  (setq org-refile-use-outline-path 'file) ;;see whole path (not just headline)
+  (setq org-outline-path-complete-in-steps nil) ;;easy to complete in one go w/ helm
+
+  (setq org-archive-location (concat (file-name-as-directory org-directory) "archive.org::datetree/")) ;;archive done tasks to datetree in archive.org
+
+  (setq org-catch-invisible-edits (quote show-and-error)) ;;avoid accidental edits in folded areas, links, etc.
+  (setq org-default-notes-file (concat (file-name-as-directory org-directory) "capture.org"))
+
   (setq org-capture-templates
         '(;; other entries
           ("t" "todo" entry
@@ -388,10 +397,13 @@ tangled, and the tangled file is compiled."
            "* %^{Heading}")
           ("p" "CS 110: Principles of Computer Systems" entry (file+datetree 
                                                                "~/org/20200403044116-cs110_principles_of_computer_systems.org")
-           "* %^{Heading}")))
+           "* %^{Heading}")
+          ("u" "new package" entry (file+headline 
+                                    "~/.emacs.d/init.org" "Packages")
+           "* %^{package name} \n#+begin_src emacs-lisp\n(use-package %\\1)\n#+end_src")))
+
   ;;open links in same window
-  (delete '(file . find-file-other-window) org-link-frame-setup)
-  (add-to-list 'org-link-frame-setup '(file . find-file))
+  (setq org-link-frame-setup '((file . find-file)))
   (global-set-key (kbd "C-c l") 'org-store-link)
   (global-set-key (kbd "C-c a") 'org-agenda)
   (global-set-key (kbd "C-c c") 'org-capture))
@@ -404,13 +416,6 @@ tangled, and the tangled file is compiled."
   :straight (:host github :repo "jethrokuan/org-roam" :branch "master")
   :config
   (setq org-roam-directory "~/org/"))
-
-
-;; Company completions for org-roam
-(use-package company-org-roam
-  :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master")
-  :config
-  (push '(company-org-roam company-capf company-files) company-backends))
 
 (use-package org-journal
   :custom
@@ -492,57 +497,59 @@ tangled, and the tangled file is compiled."
   (evil-commentary-mode t))
 
 (use-package evil-leader
-  :after evil
-  :config
-  (evil-leader/set-leader "<SPC>")
-  (evil-leader/set-key ;active in all modes
-    "<SPC>" 'helm-M-x
-    ";" 'bookmark-jump
-    "a" 'org-agenda
-    "b" 'switch-to-buffer
-    "c" 'org-capture
-    "e" 'eshell
-    "f" 'helm-find-files
-    "g" 'magit-status
-    "h i" 'info
-    "h k" 'describe-key
-    "h m" 'describe-mode
-    "h o" 'describe-symbol
-    "h v" 'describe-variable
-    "h w" 'where-is
-    "i" 'er-find-user-init-file
-    "j" 'org-journal-new-entry
-    "k" 'kill-this-buffer
-    "K" 'kill-buffer-and-window
-    "l" 'link-hint-open-link
-    "n" 'switch-to-next-buffer
-    ;; "o" 'xah-new-empty-buffer
-    "o f" 'open-dir-in-finder
-    "o i" 'open-dir-in-iterm
-    "p" 'switch-to-prev-buffer
-    "q" 'delete-other-windows
-    "s h" 'evil-window-left
-    "s j" 'evil-window-down
-    "s k" 'evil-window-up
-    "s l" 'evil-window-right
-    "s s" 'helm-projectile-ag
-    "t l" 'load-theme
-    "t s" 'switch-theme
-    "t d" 'disable-theme
-    "w" 'save-buffer;;)
-  ;; (evil-leader/set-key-for-mode 'org-mode ;just for org-mode, normal state
-    "'" 'org-edit-special
-    "r f" 'org-roam-find-file
-    "r g" 'org-roam-show-graph
-    "r i" 'org-roam-insert
-    "r l" 'org-roam
-    "r o" 'org-open-at-point
-    "v" 'find-vision-file)
-  (evil-leader/set-key-for-mode 'LaTeX-mode
-    "c a" 'LaTeX-command-run-all 
-    "c c" 'LaTeX-command-master
-    "c e" 'LaTeX-environment)
-  (global-evil-leader-mode t))
+   :after evil
+   :config
+   (evil-leader/set-leader "<SPC>")
+   (evil-leader/set-key ;active in all modes
+     "<SPC>" 'helm-M-x
+     ";" 'bookmark-jump
+     "a" 'org-agenda
+     "b" 'switch-to-buffer
+     "c" 'org-capture
+     "e" 'eshell
+     "f" 'helm-find-files
+     "g" 'magit-status
+     "h i" 'info
+     "h k" 'describe-key
+     "h m" 'describe-mode
+     "h o" 'describe-symbol
+     "h v" 'describe-variable
+     "h w" 'where-is
+     "i" 'er-find-user-init-file
+     "j" 'org-journal-new-entry
+     "k" 'kill-this-buffer
+     "K" 'kill-buffer-and-window
+     "l" 'link-hint-open-link
+     "n" 'switch-to-next-buffer
+     ;; "o" 'xah-new-empty-buffer
+     "o f" 'open-dir-in-finder
+     "o i" 'open-dir-in-iterm
+     "p" 'switch-to-prev-buffer
+     "q" 'delete-other-windows
+     "s h" 'evil-window-left
+     "s j" 'evil-window-down
+     "s k" 'evil-window-up
+     "s l" 'evil-window-right
+     "s s" 'helm-projectile-rg
+(use-package helm-ag
+  :after helm-mode)
+     "s f" 'helm-org-rifle-current-buffer
+     "t l" 'load-theme
+     "t s" 'switch-theme
+     "t d" 'disable-theme
+     "w" 'save-buffer
+     "'" 'org-edit-special
+     "r f" 'org-roam-find-file
+     "r g" 'org-roam-show-graph
+     "r i" 'org-roam-insert
+     "r l" 'org-roam
+     "r o" 'org-open-at-point
+     "v" 'find-vision-file)
+   (evil-leader/set-key-for-mode 'LaTeX-mode
+     "c a" 'LaTeX-command-run-all 
+     "c c" 'LaTeX-command-master
+     "c e" 'LaTeX-environment)
+   (global-evil-leader-mode t))
 
 (use-package evil-surround
   :after evil
@@ -551,13 +558,23 @@ tangled, and the tangled file is compiled."
 
 (use-package helm
   :diminish helm-mode
+  :bind
+  (:map helm-map
+   ("C-j" . helm-next-line)
+   ("C-k" . helm-previous-line))
+  (:map helm-find-files-map
+   ("C-h" . hem-find-files-up-one-level)
+   ("C-l" . helm-execute-persistent-action))
   :init
   (setq helm-completion-style 'emacs)
   (setq completion-styles '(helm-flex))
   :config 
-  (define-key helm-map (kbd "C-w") 'evil-delete-backward-word)
   (global-set-key (kbd "M-x") 'helm-M-x)
   (helm-mode t))
+
+;; (use-package helm-files
+;;   :bind
+;;   (:map helm-find-files-map
 
 (use-package helm-projectile
   :after helm-mode
@@ -567,6 +584,9 @@ tangled, and the tangled file is compiled."
 (use-package helm-org)
 
 (use-package helm-ag
+  :after helm-mode)
+
+(use-package helm-rg
   :after helm-mode)
 
 (use-package projectile
@@ -592,6 +612,17 @@ tangled, and the tangled file is compiled."
   (define-key company-active-map (kbd "C-w") 'evil-delete-backward-word)
   (global-company-mode t))
 
+(use-package lsp-mode
+  :init
+  (require 'lsp-clients)
+  (add-hook 'prog-mode-hook #'lsp))
+(use-package company-lsp)
+;; Company completions for org-roam
+(use-package company-org-roam
+  :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master")
+  :config
+  (push '(company-org-roam company-capf company-files) company-backends))
+
 (use-package clojure-mode)
 
 (use-package flycheck
@@ -608,6 +639,8 @@ tangled, and the tangled file is compiled."
 
 (use-package auctex
   :defer t
+  :init
+  (add-hook 'LaTeX-mode-hook 'ketan0/latex-mode-setup)
   :config
   (defvar TeX-auto-save)
   (defvar TeX-command-list)
@@ -615,6 +648,13 @@ tangled, and the tangled file is compiled."
   (setcdr (assoc "LaTeX" TeX-command-list)
           '("%`%l%(mode) -shell-escape%' %t"
             TeX-run-TeX nil (latex-mode doctex-mode) :help "Run LaTeX")))
+
+(defun ketan0/latex-mode-setup ()
+  (setq-local company-backends
+              (append '((company-math-symbols-latex company-latex-commands))
+                      company-backends)))
+
+(use-package company-math)
 
 (use-package pdf-tools
   :config
@@ -639,4 +679,13 @@ tangled, and the tangled file is compiled."
 (use-package link-hint)
 
 (use-package adaptive-wrap
-  :hook (org-mode . adaptive-wrap-prefix-mode))
+  :diminish adaptive-wrap-prefix-mode
+  :hook (after-init . adaptive-wrap-prefix-mode))
+
+(use-package helm-org-rifle)
+
+(use-package dash)
+
+(use-package f)
+
+(use-package s)
