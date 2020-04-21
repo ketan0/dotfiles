@@ -3,6 +3,7 @@
 # If you come from bash you might have to change your $PATH.
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
+export PATH="/usr/local/opt/llvm/bin:$PATH"
 __conda_setup="$('/Users/ketanagrawal/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
