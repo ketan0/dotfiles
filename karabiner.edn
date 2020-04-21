@@ -45,6 +45,10 @@
 :des "see karabiner.org for documentation.",
 :rules [
 
+[:left_command :left_command nil {:alone :!Ctab}]
+
+[:caps_lock :caps_lock nil {:alone :escape}]
+
 :ctrl-mode
 [:delete_or_backspace :!Odelete_or_backspace] ;;caps+delete to delete a word
 [:open_bracket :!Topen_bracket]
@@ -62,7 +66,6 @@
 [:f :!Tf]
 [:g :!Tg]
 [:i :!Ti]
-
 ;;TODO: really wish the whole exclude Emacs thing worked here
 ;;TODO: navigate by words
 ;;TODO: implement f+char?!

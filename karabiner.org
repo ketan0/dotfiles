@@ -92,139 +92,149 @@ inspiration taken from:
 * Main
 ** begin main
    #+begin_src clojure
-     :main [{
-     :des "see karabiner.org for documentation.",
-     :rules [
+   :main [{
+   :des "see karabiner.org for documentation.",
+   :rules [
    #+end_src
-** ctrl-mode (caps)
+** left cmd => cmd+tab
+   press left command alone to switch to the previous app.
    #+begin_src clojure
-     :ctrl-mode
-     [:delete_or_backspace :!Odelete_or_backspace] ;;caps+delete to delete a word
-     [:open_bracket :!Topen_bracket]
-     [:close_bracket :!Tclose_bracket]
-     [:semicolon :!Tsemicolon]
-     [:quote :!Tquote]
-     [:comma :!Tcomma]
-     [:period :!Tperiod]
-     [:slash :!Tslash]
-     [:a :!Ta]
-     [:b :!Tb]
-     [:c :!Tc]
-     [:d :!Td]
-     [:e :!Te]
-     [:f :!Tf]
-     [:g :!Tg]
-     [:i :!Ti]
-
-     ;;TODO: really wish the whole exclude Emacs thing worked here
-     ;;TODO: navigate by words
-     ;;TODO: implement f+char?!
-     [:#Sh :left_arrow] ;; hjkl navigation everywhere + Shift
-     [:#Sj :down_arrow]
-     [:#Sk :up_arrow]
-     [:#Sl :right_arrow]
-     [:m :!Tm]
-     [:n :!Tn]
-     [:o :!To]
-     [:p :!Tp]
-     [:q :!Tq]
-     [:r :!Tr]
-     [:s :!Ts]
-     [:t :!Tt]
-     [:u :!Tu]
-     [:v :!Tv]
-     [:w :!Tw]
-     [:x :!Tx]
-     [:y :!Ty]
-     [:z :!Tz]
-     [:1 :!T1]
-     [:2 :!T2]
-     [:3 :!T3]
-     [:4 :!T4]
-     [:5 :!T5]
-     [:6 :!T6]
-     [:7 :!T7]
-     [:8 :!T8]
-     [:9 :!T9]
-     [:0 :!T0]
-
+   [:left_command :left_command nil {:alone :!Ctab}]
    #+end_src
+** caps lock rules
+*** alone = escape
+    #+begin_src clojure
+    [:caps_lock :caps_lock nil {:alone :escape}]
+    #+end_src
+*** ctrl-mode (caps)
+    #+begin_src clojure
+    :ctrl-mode
+    [:delete_or_backspace :!Odelete_or_backspace] ;;caps+delete to delete a word
+    [:open_bracket :!Topen_bracket]
+    [:close_bracket :!Tclose_bracket]
+    [:semicolon :!Tsemicolon]
+    [:quote :!Tquote]
+    [:comma :!Tcomma]
+    [:period :!Tperiod]
+    [:slash :!Tslash]
+    [:a :!Ta]
+    [:b :!Tb]
+    [:c :!Tc]
+    [:d :!Td]
+    [:e :!Te]
+    [:f :!Tf]
+    [:g :!Tg]
+    [:i :!Ti]
+    ;;TODO: really wish the whole exclude Emacs thing worked here
+    ;;TODO: navigate by words
+    ;;TODO: implement f+char?!
+    [:#Sh :left_arrow] ;; hjkl navigation everywhere + Shift
+    [:#Sj :down_arrow]
+    [:#Sk :up_arrow]
+    [:#Sl :right_arrow]
+    [:m :!Tm]
+    [:n :!Tn]
+    [:o :!To]
+    [:p :!Tp]
+    [:q :!Tq]
+    [:r :!Tr]
+    [:s :!Ts]
+    [:t :!Tt]
+    [:u :!Tu]
+    [:v :!Tv]
+    [:w :!Tw]
+    [:x :!Tx]
+    [:y :!Ty]
+    [:z :!Tz]
+    [:1 :!T1]
+    [:2 :!T2]
+    [:3 :!T3]
+    [:4 :!T4]
+    [:5 :!T5]
+    [:6 :!T6]
+    [:7 :!T7]
+    [:8 :!T8]
+    [:9 :!T9]
+    [:0 :!T0]
+
+    #+end_src
   
 ** yabai-mode(tab+{wsf}+{hjkl})
    #+begin_src clojure
-     ;; :yabai-insert-mode
-     ;; [:h "/usr/local/bin/yabai -m window --insert west"]
-     ;; [:j "/usr/local/bin/yabai -m window --insert south"]
-     ;; [:k "/usr/local/bin/yabai -m window --insert north"]
-     ;; [:l "/usr/local/bin/yabai -m window --insert east"]
+   ;; :yabai-insert-mode
+   ;; [:h "/usr/local/bin/yabai -m window --insert west"]
+   ;; [:j "/usr/local/bin/yabai -m window --insert south"]
+   ;; [:k "/usr/local/bin/yabai -m window --insert north"]
+   ;; [:l "/usr/local/bin/yabai -m window --insert east"]
 
-     ;; move windows
-     :yabai-move-mode
-     [:b "/usr/local/bin/yabai -m space --balance"]
-     [:h "/usr/local/bin/yabai -m window --warp west"]
-     [:j "/usr/local/bin/yabai -m window --warp south"]
-     [:k "/usr/local/bin/yabai -m window --warp north"]
-     [:l "/usr/local/bin/yabai -m window --warp east"]
-     [:p "/usr/local/bin/yabai -m window --toggle float"]
-     [:s "/usr/local/bin/yabai -m window --toggle split"]
+   ;; move windows
+   :yabai-move-mode
+   [:b "/usr/local/bin/yabai -m space --balance"]
+   [:h "/usr/local/bin/yabai -m window --warp west"]
+   [:j "/usr/local/bin/yabai -m window --warp south"]
+   [:k "/usr/local/bin/yabai -m window --warp north"]
+   [:l "/usr/local/bin/yabai -m window --warp east"]
+   [:p "/usr/local/bin/yabai -m window --toggle float"]
+   [:s "/usr/local/bin/yabai -m window --toggle split"]
 
    #+end_src
    
 ** yabai-focus-mode
    #+begin_src clojure
-     ;; ;; ;; scale windows
-     ;; :yabai-scale-mode
-     ;; [:h "/usr/local/bin/yabai -m window --resize left"]
-     ;; [:j "/usr/local/bin/yabai -m window --resize down"]
-     ;; [:k "/usr/local/bin/yabai -m window --resize up"]
-     ;; [:l "/usr/local/bin/yabai -m window --resize right"]
+   ;; ;; ;; scale windows
+   ;; :yabai-scale-mode
+   ;; [:h "/usr/local/bin/yabai -m window --resize left"]
+   ;; [:j "/usr/local/bin/yabai -m window --resize down"]
+   ;; [:k "/usr/local/bin/yabai -m window --resize up"]
+   ;; [:l "/usr/local/bin/yabai -m window --resize right"]
 
-     ;; directionally navigate windows/spaces
-     ;; space<=="g", {"h" "j" "k" "l"}, ";"==>space
-     :yabai-focus-mode
-     [:g "/usr/local/bin/yabai -m space --focus prev"]
-     [:h "/usr/local/bin/yabai -m window --focus west"]
-     [:j "/usr/local/bin/yabai -m window --focus south"]
-     [:k "/usr/local/bin/yabai -m window --focus north"]
-     [:l "/usr/local/bin/yabai -m window --focus east"]
-     [:semicolon "/usr/local/bin/yabai -m space --focus next"]
+   ;; directionally navigate windows/spaces
+   ;; space<=="g", {"h" "j" "k" "l"}, ";"==>space
+   :yabai-focus-mode
+   [:g "/usr/local/bin/yabai -m space --focus prev"]
+   [:h "/usr/local/bin/yabai -m window --focus west"]
+   [:j "/usr/local/bin/yabai -m window --focus south"]
+   [:k "/usr/local/bin/yabai -m window --focus north"]
+   [:l "/usr/local/bin/yabai -m window --focus east"]
+   [:semicolon "/usr/local/bin/yabai -m space --focus next"]
    #+end_src
 
-** chrome-tab-mode (tab+{rt}+{hjkl})
+** chrome-history-mode (tab+{g}+{hjkl})
    #+begin_src clojure
-     :chrome-history-mode
-     [:h :!Copen_bracket]
-     [:l :!Cclose_bracket]
+   :chrome-history-mode
+   [:h :!Copen_bracket]
+   [:l :!Cclose_bracket]
    #+end_src
-** chrome-tab-mode (tab+{rt}+{hjkl})
+** chrome-movement-mode (tab+{t}+{hjkl})
    #+begin_src clojure
-     :chrome-movement-mode
-     [:h :!TStab]
-     [:l :!Ttab]
+   :chrome-movement-mode
+   [:h :!TStab]
+   [:l :!Ttab]
      #+end_src
+** chrome-rearrange-tab-mode (tab+{r}+{hjkl})
    #+begin_src clojure
-     ;;NOTE: need the Chrome extension for this to work
-     :chrome-rearrange-tab-mode
-     ;; [:h :!COdown_arrow]
+   ;;NOTE: need the Chrome extension for this to work
+   :chrome-rearrange-tab-mode
+   ;; [:h :!COdown_arrow]
 
-     [:h :!TSleft_arrow]
-     [:l :!TSright_arrow]
-     ;; [:l :!COup_arrow]
+   [:h :!TSleft_arrow]
+   [:l :!TSright_arrow]
+   ;; [:l :!COup_arrow]
    #+end_src
 ** tab-mode (tab)
    #+begin_src clojure
-     :tab-mode
-     [:f8 [:km "Open Spotify"]]
-     [:c [:km "Open Chrome"]]
-     [:e [:km "Open Emacs"]]
-     [:i [:km "Open iTerm"]]
-     [:m [:km "Open Messages"]]
-     [:n [:km "Open Notes"]]
-     [:q [:km "Open Qutebrowser"]]
-     [:x [:km "Open Xcode"]]
-     [:w [:km "Open Word"]]
-     [:y [:km "Open Keyboard Maestro"]]
-     [:z [:km "Open Zoom"]]
+   :tab-mode
+   [:f8 [:km "Open Spotify"]]
+   [:c [:km "Open Chrome"]]
+   [:e [:km "Open Emacs"]]
+   [:i [:km "Open iTerm"]]
+   [:m [:km "Open Messages"]]
+   [:n [:km "Open Notes"]]
+   [:q [:km "Open Qutebrowser"]]
+   [:x [:km "Open Xcode"]]
+   [:w [:km "Open Word"]]
+   [:y [:km "Open Keyboard Maestro"]]
+   [:z [:km "Open Zoom"]]
 
    #+end_src
   
@@ -252,4 +262,3 @@ inspiration taken from:
   #+end_src
  
 * [[file:emacs.d/init.org::*Tangle source code][Tangle]] (see init.org)
-
