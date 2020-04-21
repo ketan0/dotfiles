@@ -3,6 +3,10 @@
 # bsp or float (default: bsp)
 yabai -m config layout bsp
 
+# always float these apps:
+yabai -m rule --add app="^System Preferences$" manage=off
+yabai -m rule --add app="^Messages$" manage=off
+
 # New window spawns to the right if vertical split, or bottom if horizontal split
 yabai -m config window_placement second_child
 
@@ -34,7 +38,7 @@ yabai -m config active_window_opacity 1.0
 yabai -m config normal_window_opacity 0.9
 
 #status bar settings
-yabai -m config status_bar                   on
+yabai -m config status_bar                   off #for now I wanna go minimalist
 yabai -m config status_bar_text_font         "Fira Code:Bold:12.0"
 yabai -m config status_bar_icon_font         "Font Awesome 5 Pro:Solid:12.0"
 yabai -m config status_bar_background_color  0xff202020
