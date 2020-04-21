@@ -4,11 +4,9 @@
 #+LATEX_HEADER: \usepackage{parskip}
 #+LATEX_HEADER: \usepackage{inconsolata}
 #+LATEX_HEADER: \usepackage[utf8]{inputenc}
-#+PROPERTY: header-args :tangle ~/.dotfiles/init.el
 ^above line tangles code blocks by default
 
 Inspirations for this org-based setup comes from [[https://github.com/larstvei/dot-emacs][larstvei]] and [[https://github.com/danielmai/.emacs.d/blob/master/config.org][danielmai]].
-
 * TODOs
 ** TODO Refactor bindings code
 * Setup
@@ -42,12 +40,12 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
             "If the current buffer is 'init.org' the code-blocks are
         tangled, and the tangled file is compiled."
             (when (equal (buffer-file-name)
-                        (expand-file-name (concat user-emacs-directory "init.org")))
+                        (expand-file-name (concat ketan0/dotfiles-dir "init.org")))
             ;; Avoid running hooks when tangling.
             (let ((prog-mode-hook nil))
                 (org-babel-tangle-file
-                (expand-file-name (concat user-emacs-directory "init.org"))
-                (expand-file-name (concat user-emacs-directory "init.el")) 
+                (expand-file-name (concat ketan0/dotfiles-dir "init.org"))
+                (expand-file-name (concat ketan0/dotfiles-dir "init.el")) 
                 "emacs-lisp")
                 (byte-compile-file (concat user-emacs-directory "init.el")))))
         ;;TODO: add dotfiles variable and stuffs
@@ -115,65 +113,91 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    #+end_src
    Other convenience functions
    #+begin_src emacs-lisp
-     (global-set-key (kbd "A-<backspace>") 'backward-kill-word)
-     (global-set-key (kbd "M-m") 'suspend-frame)
-     (global-set-key (kbd "M-q") 'save-buffers-kill-emacs)
-     (global-set-key (kbd "C-M-f") 'toggle-frame-fullscreen)
-     (global-set-key (kbd "˙") 'switch-to-prev-buffer) ;; A-h
-     (global-set-key (kbd "¬") 'switch-to-next-buffer) ;; A-l
+   (global-set-key (kbd "A-<backspace>") 'backward-kill-word)
+   (global-set-key (kbd "M-m") 'suspend-frame)
+   (global-set-key (kbd "M-q") 'save-buffers-kill-emacs)
+   (global-set-key (kbd "C-M-f") 'toggle-frame-fullscreen)
+   (global-set-key (kbd "˙") 'switch-to-prev-buffer) ;; A-h
+   (global-set-key (kbd "¬") 'switch-to-next-buffer) ;; A-l
 
-     ;;TODO: work on making this work
-     ;; (defun ketan0/find-certain-file (filepath)
-     ;;   "here's a function"
-     ;;   `(lambda (filepath)
-     ;;      (interactive)
-     ;;      (find-file filepath)))
+   ;;TODO: work on making this work
+   ;; (defun ketan0/find-certain-file (filepath)
+   ;;   "here's a function"
+   ;;   `(lambda (filepath)
+   ;;      (interactive)
+   ;;      (find-file filepath)))
 
+   (defun window-toggle-split-direction ()
+     "Switch window split from horizontally to vertically, or vice versa.
 
-     (defun find-todo-file ()
-       "Edit the todo.org file, in *this* window."
-       (interactive)
-       (find-file (concat org-directory "/todo.org")))
+   i.e. change right window to bottom, or change bottom window to right."
+     (interactive)
+     (require 'windmove)
+     (let ((done))
+       (dolist (dirs '((right . down) (down . right)))
+         (unless done
+           (let* ((win (selected-window))
+                  (nextdir (car dirs))
+                  (neighbour-dir (cdr dirs))
+                  (next-win (windmove-find-other-window nextdir win))
+                  (neighbour1 (windmove-find-other-window neighbour-dir win))
+                  (neighbour2 (if next-win (with-selected-window next-win
+                                             (windmove-find-other-window neighbour-dir next-win)))))
+             ;;(message "win: %s\nnext-win: %s\nneighbour1: %s\nneighbour2:%s" win next-win neighbour1 neighbour2)
+             (setq done (and (eq neighbour1 neighbour2)
+                             (not (eq (minibuffer-window) next-win))))
+             (if done
+                 (let* ((other-buf (window-buffer next-win)))
+                   (delete-window next-win)
+                   (if (eq nextdir 'right)
+                       (split-window-vertically)
+                     (split-window-horizontally))
+                   (set-window-buffer (windmove-find-other-window neighbour-dir) other-buf))))))))
 
-     (defun find-vision-file ()
-       "Edit the vision.org file, in *this* window."
-       (interactive)
-       (find-file (concat org-directory "/20200407061957-vision.org")))
+   (defun find-todo-file ()
+     "Edit the todo.org file, in *this* window."
+     (interactive)
+     (find-file (concat org-directory "/todo.org")))
 
-     (defun er-find-user-init-file ()
-       "Edit the `user-init-file', in *this* window."
-       (interactive)
-       (find-file (concat ketan0/dotfiles-dir "init.org")))
+   (defun find-vision-file ()
+     "Edit the vision.org file, in *this* window."
+     (interactive)
+     (find-file (concat org-directory "/20200407061957-vision.org")))
 
-     (defun open-dir-in-finder ()
-       "Open a new Finder window to the path of the current buffer"
-       (interactive)
-       (start-process "mai-open-dir-process" nil "open" "."))
+   (defun er-find-user-init-file ()
+     "Edit the `user-init-file', in *this* window."
+     (interactive)
+     (find-file (concat ketan0/dotfiles-dir "init.org")))
 
-     (defun open-dir-in-iterm ()
-       "Open the current directory of the buffer in iTerm."
-       (interactive)
-       (let* ((iterm-app-path "/Applications/iTerm.app")
-              (iterm-brew-path "/opt/homebrew-cask/Caskroom/iterm2/1.0.0/iTerm.app")
-              (iterm-path (if (file-directory-p iterm-app-path)
-                              iterm-app-path
-                            iterm-brew-path)))
-         (start-process "mai-open-dir-process" nil "open" "-a" iterm-path ".")))
+   (defun open-dir-in-finder ()
+     "Open a new Finder window to the path of the current buffer"
+     (interactive)
+     (start-process "mai-open-dir-process" nil "open" "."))
 
-     (defun xah-new-empty-buffer ()
-       "Create a new empty buffer.
-               New buffer will be named “untitled” or “untitled<2>”, “untitled<3>”, etc.
+   (defun open-dir-in-iterm ()
+     "Open the current directory of the buffer in iTerm."
+     (interactive)
+     (let* ((iterm-app-path "/Applications/iTerm.app")
+            (iterm-brew-path "/opt/homebrew-cask/Caskroom/iterm2/1.0.0/iTerm.app")
+            (iterm-path (if (file-directory-p iterm-app-path)
+                            iterm-app-path
+                          iterm-brew-path)))
+       (start-process "mai-open-dir-process" nil "open" "-a" iterm-path ".")))
 
-               It returns the buffer (for elisp programing).
+   (defun xah-new-empty-buffer ()
+     "Create a new empty buffer.
+             New buffer will be named “untitled” or “untitled<2>”, “untitled<3>”, etc.
 
-               URL `http://ergoemacs.org/emacs/emacs_new_empty_buffer.html'
-               Version 2017-11-01"
-       (interactive)
-       (let (($buf (generate-new-buffer "untitled")))
-         (switch-to-buffer-other-window $buf)
-         (funcall initial-major-mode)
-         (setq buffer-offer-save t)
-         $buf))
+             It returns the buffer (for elisp programing).
+
+             URL `http://ergoemacs.org/emacs/emacs_new_empty_buffer.html'
+             Version 2017-11-01"
+     (interactive)
+     (let (($buf (generate-new-buffer "untitled")))
+       (switch-to-buffer-other-window $buf)
+       (funcall initial-major-mode)
+       (setq buffer-offer-save t)
+       $buf))
 
    #+end_src 
    
@@ -302,6 +326,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
   (setq backup-directory-alist '(("." . "~/.emacs.d/backups")))
   (setq auto-save-file-name-transforms '((".*" "~/.emacs.d/auto-save-list/" t)))
 
+
   (setq vc-follow-symlinks 'ask)
   ;; TRAMP: disable version control to avoid delays:
   (setq vc-ignore-dir-regexp
@@ -361,14 +386,13 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 *** org
      #+begin_src emacs-lisp
      ;;______________________________________________________________________
-     ;;;;  Installing Org with straight.el
-     ;;; https://github.com/raxod502/straight.el/blob/develop/README.md#installing-org-with-straightel
+          ;;;;  Installing Org with straight.el
      (require 'subr-x)
      (use-package git)
 
      (defun org-git-version ()
        "The Git version of 'org-mode'.
-                      Inserted by installing 'org-mode' or when a release is made."
+                           Inserted by installing 'org-mode' or when a release is made."
        (require 'git)
        (let ((git-repo (expand-file-name
                         "straight/repos/org/" user-emacs-directory)))
@@ -380,7 +404,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 
      (defun org-release ()
        "The release version of 'org-mode'.
-                      Inserted by installing 'org-mode' or when a release is made."
+                           Inserted by installing 'org-mode' or when a release is made."
        (require 'git)
        (let ((git-repo (expand-file-name
                         "straight/repos/org/" user-emacs-directory)))
@@ -398,7 +422,6 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      (use-package org
        :config
        (setq org-ellipsis "…")
-       (setq org-log-done t)
        (setq org-directory "~/org")
        (setq org-return-follows-link t)
 
@@ -414,12 +437,15 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 
        ;;stores changes from dropbox
        (setq org-mobile-inbox-for-pull "~/org/flagged.org")
-
        ;;Organ (my app)'s store
        (setq org-mobile-directory "~/Dropbox/Apps/Organ/")
 
+       ;;settings for TODOs
+       (setq org-log-done 'time) ;;record time a task is done
+
        (setq org-agenda-files '("~/org/"))
        (setq org-agenda-block-separator nil)
+       (setq org-agenda-log-mode-items '(closed clock state))
        (setq org-agenda-format-date (lambda (date) (concat "\n"
                                                            (make-string (/ (window-width) 2) 9472)
                                                            "\n"
@@ -465,7 +491,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
                 "* %^{Heading}")
                ("u" "new package" entry (file+headline 
                                          "~/.emacs.d/init.org" "Packages")
-                "* %^{package name} \n#+begin_src emacs-lisp\n(use-package %\\1)\n#+end_src")))
+                "* %^{package name} \n#+begin_src emacs-lisp\n(use-package %\\1)\n#+end_src\n")))
 
        ;;open links in same window
        (setq org-link-frame-setup '((file . find-file)))
@@ -486,6 +512,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       (after-init . org-roam-mode)
       :straight (:host github :repo "jethrokuan/org-roam" :branch "master")
       :config
+      (setq org-roam-graphviz-executable "/usr/local/bin/dot")
+      (setq org-roam-graph-viewer "/Applications/Google Chrome.app/")
       (setq org-roam-directory "~/org/"))
     #+end_src 
     
@@ -510,6 +538,10 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       (setq org-super-agenda-header-map (make-sparse-keymap))) ;;the header keymaps conflict w/ evil-org keymaps
     #+end_src
     
+*** org-ql 
+  #+begin_src emacs-lisp
+  (use-package org-ql)
+  #+end_src
 *** org-pdftools
     #+begin_src emacs-lisp
     (use-package org-pdftools
@@ -635,11 +667,12 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
         "k" 'kill-this-buffer
         "K" 'kill-buffer-and-window
         "l" 'link-hint-open-link
-        "n" 'switch-to-next-buffer
+        ;; "n" 'switch-to-next-buffer
         ;; "o" 'xah-new-empty-buffer
         "o f" 'open-dir-in-finder
         "o i" 'open-dir-in-iterm
-        "p" 'switch-to-prev-buffer
+        ;; "p" 'switch-to-prev-buffer
+        "p" 'org-pomodoro
         "q" 'delete-other-windows
         "s h" 'evil-window-left
         "s j" 'evil-window-down
@@ -647,6 +680,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
         "s l" 'evil-window-right
         "s s" 'helm-projectile-rg
         "s f" 'helm-org-rifle-current-buffer
+        "s t" 'window-toggle-split-direction 
         "t l" 'load-theme
         "t s" 'switch-theme
         "t d" 'disable-theme
@@ -685,6 +719,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      (:map helm-find-files-map
       ("C-h" . hem-find-files-up-one-level)
       ("C-l" . helm-execute-persistent-action))
+     (:map helm-M-x-map
+      ("C-d" . help-message))
      :init
      (setq helm-completion-style 'emacs)
      (setq completion-styles '(helm-flex))
@@ -740,20 +776,45 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    #+begin_src emacs-lisp
    (use-package company
      :diminish company-mode
+     :bind
+     (:map company-active-map
+           ("C-w" . 'evil-delete-backward-word)
+           ("<RET>" . company-complete-selection))
      :config
-     (define-key company-active-map (kbd "C-w") 'evil-delete-backward-word)
-     (global-company-mode t))
+     (add-hook 'after-init-hook 'global-company-mode))
+
+   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+   (setq lsp-keymap-prefix "s-l")
 
    (use-package lsp-mode
-     :init
-     (require 'lsp-clients)
-     (add-hook 'prog-mode-hook #'lsp))
-   (use-package company-lsp)
+     :config 
+     (setq lsp-auto-require-clients t)
+     (setq lsp-auto-configure t)
+     (lsp-register-client
+      (make-lsp-client :new-connection (lsp-tramp-connection "<insert your LS's binary name or path here>")
+                       :major-modes '(python-mode)
+                       :remote? t
+                       :server-id 'pyls-remote))
+     :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+            (c++-mode . lsp)
+            (python-mode . lsp)
+            )
+     :commands lsp)
+
+   ;; optionally
+   (use-package lsp-ui :commands lsp-ui-mode)
+   ;; if you are helm user
+   (use-package helm-lsp :commands helm-lsp-workspace-symbol)
+   (defun ketan0/prog-mode-setup ()
+     (push 'company-lsp company-backends))
+
+   (use-package company-lsp
+     :commands company-lsp
+     :config
+     (add-hook 'prog-mode-hook #'ketan0/prog-mode-setup))
    ;; Company completions for org-roam
    (use-package company-org-roam
-     :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master")
-     :config
-     (push '(company-org-roam company-capf company-files) company-backends))
+     :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master"))
    #+end_src 
    
 ** clojure-mode
@@ -784,24 +845,39 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    #+begin_src emacs-lisp
    (use-package auctex
      :defer t
-     :init
-     (add-hook 'LaTeX-mode-hook 'ketan0/latex-mode-setup)
      :config
-     (defvar TeX-auto-save)
-     (defvar TeX-command-list)
+     (setq-default TeX-master nil)
+     (setq TeX-save-query nil)
      (setq TeX-auto-save t)
+
+     ;; Use pdf-tools to open PDF files
+     (setq TeX-view-program-selection '((output-pdf "PDF Tools")) 
+           TeX-source-correlate-start-server t)
+
+     ;; Update PDF buffers after successful LaTeX runs
+     (add-hook 'TeX-after-compilation-finished-functions
+               #'TeX-revert-document-buffer)
+
      (setcdr (assoc "LaTeX" TeX-command-list)
              '("%`%l%(mode) -shell-escape%' %t"
                TeX-run-TeX nil (latex-mode doctex-mode) :help "Run LaTeX")))
 
    (defun ketan0/latex-mode-setup ()
      (setq-local company-backends
-                 (append '((company-math-symbols-latex company-latex-commands))
-                         company-backends)))
+                 (push '(company-math-symbols-latex company-latex-commands)
+                       company-backends)))
 
-   (use-package company-math)
+   ;;TODO: let's clean this up
+   (defun ketan0/org-mode-setup ()
+     (setq-local company-backends
+                 (push '(company-math-symbols-unicode company-org-roam)
+                       company-backends)))
+
+   (use-package company-math
+     :init
+     (add-hook 'LaTeX-mode-hook 'ketan0/latex-mode-setup)
+     (add-hook 'org-mode-hook 'ketan0/org-mode-setup))
    #+end_src 
-   
 ** pdf-tools
    #+begin_src emacs-lisp
    (use-package pdf-tools
@@ -846,7 +922,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    #+begin_src emacs-lisp
    (use-package adaptive-wrap
      :diminish adaptive-wrap-prefix-mode
-     :hook (after-init . adaptive-wrap-prefix-mode))
+     :init (adaptive-wrap-prefix-mode))
    #+end_src
    
 ** org-rifle
@@ -868,3 +944,13 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    #+begin_src emacs-lisp
    (use-package s)
    #+end_src
+** yasnippet 
+ #+begin_src emacs-lisp
+ (use-package yasnippet
+   :config
+   (yas-global-mode t))
+ #+end_src
+** org-pomodoro 
+ #+begin_src emacs-lisp
+ (use-package org-pomodoro)
+ #+end_src
