@@ -505,6 +505,12 @@ i.e. change right window to bottom, or change bottom window to right."
   :diminish evil-org-mode
   :config
   (add-hook 'org-mode-hook 'evil-org-mode)
+  (defun my-org-latex-yas ()
+    "Activate org and LaTeX yas expansion in org-mode buffers."
+    (yas-minor-mode)
+    (yas-activate-extra-mode 'latex-mode))
+
+  (add-hook 'org-mode-hook #'my-org-latex-yas)
   (add-hook 'evil-org-mode-hook
             (lambda ()
               (evil-org-set-key-theme '(textobjects insert navigation additional shift todo heading))))
@@ -595,17 +601,14 @@ i.e. change right window to bottom, or change bottom window to right."
    ("C-j" . helm-next-line)
    ("C-k" . helm-previous-line))
   (:map helm-find-files-map
-   ("C-h" . hem-find-files-up-one-level)
+   ("C-h" . helm-find-files-up-one-level)
    ("C-l" . helm-execute-persistent-action))
-  (:map helm-M-x-map
-   ("C-d" . help-message))
   :init
   (setq helm-completion-style 'emacs)
   (setq completion-styles '(helm-flex))
   :config 
   (global-set-key (kbd "M-x") 'helm-M-x)
   (helm-mode t))
-
 ;; (use-package helm-files
 ;;   :bind
 ;;   (:map helm-find-files-map
@@ -630,57 +633,58 @@ i.e. change right window to bottom, or change bottom window to right."
   (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
   (projectile-mode +1))
 
-(use-package elpy
-  :init
-  (elpy-enable)
+(use-package pyvenv
   :config
-  (setq elpy-rpc-virtualenv-path 'current)
-  (setenv "WORKON_HOME" (concat (getenv "CONDA_PREFIX") "/envs")) ;; use conda envs
-  (pyvenv-mode 1))
+  (setenv "WORKON_HOME" "/Users/ketanagrawal/miniconda3/envs")
+  (pyvenv-mode))
 
 (use-package ein)
 
 (use-package company
-  :diminish company-mode
-  :bind
-  (:map company-active-map
-        ("C-w" . 'evil-delete-backward-word)
-        ("<RET>" . company-complete-selection))
+    :diminish company-mode
+    :bind
+    (:map company-active-map
+          ("C-w" . 'evil-delete-backward-word)
+          ("<RET>" . company-complete-selection))
+    :config
+    (add-hook 'after-init-hook 'global-company-mode))
+
+  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+  (setq lsp-keymap-prefix "s-l")
+
+  (use-package lsp-mode
+    :config 
+    (require 'lsp-imenu)
+    (setq lsp-auto-require-clients t)
+    (setq lsp-auto-configure t)
+    ;; (lsp-register-client
+    ;;  (make-lsp-client :new-connection (lsp-tramp-connection "<insert your LS's binary name or path here>")
+    ;;                   :major-modes '(python-mode)
+    ;;                   :remote? t
+    ;;                   :server-id 'pyls-remote))
+    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+           (c++-mode . lsp)
+           (python-mode . lsp)
+           )
+    :commands lsp)
+
+  ;; optionally
+(use-package lsp-ui
+  :ensure t
   :config
-  (add-hook 'after-init-hook 'global-company-mode))
+  (setq lsp-ui-sideline-ignore-duplicate t)
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode))   ;; if you are helm user
+  (use-package helm-lsp :commands helm-lsp-workspace-symbol)
+  (defun ketan0/prog-mode-setup ()
+    (push 'company-lsp company-backends))
 
-;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-(setq lsp-keymap-prefix "s-l")
-
-(use-package lsp-mode
-  :config 
-  (setq lsp-auto-require-clients t)
-  (setq lsp-auto-configure t)
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-tramp-connection "<insert your LS's binary name or path here>")
-                    :major-modes '(python-mode)
-                    :remote? t
-                    :server-id 'pyls-remote))
-  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-         (c++-mode . lsp)
-         (python-mode . lsp)
-         )
-  :commands lsp)
-
-;; optionally
-(use-package lsp-ui :commands lsp-ui-mode)
-;; if you are helm user
-(use-package helm-lsp :commands helm-lsp-workspace-symbol)
-(defun ketan0/prog-mode-setup ()
-  (push 'company-lsp company-backends))
-
-(use-package company-lsp
-  :commands company-lsp
-  :config
-  (add-hook 'prog-mode-hook #'ketan0/prog-mode-setup))
-;; Company completions for org-roam
-(use-package company-org-roam
-  :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master"))
+  (use-package company-lsp
+    :commands company-lsp
+    :config
+    (add-hook 'prog-mode-hook #'ketan0/prog-mode-setup))
+  ;; Company completions for org-roam
+  (use-package company-org-roam
+    :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master"))
 
 (use-package clojure-mode)
 
@@ -697,7 +701,6 @@ i.e. change right window to bottom, or change bottom window to right."
   (google-this-mode t))
 
 (use-package auctex
-  :defer t
   :config
   (setq-default TeX-master nil)
   (setq TeX-save-query nil)
@@ -770,3 +773,5 @@ i.e. change right window to bottom, or change bottom window to right."
   (yas-global-mode t))
 
 (use-package org-pomodoro)
+
+(use-package rainbow-delimiters)
