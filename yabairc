@@ -5,6 +5,9 @@ yabai -m config layout bsp
 
 # always float these apps:
 yabai -m rule --add app="^System Preferences$" manage=off
+yabai -m rule --add app="^Stickies$" manage=off
+yabai -m rule --add app="^Finder$" manage=off
+yabai -m rule --add app="^Spotify$" manage=off
 yabai -m rule --add app="^Messages$" manage=off
 
 # New window spawns to the right if vertical split, or bottom if horizontal split
