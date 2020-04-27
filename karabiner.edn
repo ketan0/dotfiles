@@ -47,6 +47,8 @@
 
 [:left_command :left_command nil {:alone :!Ctab}]
 
+[:!Sdelete_or_backspace :!Odelete_or_backspace]
+
 [:caps_lock :caps_lock nil {:alone :escape}]
 
 :ctrl-mode

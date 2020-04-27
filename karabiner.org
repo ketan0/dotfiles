@@ -101,6 +101,10 @@ inspiration taken from:
    #+begin_src clojure
    [:left_command :left_command nil {:alone :!Ctab}]
    #+end_src
+** shift+delete deletes a word
+   #+begin_src clojure
+   [:!Sdelete_or_backspace :!Odelete_or_backspace]
+   #+end_src
 ** caps lock rules
 *** alone = escape
     #+begin_src clojure
@@ -158,7 +162,6 @@ inspiration taken from:
     [:0 :!T0]
 
     #+end_src
-  
 ** yabai-mode(tab+{wsf}+{hjkl})
    #+begin_src clojure
    ;; :yabai-insert-mode
