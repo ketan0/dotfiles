@@ -9,26 +9,26 @@
     (with-current-buffer
         (url-retrieve-synchronously
          "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
-       (goto-char (point-max))
-       (eval-print-last-sexp)))
-   (load bootstrap-file nil 'nomessage))
-   (straight-use-package 'use-package)
-   (setq straight-use-package-by-default t)
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+(straight-use-package 'use-package)
+(setq straight-use-package-by-default t)
 
 (defun tangle-init ()
-        "If the current buffer is 'init.org' the code-blocks are
+  "If the current buffer is 'init.org' the code-blocks are
     tangled, and the tangled file is compiled."
-        (when (equal (buffer-file-name)
-                    (expand-file-name (concat ketan0/dotfiles-dir "init.org")))
-        ;; Avoid running hooks when tangling.
-        (let ((prog-mode-hook nil))
-            (org-babel-tangle-file
-            (expand-file-name (concat ketan0/dotfiles-dir "init.org"))
-            (expand-file-name (concat ketan0/dotfiles-dir "init.el")) 
-            "emacs-lisp")
-            (byte-compile-file (concat user-emacs-directory "init.el")))))
-    ;;TODO: add dotfiles variable and stuffs
+  (when (equal (buffer-file-name)
+               (expand-file-name (concat ketan0/dotfiles-dir "init.org")))
+    ;; Avoid running hooks when tangling.
+    (let ((prog-mode-hook nil))
+      (org-babel-tangle-file
+       (expand-file-name (concat ketan0/dotfiles-dir "init.org"))
+       (expand-file-name (concat ketan0/dotfiles-dir "init.el")) 
+       "emacs-lisp")
+      (byte-compile-file (concat user-emacs-directory "init.el")))))
+;;TODO: add dotfiles variable and stuffs
 
 (defun tangle-karabiner ()
   "If the current buffer is 'karabiner.org' the code-blocks are
@@ -40,7 +40,7 @@ tangled, and the tangled file is compiled."
       (org-babel-tangle-file
        (expand-file-name (concat ketan0/dotfiles-dir "karabiner.org"))
        (expand-file-name (concat ketan0/dotfiles-dir "karabiner.edn"))))
-       (message (concat "Goku output: " (shell-command-to-string "goku")))))
+    (message (concat "Goku output: " (shell-command-to-string "goku")))))
 ;;TODO: add dotfiles variable and stuffs
 
 (defun source-yabairc ()
@@ -49,7 +49,7 @@ tangled, and the tangled file is compiled."
   (when (equal (buffer-file-name)
                (expand-file-name (concat ketan0/dotfiles-dir "yabairc")))
     ;; Avoid running hooks when tangling.
-       (message (concat "yabairc has been sourced" (shell-command-to-string "launchctl kickstart -k \"gui/${UID}/homebrew.mxcl.yabai\"")))))
+    (message (concat "yabairc has been sourced" (shell-command-to-string "launchctl kickstart -k \"gui/${UID}/homebrew.mxcl.yabai\"")))))
 ;;TODO: add dotfiles variable and stuffs
 
 (add-hook 'after-save-hook 'tangle-init)
@@ -165,7 +165,7 @@ i.e. change right window to bottom, or change bottom window to right."
 
 (set-frame-font "Fira Code 12" nil t)
 ;;Fira Code ligatures
-(if (string-equal system-type "darwin")
+(if (and (string-equal system-type "darwin") (boundp 'mac-auto-operator-composition-mode))
     (mac-auto-operator-composition-mode t))
 
 (defun switch-theme (theme)
@@ -242,7 +242,7 @@ i.e. change right window to bottom, or change bottom window to right."
 
 (setq frame-title-format "%b") ; show buffer name in title bar
 (setq inhibit-splash-screen t) ;don't show default emacs startup screen
-(setq visible-bell t) ;Instead of shell bell, visual flash
+(setq visible-bell nil) ; Actually I changed my mind, I don't like this
 (setq ring-bell-function ; don't ring (flash) the bell on C-g
       (lambda ()
         (unless (memq this-command
@@ -313,13 +313,16 @@ i.e. change right window to bottom, or change bottom window to right."
   (global-display-line-numbers-mode))
 
 (use-package centered-window
+  :straight (:host github :repo "ketan0/centered-window-mode" :branch "center-on-frame-size-change")
   :config 
   (centered-window-mode t))
 
 (require 'bind-key)
 
 (use-package diminish
-  :config
+  :init
+  (diminish 'undo-tree-mode)
+  (diminish 'yas/minor-mode)
   (diminish 'auto-revert-mode))
 
 ;;______________________________________________________________________
@@ -448,10 +451,10 @@ i.e. change right window to bottom, or change bottom window to right."
   (setq org-roam-directory "~/org/"))
 
 (use-package org-journal
-  :custom
-  (org-journal-find-file 'find-file)
-  (org-journal-dir "~/org/journal/")
-  (org-journal-date-format "%A, %d %B %Y"))
+  :init
+  (setq org-journal-find-file 'find-file)
+  (setq org-journal-dir "~/org/")
+  (setq org-journal-date-format "%A, %d %B %Y"))
 
 (use-package org-super-agenda
   :config
@@ -485,6 +488,20 @@ i.e. change right window to bottom, or change bottom window to right."
   (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
   (setq evil-want-keybinding nil)
   :config 
+  (defmacro define-and-bind-text-object (key start-regex end-regex)
+    (let ((inner-name (make-symbol "inner-name"))
+          (outer-name (make-symbol "outer-name")))
+      `(progn
+         (evil-define-text-object ,inner-name (count &optional beg end type)
+           (evil-select-paren ,start-regex ,end-regex beg end type count nil))
+         (evil-define-text-object ,outer-name (count &optional beg end type)
+           (evil-select-paren ,start-regex ,end-regex beg end type count t))
+         (define-key evil-inner-text-objects-map ,key (quote ,inner-name))
+         (define-key evil-outer-text-objects-map ,key (quote ,outer-name)))))
+  ;; create "il"/"al" (inside/around) line text objects:
+  (define-and-bind-text-object "l" "^\\s-*" "\\s-*$")
+  ;; create "ie"/"ae" (inside/around) entire buffer text objects:
+  (define-and-bind-text-object "e" "\\`\\s-*" "\\s-*\\'")
   ;; Make evil-mode up/down operate in screen lines instead of logical lines
   (evil-mode t)
   (define-key evil-normal-state-map "Q" (kbd "@q"))
@@ -598,16 +615,15 @@ i.e. change right window to bottom, or change bottom window to right."
   :diminish helm-mode
   :bind
   (:map helm-map
-   ("C-j" . helm-next-line)
-   ("C-k" . helm-previous-line))
+        ("C-j" . helm-next-line)
+        ("C-k" . helm-previous-line))
   (:map helm-find-files-map
-   ("C-h" . helm-find-files-up-one-level)
-   ("C-l" . helm-execute-persistent-action))
+        ("C-h" . helm-find-files-up-one-level)
+        ("C-l" . helm-execute-persistent-action))
   :init
   (setq helm-completion-style 'emacs)
-  (setq completion-styles '(helm-flex))
+  (setq completion-styles '(flex))
   :config 
-  (global-set-key (kbd "M-x") 'helm-M-x)
   (helm-mode t))
 ;; (use-package helm-files
 ;;   :bind
@@ -641,50 +657,56 @@ i.e. change right window to bottom, or change bottom window to right."
 (use-package ein)
 
 (use-package company
-    :diminish company-mode
-    :bind
-    (:map company-active-map
-          ("C-w" . 'evil-delete-backward-word)
-          ("<RET>" . company-complete-selection))
-    :config
-    (add-hook 'after-init-hook 'global-company-mode))
+  :diminish company-mode
+  :bind
+  (:map company-active-map
+        ("C-w" . 'evil-delete-backward-word)
+        ("<RET>" . company-complete-selection))
+  :config
+  (add-hook 'after-init-hook 'global-company-mode))
 
-  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-  (setq lsp-keymap-prefix "s-l")
+;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+(setq lsp-keymap-prefix "s-l")
 
-  (use-package lsp-mode
-    :config 
-    (require 'lsp-imenu)
-    (setq lsp-auto-require-clients t)
-    (setq lsp-auto-configure t)
-    ;; (lsp-register-client
-    ;;  (make-lsp-client :new-connection (lsp-tramp-connection "<insert your LS's binary name or path here>")
-    ;;                   :major-modes '(python-mode)
-    ;;                   :remote? t
-    ;;                   :server-id 'pyls-remote))
-    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-           (c++-mode . lsp)
-           (python-mode . lsp)
-           )
-    :commands lsp)
+(use-package lsp-mode
+  :config 
+  (setq lsp-auto-require-clients t)
+  (setq lsp-auto-configure t)
+  (setq lsp-ui-doc-enable nil)
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-tramp-connection "clangd-10")
+                    :major-modes '(c-mode c++-mode)
+                    :remote? t
+                    :server-id 'clangd-remote))
+  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+         (c++-mode . lsp)
+         (c-mode . lsp)
+         (python-mode . lsp)
+         (tex-mode . lsp)
+         (latex-mode . lsp)
+         )
+  :commands lsp)
 
-  ;; optionally
+;; optionally
 (use-package lsp-ui
   :ensure t
   :config
   (setq lsp-ui-sideline-ignore-duplicate t)
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))   ;; if you are helm user
-  (use-package helm-lsp :commands helm-lsp-workspace-symbol)
-  (defun ketan0/prog-mode-setup ()
-    (push 'company-lsp company-backends))
+(use-package helm-lsp :commands helm-lsp-workspace-symbol)
+(defun ketan0/prog-mode-setup ()
+  (push 'company-lsp company-backends))
 
-  (use-package company-lsp
-    :commands company-lsp
-    :config
-    (add-hook 'prog-mode-hook #'ketan0/prog-mode-setup))
-  ;; Company completions for org-roam
-  (use-package company-org-roam
-    :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master"))
+(use-package company-lsp
+  :commands company-lsp
+  :config
+  (add-hook 'prog-mode-hook #'ketan0/prog-mode-setup))
+;; Company completions for org-roam
+(use-package company-org-roam
+  :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master"))
+
+(use-package lsp-latex
+  :straight (:host github :repo "ROCKTAKEY/lsp-latex" :branch "master"))
 
 (use-package clojure-mode)
 
@@ -700,7 +722,8 @@ i.e. change right window to bottom, or change bottom window to right."
   :config
   (google-this-mode t))
 
-(use-package auctex
+(use-package tex-site
+  :straight auctex
   :config
   (setq-default TeX-master nil)
   (setq TeX-save-query nil)
@@ -758,7 +781,7 @@ i.e. change right window to bottom, or change bottom window to right."
 
 (use-package adaptive-wrap
   :diminish adaptive-wrap-prefix-mode
-  :init (adaptive-wrap-prefix-mode))
+  :config (add-hook 'after-save-hook 'adaptive-wrap-prefix-mode))
 
 (use-package helm-org-rifle)
 
@@ -775,3 +798,9 @@ i.e. change right window to bottom, or change bottom window to right."
 (use-package org-pomodoro)
 
 (use-package rainbow-delimiters)
+
+(use-package ccls
+  :hook ((c-mode c++-mode objc-mode cuda-mode) .
+         (lambda () (require 'ccls) (lsp)))
+  :config
+  (setq ccls-executable "/Users/ketanagrawal/ccls/Release/ccls"))

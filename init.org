@@ -13,275 +13,275 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 * Setup
 ** My Variables
    #+begin_src emacs-lisp
-     (defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
-       "Personal dotfiles directory.")
+   (defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
+     "Personal dotfiles directory.")
    #+end_src
    
 ** Straight.el bootstrap
    #+begin_src emacs-lisp
-     (defvar bootstrap-version)
-     (let ((bootstrap-file
-            (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-           (bootstrap-version 5))
-       (unless (file-exists-p bootstrap-file)
-         (with-current-buffer
-             (url-retrieve-synchronously
-              "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-                'silent 'inhibit-cookies)
-            (goto-char (point-max))
-            (eval-print-last-sexp)))
-        (load bootstrap-file nil 'nomessage))
-        (straight-use-package 'use-package)
-        (setq straight-use-package-by-default t)
-    #+end_src
+   (defvar bootstrap-version)
+   (let ((bootstrap-file
+          (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+         (bootstrap-version 5))
+     (unless (file-exists-p bootstrap-file)
+       (with-current-buffer
+           (url-retrieve-synchronously
+            "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+            'silent 'inhibit-cookies)
+         (goto-char (point-max))
+         (eval-print-last-sexp)))
+     (load bootstrap-file nil 'nomessage))
+   (straight-use-package 'use-package)
+   (setq straight-use-package-by-default t)
+   #+end_src
     
 ** Tangle source code
-    #+begin_src emacs-lisp
+   #+begin_src emacs-lisp
 
-    (defun tangle-init ()
-            "If the current buffer is 'init.org' the code-blocks are
-        tangled, and the tangled file is compiled."
-            (when (equal (buffer-file-name)
-                        (expand-file-name (concat ketan0/dotfiles-dir "init.org")))
-            ;; Avoid running hooks when tangling.
-            (let ((prog-mode-hook nil))
-                (org-babel-tangle-file
-                (expand-file-name (concat ketan0/dotfiles-dir "init.org"))
-                (expand-file-name (concat ketan0/dotfiles-dir "init.el")) 
-                "emacs-lisp")
-                (byte-compile-file (concat user-emacs-directory "init.el")))))
-        ;;TODO: add dotfiles variable and stuffs
+   (defun tangle-init ()
+     "If the current buffer is 'init.org' the code-blocks are
+       tangled, and the tangled file is compiled."
+     (when (equal (buffer-file-name)
+                  (expand-file-name (concat ketan0/dotfiles-dir "init.org")))
+       ;; Avoid running hooks when tangling.
+       (let ((prog-mode-hook nil))
+         (org-babel-tangle-file
+          (expand-file-name (concat ketan0/dotfiles-dir "init.org"))
+          (expand-file-name (concat ketan0/dotfiles-dir "init.el")) 
+          "emacs-lisp")
+         (byte-compile-file (concat user-emacs-directory "init.el")))))
+   ;;TODO: add dotfiles variable and stuffs
 
-    (defun tangle-karabiner ()
-      "If the current buffer is 'karabiner.org' the code-blocks are
-    tangled, and the tangled file is compiled."
-      (when (equal (buffer-file-name)
-                   (expand-file-name (concat ketan0/dotfiles-dir "karabiner.org")))
-        ;; Avoid running hooks when tangling.
-        (let ((prog-mode-hook nil))
-          (org-babel-tangle-file
-           (expand-file-name (concat ketan0/dotfiles-dir "karabiner.org"))
-           (expand-file-name (concat ketan0/dotfiles-dir "karabiner.edn"))))
-           (message (concat "Goku output: " (shell-command-to-string "goku")))))
-    ;;TODO: add dotfiles variable and stuffs
+   (defun tangle-karabiner ()
+     "If the current buffer is 'karabiner.org' the code-blocks are
+   tangled, and the tangled file is compiled."
+     (when (equal (buffer-file-name)
+                  (expand-file-name (concat ketan0/dotfiles-dir "karabiner.org")))
+       ;; Avoid running hooks when tangling.
+       (let ((prog-mode-hook nil))
+         (org-babel-tangle-file
+          (expand-file-name (concat ketan0/dotfiles-dir "karabiner.org"))
+          (expand-file-name (concat ketan0/dotfiles-dir "karabiner.edn"))))
+       (message (concat "Goku output: " (shell-command-to-string "goku")))))
+   ;;TODO: add dotfiles variable and stuffs
 
-    (defun source-yabairc ()
-      "If the current buffer is 'karabiner.org' the code-blocks are
-    tangled, and the tangled file is compiled."
-      (when (equal (buffer-file-name)
-                   (expand-file-name (concat ketan0/dotfiles-dir "yabairc")))
-        ;; Avoid running hooks when tangling.
-           (message (concat "yabairc has been sourced" (shell-command-to-string "launchctl kickstart -k \"gui/${UID}/homebrew.mxcl.yabai\"")))))
-    ;;TODO: add dotfiles variable and stuffs
+   (defun source-yabairc ()
+     "If the current buffer is 'karabiner.org' the code-blocks are
+   tangled, and the tangled file is compiled."
+     (when (equal (buffer-file-name)
+                  (expand-file-name (concat ketan0/dotfiles-dir "yabairc")))
+       ;; Avoid running hooks when tangling.
+       (message (concat "yabairc has been sourced" (shell-command-to-string "launchctl kickstart -k \"gui/${UID}/homebrew.mxcl.yabai\"")))))
+   ;;TODO: add dotfiles variable and stuffs
 
-    (add-hook 'after-save-hook 'tangle-init)
-    (add-hook 'after-save-hook 'tangle-karabiner)
-    (add-hook 'after-save-hook 'source-yabairc)
+   (add-hook 'after-save-hook 'tangle-init)
+   (add-hook 'after-save-hook 'tangle-karabiner)
+   (add-hook 'after-save-hook 'source-yabairc)
 
-    #+end_src
+   #+end_src
     
 ** Move frame to right half of screen
-    Right-aligns my emacs window. (Why isn't this working on startup...)
-    #+begin_src emacs-lisp
-    (defun get-string-from-file (filePath)
-    "Return filePath's file content."
-    (with-temp-buffer
-      (insert-file-contents filePath)
-      (buffer-string)))
+   Right-aligns my emacs window. (Why isn't this working on startup...)
+   #+begin_src emacs-lisp
+   (defun get-string-from-file (filePath)
+     "Return filePath's file content."
+     (with-temp-buffer
+       (insert-file-contents filePath)
+       (buffer-string)))
 
-  (add-hook 'after-make-frame-functions
-            (lambda (frame)
-              (if (string-equal system-type "darwin")
-                  (do-applescript
-                   (get-string-from-file "~/Documents/rightalign.txt")))))
-#+end_src
+   (add-hook 'after-make-frame-functions
+             (lambda (frame)
+               (if (string-equal system-type "darwin")
+                   (do-applescript
+                    (get-string-from-file "~/Documents/rightalign.txt")))))
+   #+end_src
 
 ** Custom
    See [[file:custom.el][custom.el]] for variables edited via customization buffer.
    EDIT: not using custom.el, at the moment. Keep in case other packages need to add custom stuff.
    #+begin_src emacs-lisp
-     (setq custom-safe-themes t)
-     (setq custom-file (concat user-emacs-directory "custom.el"))
-     (load custom-file)
+   (setq custom-safe-themes t)
+   (setq custom-file (concat user-emacs-directory "custom.el"))
+   (load custom-file)
    #+end_src
    
 * General Convenience
   Because of the vim-mode modifications in [[file:~/.dotfiles/karabiner.edn][karabiner.edn]]...
-   #+begin_src emacs-lisp
-     (define-key key-translation-map (kbd "<left>") (kbd "C-h")) 
-     (define-key key-translation-map (kbd "<down>") (kbd "C-j")) 
-     (define-key key-translation-map (kbd "<up>") (kbd "C-k")) 
-     (define-key key-translation-map (kbd "<right>") (kbd "C-l")) 
-   #+end_src
-   Other convenience functions
-   #+begin_src emacs-lisp
-   (global-set-key (kbd "A-<backspace>") 'backward-kill-word)
-   (global-set-key (kbd "M-m") 'suspend-frame)
-   (global-set-key (kbd "M-q") 'save-buffers-kill-emacs)
-   (global-set-key (kbd "C-M-f") 'toggle-frame-fullscreen)
-   (global-set-key (kbd "˙") 'switch-to-prev-buffer) ;; A-h
-   (global-set-key (kbd "¬") 'switch-to-next-buffer) ;; A-l
+  #+begin_src emacs-lisp
+  (define-key key-translation-map (kbd "<left>") (kbd "C-h")) 
+  (define-key key-translation-map (kbd "<down>") (kbd "C-j")) 
+  (define-key key-translation-map (kbd "<up>") (kbd "C-k")) 
+  (define-key key-translation-map (kbd "<right>") (kbd "C-l")) 
+  #+end_src
+  Other convenience functions
+  #+begin_src emacs-lisp
+  (global-set-key (kbd "A-<backspace>") 'backward-kill-word)
+  (global-set-key (kbd "M-m") 'suspend-frame)
+  (global-set-key (kbd "M-q") 'save-buffers-kill-emacs)
+  (global-set-key (kbd "C-M-f") 'toggle-frame-fullscreen)
+  (global-set-key (kbd "˙") 'switch-to-prev-buffer) ;; A-h
+  (global-set-key (kbd "¬") 'switch-to-next-buffer) ;; A-l
 
-   ;;TODO: work on making this work
-   ;; (defun ketan0/find-certain-file (filepath)
-   ;;   "here's a function"
-   ;;   `(lambda (filepath)
-   ;;      (interactive)
-   ;;      (find-file filepath)))
+  ;;TODO: work on making this work
+  ;; (defun ketan0/find-certain-file (filepath)
+  ;;   "here's a function"
+  ;;   `(lambda (filepath)
+  ;;      (interactive)
+  ;;      (find-file filepath)))
 
-   (defun window-toggle-split-direction ()
-     "Switch window split from horizontally to vertically, or vice versa.
+  (defun window-toggle-split-direction ()
+    "Switch window split from horizontally to vertically, or vice versa.
 
-   i.e. change right window to bottom, or change bottom window to right."
-     (interactive)
-     (require 'windmove)
-     (let ((done))
-       (dolist (dirs '((right . down) (down . right)))
-         (unless done
-           (let* ((win (selected-window))
-                  (nextdir (car dirs))
-                  (neighbour-dir (cdr dirs))
-                  (next-win (windmove-find-other-window nextdir win))
-                  (neighbour1 (windmove-find-other-window neighbour-dir win))
-                  (neighbour2 (if next-win (with-selected-window next-win
-                                             (windmove-find-other-window neighbour-dir next-win)))))
-             ;;(message "win: %s\nnext-win: %s\nneighbour1: %s\nneighbour2:%s" win next-win neighbour1 neighbour2)
-             (setq done (and (eq neighbour1 neighbour2)
-                             (not (eq (minibuffer-window) next-win))))
-             (if done
-                 (let* ((other-buf (window-buffer next-win)))
-                   (delete-window next-win)
-                   (if (eq nextdir 'right)
-                       (split-window-vertically)
-                     (split-window-horizontally))
-                   (set-window-buffer (windmove-find-other-window neighbour-dir) other-buf))))))))
+  i.e. change right window to bottom, or change bottom window to right."
+    (interactive)
+    (require 'windmove)
+    (let ((done))
+      (dolist (dirs '((right . down) (down . right)))
+        (unless done
+          (let* ((win (selected-window))
+                 (nextdir (car dirs))
+                 (neighbour-dir (cdr dirs))
+                 (next-win (windmove-find-other-window nextdir win))
+                 (neighbour1 (windmove-find-other-window neighbour-dir win))
+                 (neighbour2 (if next-win (with-selected-window next-win
+                                            (windmove-find-other-window neighbour-dir next-win)))))
+            ;;(message "win: %s\nnext-win: %s\nneighbour1: %s\nneighbour2:%s" win next-win neighbour1 neighbour2)
+            (setq done (and (eq neighbour1 neighbour2)
+                            (not (eq (minibuffer-window) next-win))))
+            (if done
+                (let* ((other-buf (window-buffer next-win)))
+                  (delete-window next-win)
+                  (if (eq nextdir 'right)
+                      (split-window-vertically)
+                    (split-window-horizontally))
+                  (set-window-buffer (windmove-find-other-window neighbour-dir) other-buf))))))))
 
-   (defun find-todo-file ()
-     "Edit the todo.org file, in *this* window."
-     (interactive)
-     (find-file (concat org-directory "/todo.org")))
+  (defun find-todo-file ()
+    "Edit the todo.org file, in *this* window."
+    (interactive)
+    (find-file (concat org-directory "/todo.org")))
 
-   (defun find-vision-file ()
-     "Edit the vision.org file, in *this* window."
-     (interactive)
-     (find-file (concat org-directory "/20200407061957-vision.org")))
+  (defun find-vision-file ()
+    "Edit the vision.org file, in *this* window."
+    (interactive)
+    (find-file (concat org-directory "/20200407061957-vision.org")))
 
-   (defun er-find-user-init-file ()
-     "Edit the `user-init-file', in *this* window."
-     (interactive)
-     (find-file (concat ketan0/dotfiles-dir "init.org")))
+  (defun er-find-user-init-file ()
+    "Edit the `user-init-file', in *this* window."
+    (interactive)
+    (find-file (concat ketan0/dotfiles-dir "init.org")))
 
-   (defun open-dir-in-finder ()
-     "Open a new Finder window to the path of the current buffer"
-     (interactive)
-     (start-process "mai-open-dir-process" nil "open" "."))
+  (defun open-dir-in-finder ()
+    "Open a new Finder window to the path of the current buffer"
+    (interactive)
+    (start-process "mai-open-dir-process" nil "open" "."))
 
-   (defun open-dir-in-iterm ()
-     "Open the current directory of the buffer in iTerm."
-     (interactive)
-     (let* ((iterm-app-path "/Applications/iTerm.app")
-            (iterm-brew-path "/opt/homebrew-cask/Caskroom/iterm2/1.0.0/iTerm.app")
-            (iterm-path (if (file-directory-p iterm-app-path)
-                            iterm-app-path
-                          iterm-brew-path)))
-       (start-process "mai-open-dir-process" nil "open" "-a" iterm-path ".")))
+  (defun open-dir-in-iterm ()
+    "Open the current directory of the buffer in iTerm."
+    (interactive)
+    (let* ((iterm-app-path "/Applications/iTerm.app")
+           (iterm-brew-path "/opt/homebrew-cask/Caskroom/iterm2/1.0.0/iTerm.app")
+           (iterm-path (if (file-directory-p iterm-app-path)
+                           iterm-app-path
+                         iterm-brew-path)))
+      (start-process "mai-open-dir-process" nil "open" "-a" iterm-path ".")))
 
-   (defun xah-new-empty-buffer ()
-     "Create a new empty buffer.
-             New buffer will be named “untitled” or “untitled<2>”, “untitled<3>”, etc.
+  (defun xah-new-empty-buffer ()
+    "Create a new empty buffer.
+            New buffer will be named “untitled” or “untitled<2>”, “untitled<3>”, etc.
 
-             It returns the buffer (for elisp programing).
+            It returns the buffer (for elisp programing).
 
-             URL `http://ergoemacs.org/emacs/emacs_new_empty_buffer.html'
-             Version 2017-11-01"
-     (interactive)
-     (let (($buf (generate-new-buffer "untitled")))
-       (switch-to-buffer-other-window $buf)
-       (funcall initial-major-mode)
-       (setq buffer-offer-save t)
-       $buf))
+            URL `http://ergoemacs.org/emacs/emacs_new_empty_buffer.html'
+            Version 2017-11-01"
+    (interactive)
+    (let (($buf (generate-new-buffer "untitled")))
+      (switch-to-buffer-other-window $buf)
+      (funcall initial-major-mode)
+      (setq buffer-offer-save t)
+      $buf))
 
-   #+end_src 
+  #+end_src 
    
 * Appearances
   Fira Code is a pleasing font.
   #+begin_src emacs-lisp
   (set-frame-font "Fira Code 12" nil t)
   ;;Fira Code ligatures
-  (if (string-equal system-type "darwin")
+  (if (and (string-equal system-type "darwin") (boundp 'mac-auto-operator-composition-mode))
       (mac-auto-operator-composition-mode t))
 
   #+end_src
   
   My current color theme and powerline theme.
   #+begin_src emacs-lisp
-    (defun switch-theme (theme)
-      "Disables any currently active themes and loads THEME."
-      ;; This interactive call is taken from `load-theme'
-      (interactive
-       (list
-        (intern (completing-read "Load custom theme: "
-                                 (mapc 'symbol-name
-                                       (custom-available-themes))))))
-      (let ((enabled-themes custom-enabled-themes))
-        (mapc #'disable-theme custom-enabled-themes)
-        (load-theme theme t)
-        (load-theme 'airline-luna t)))
+  (defun switch-theme (theme)
+    "Disables any currently active themes and loads THEME."
+    ;; This interactive call is taken from `load-theme'
+    (interactive
+     (list
+      (intern (completing-read "Load custom theme: "
+                               (mapc 'symbol-name
+                                     (custom-available-themes))))))
+    (let ((enabled-themes custom-enabled-themes))
+      (mapc #'disable-theme custom-enabled-themes)
+      (load-theme theme t)
+      (load-theme 'airline-luna t)))
 
-    (defun disable-active-themes ()
-      "Disables any currently active themes listed in `custom-enabled-themes'."
-      (interactive)
-      (mapc #'disable-theme custom-enabled-themes))
+  (defun disable-active-themes ()
+    "Disables any currently active themes listed in `custom-enabled-themes'."
+    (interactive)
+    (mapc #'disable-theme custom-enabled-themes))
 
-    (use-package doom-themes
-      :defer t
-      :no-require t)
+  (use-package doom-themes
+    :defer t
+    :no-require t)
 
-    (use-package apropospriate-theme
-      :defer t
-      :no-require t)
+  (use-package apropospriate-theme
+    :defer t
+    :no-require t)
 
-    (use-package cyberpunk-theme
-      :defer t
-      :no-require t)
+  (use-package cyberpunk-theme
+    :defer t
+    :no-require t)
 
-    (use-package oldlace-theme
-      :defer t
-      :no-require t)
+  (use-package oldlace-theme
+    :defer t
+    :no-require t)
 
-    (use-package spacemacs-theme
-      :defer t
-      :no-require t)
+  (use-package spacemacs-theme
+    :defer t
+    :no-require t)
 
-    (use-package leuven-theme
-      :defer t
-      :no-require t)
+  (use-package leuven-theme
+    :defer t
+    :no-require t)
 
-    (use-package constant-theme
-      :defer t
-      :no-require t)
+  (use-package constant-theme
+    :defer t
+    :no-require t)
 
-    (use-package cherry-blossom-theme
-      :defer t
-      :no-require t)
+  (use-package cherry-blossom-theme
+    :defer t
+    :no-require t)
 
-    (use-package gruvbox-theme
-      :defer t
-      :no-require t)
+  (use-package gruvbox-theme
+    :defer t
+    :no-require t)
 
-    (use-package dracula-theme
-      :defer t
-      :no-require t)
+  (use-package dracula-theme
+    :defer t
+    :no-require t)
 
-    (use-package bubbleberry-theme
-      :defer t
-      :no-require t)
+  (use-package bubbleberry-theme
+    :defer t
+    :no-require t)
 
-    (use-package airline-themes
-      :config (load-theme 'airline-luna))
+  (use-package airline-themes
+    :config (load-theme 'airline-luna))
 
 
-    (switch-theme 'doom-acario-dark)
+  (switch-theme 'doom-acario-dark)
   #+end_src
   
 * Defaults
@@ -293,7 +293,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 
   (setq frame-title-format "%b") ; show buffer name in title bar
   (setq inhibit-splash-screen t) ;don't show default emacs startup screen
-  (setq visible-bell t) ;Instead of shell bell, visual flash
+  (setq visible-bell nil) ; Actually I changed my mind, I don't like this
   (setq ring-bell-function ; don't ring (flash) the bell on C-g
         (lambda ()
           (unless (memq this-command
@@ -364,10 +364,11 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
     (global-display-line-numbers-mode))
   #+end_src
   
-* Packages
+* Packsges
 ** centered-window
    #+begin_src emacs-lisp
    (use-package centered-window
+     :straight (:host github :repo "ketan0/centered-window-mode" :branch "center-on-frame-size-change")
      :config 
      (centered-window-mode t))
    #+end_src 
@@ -380,127 +381,129 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 ** diminish
    #+begin_src emacs-lisp
    (use-package diminish
-     :config
+     :init
+     (diminish 'undo-tree-mode)
+     (diminish 'yas/minor-mode)
      (diminish 'auto-revert-mode))
    #+end_src 
    
 ** Org
 *** org
-     #+begin_src emacs-lisp
-     ;;______________________________________________________________________
-          ;;;;  Installing Org with straight.el
-     (require 'subr-x)
-     (use-package git)
+    #+begin_src emacs-lisp
+    ;;______________________________________________________________________
+         ;;;;  Installing Org with straight.el
+    (require 'subr-x)
+    (use-package git)
 
-     (defun org-git-version ()
-       "The Git version of 'org-mode'.
-                           Inserted by installing 'org-mode' or when a release is made."
-       (require 'git)
-       (let ((git-repo (expand-file-name
-                        "straight/repos/org/" user-emacs-directory)))
-         (string-trim
+    (defun org-git-version ()
+      "The Git version of 'org-mode'.
+                          Inserted by installing 'org-mode' or when a release is made."
+      (require 'git)
+      (let ((git-repo (expand-file-name
+                       "straight/repos/org/" user-emacs-directory)))
+        (string-trim
+         (git-run "describe"
+                  "--match=release\*"
+                  "--abbrev=6"
+                  "HEAD"))))
+
+    (defun org-release ()
+      "The release version of 'org-mode'.
+                          Inserted by installing 'org-mode' or when a release is made."
+      (require 'git)
+      (let ((git-repo (expand-file-name
+                       "straight/repos/org/" user-emacs-directory)))
+        (string-trim
+         (string-remove-prefix
+          "release_"
           (git-run "describe"
                    "--match=release\*"
-                   "--abbrev=6"
-                   "HEAD"))))
+                   "--abbrev=0"
+                   "HEAD")))))
 
-     (defun org-release ()
-       "The release version of 'org-mode'.
-                           Inserted by installing 'org-mode' or when a release is made."
-       (require 'git)
-       (let ((git-repo (expand-file-name
-                        "straight/repos/org/" user-emacs-directory)))
-         (string-trim
-          (string-remove-prefix
-           "release_"
-           (git-run "describe"
-                    "--match=release\*"
-                    "--abbrev=0"
-                    "HEAD")))))
-
-     (provide 'org-version)
+    (provide 'org-version)
 
 
-     (use-package org
-       :config
-       (setq org-ellipsis "…")
-       (setq org-directory "~/org")
-       (setq org-return-follows-link t)
+    (use-package org
+      :config
+      (setq org-ellipsis "…")
+      (setq org-directory "~/org")
+      (setq org-return-follows-link t)
 
-       (setq org-emphasis-alist ;;different ways to emphasize text
-             '(("!"  (:foreground "red") )
-               ("*" (bold :foreground "Orange" ))
-               ("/" italic "<i>" "</i>") 
-               ("_" underline "<span style=\"text-decoration:underline;\">" "</span>")
-               ("-" (:overline t) "<span style=\"text-decoration:overline;\">" "</span>")
-               ("~" org-code "<code>" "</code>" verbatim)
-               ("=" org-verbatim "<code>" "</code>" verbatim) 
-               ("+" (:strike-through t) "<del>" "</del>")))
+      (setq org-emphasis-alist ;;different ways to emphasize text
+            '(("!"  (:foreground "red") )
+              ("*" (bold :foreground "Orange" ))
+              ("/" italic "<i>" "</i>") 
+              ("_" underline "<span style=\"text-decoration:underline;\">" "</span>")
+              ("-" (:overline t) "<span style=\"text-decoration:overline;\">" "</span>")
+              ("~" org-code "<code>" "</code>" verbatim)
+              ("=" org-verbatim "<code>" "</code>" verbatim) 
+              ("+" (:strike-through t) "<del>" "</del>")))
 
-       ;;stores changes from dropbox
-       (setq org-mobile-inbox-for-pull "~/org/flagged.org")
-       ;;Organ (my app)'s store
-       (setq org-mobile-directory "~/Dropbox/Apps/Organ/")
+      ;;stores changes from dropbox
+      (setq org-mobile-inbox-for-pull "~/org/flagged.org")
+      ;;Organ (my app)'s store
+      (setq org-mobile-directory "~/Dropbox/Apps/Organ/")
 
-       ;;settings for TODOs
-       (setq org-log-done 'time) ;;record time a task is done
+      ;;settings for TODOs
+      (setq org-log-done 'time) ;;record time a task is done
 
-       (setq org-agenda-files '("~/org/"))
-       (setq org-agenda-block-separator nil)
-       (setq org-agenda-log-mode-items '(closed clock state))
-       (setq org-agenda-format-date (lambda (date) (concat "\n"
-                                                           (make-string (/ (window-width) 2) 9472)
-                                                           "\n"
-                                                           (org-agenda-format-date-aligned date))))
-       (setq org-agenda-window-setup 'only-window) ;;agenda take up whole frame
-       ;;don't show warnings for deadlines
-       (setq org-deadline-warning-days 0) ;;don't show upcoming tasks in today view
+      (setq org-agenda-files '("~/org/"))
+      (setq org-agenda-block-separator nil)
+      (setq org-agenda-log-mode-items '(closed clock state))
+      (setq org-agenda-format-date (lambda (date) (concat "\n"
+                                                          (make-string (/ (window-width) 2) 9472)
+                                                          "\n"
+                                                          (org-agenda-format-date-aligned date))))
+      (setq org-agenda-window-setup 'only-window) ;;agenda take up whole frame
+      ;;don't show warnings for deadlines
+      (setq org-deadline-warning-days 0) ;;don't show upcoming tasks in today view
 
-       (setq org-edit-src-content-indentation 0) ;;don't indent src blocks further
+      (setq org-edit-src-content-indentation 0) ;;don't indent src blocks further
 
-       ;;refile headlines to any other agenda files
-       (setq org-refile-use-cache t) ;;speeds up loading refile targets
-       (setq org-refile-targets '((org-agenda-files :maxlevel . 3))) 
-       (setq org-refile-allow-creating-parent-nodes 'confirm)
+      ;;refile headlines to any other agenda files
+      (setq org-refile-use-cache t) ;;speeds up loading refile targets
+      (setq org-refile-targets '((org-agenda-files :maxlevel . 3))) 
+      (setq org-refile-allow-creating-parent-nodes 'confirm)
 
-       (setq org-refile-use-outline-path 'file) ;;see whole path (not just headline)
-       (setq org-outline-path-complete-in-steps nil) ;;easy to complete in one go w/ helm
+      (setq org-refile-use-outline-path 'file) ;;see whole path (not just headline)
+      (setq org-outline-path-complete-in-steps nil) ;;easy to complete in one go w/ helm
 
-       (setq org-archive-location (concat (file-name-as-directory org-directory) "archive.org::datetree/")) ;;archive done tasks to datetree in archive.org
+      (setq org-archive-location (concat (file-name-as-directory org-directory) "archive.org::datetree/")) ;;archive done tasks to datetree in archive.org
 
-       (setq org-catch-invisible-edits (quote show-and-error)) ;;avoid accidental edits in folded areas, links, etc.
-       (setq org-default-notes-file (concat (file-name-as-directory org-directory) "capture.org"))
+      (setq org-catch-invisible-edits (quote show-and-error)) ;;avoid accidental edits in folded areas, links, etc.
+      (setq org-default-notes-file (concat (file-name-as-directory org-directory) "capture.org"))
 
-       (setq org-capture-templates
-             '(;; other entries
-               ("t" "todo" entry
-                (file "~/org/capture.org")
-                "* TODO %?")
-               ("c" "coronavirus" entry (file+datetree 
-                                         "~/org/20200314210447_coronavirus.org")
-                "* %^{Heading}")
-               ("k" "CS 520: Knowledge Graphs" entry (file+datetree 
-                                                      "~/org/20200331194240-cs520_knowledge_graphs.org")
-                "* %^{Heading}")
-               ("l" "Linguist 167: Languages of the World" entry (file+datetree 
-                                                                  "~/org/20200406225041-linguist_167_languages_of_the_world.org")
-                "* %^{Heading}")
-               ("m" "CS 229: Machine Learning" entry (file+datetree 
-                                                      "~/org/20200403043734-cs229_machine_learning.org")
-                "* %^{Heading}")
-               ("p" "CS 110: Principles of Computer Systems" entry (file+datetree 
-                                                                    "~/org/20200403044116-cs110_principles_of_computer_systems.org")
-                "* %^{Heading}")
-               ("u" "new package" entry (file+headline 
-                                         "~/.emacs.d/init.org" "Packages")
-                "* %^{package name} \n#+begin_src emacs-lisp\n(use-package %\\1)\n#+end_src\n")))
+      (setq org-capture-templates
+            '(;; other entries
+              ("t" "todo" entry
+               (file "~/org/capture.org")
+               "* TODO %?")
+              ("c" "coronavirus" entry (file+datetree 
+                                        "~/org/20200314210447_coronavirus.org")
+               "* %^{Heading}")
+              ("k" "CS 520: Knowledge Graphs" entry (file+datetree 
+                                                     "~/org/20200331194240-cs520_knowledge_graphs.org")
+               "* %^{Heading}")
+              ("l" "Linguist 167: Languages of the World" entry (file+datetree 
+                                                                 "~/org/20200406225041-linguist_167_languages_of_the_world.org")
+               "* %^{Heading}")
+              ("m" "CS 229: Machine Learning" entry (file+datetree 
+                                                     "~/org/20200403043734-cs229_machine_learning.org")
+               "* %^{Heading}")
+              ("p" "CS 110: Principles of Computer Systems" entry (file+datetree 
+                                                                   "~/org/20200403044116-cs110_principles_of_computer_systems.org")
+               "* %^{Heading}")
+              ("u" "new package" entry (file+headline 
+                                        "~/.emacs.d/init.org" "Packages")
+               "* %^{package name} \n#+begin_src emacs-lisp\n(use-package %\\1)\n#+end_src\n")))
 
-       ;;open links in same window
-       (setq org-link-frame-setup '((file . find-file)))
-       (global-set-key (kbd "C-c l") 'org-store-link)
-       (global-set-key (kbd "C-c a") 'org-agenda)
-       (global-set-key (kbd "C-c c") 'org-capture))
-     #+end_src 
+      ;;open links in same window
+      (setq org-link-frame-setup '((file . find-file)))
+      (global-set-key (kbd "C-c l") 'org-store-link)
+      (global-set-key (kbd "C-c a") 'org-agenda)
+      (global-set-key (kbd "C-c c") 'org-capture))
+    #+end_src 
      
 *** org-roam
     :PROPERTIES:
@@ -522,11 +525,10 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 *** org-journal
     #+begin_src emacs-lisp
     (use-package org-journal
-      :custom
-      (org-journal-find-file 'find-file)
-      (org-journal-dir "~/org/journal/")
-      (org-journal-date-format "%A, %d %B %Y"))
-
+      :init
+      (setq org-journal-find-file 'find-file)
+      (setq org-journal-dir "~/org/")
+      (setq org-journal-date-format "%A, %d %B %Y"))
     #+end_src 
     
 *** org-super-agenda
@@ -541,9 +543,9 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
     #+end_src
     
 *** org-ql 
-  #+begin_src emacs-lisp
-  (use-package org-ql)
-  #+end_src
+    #+begin_src emacs-lisp
+    (use-package org-ql)
+    #+end_src
 *** org-pdftools
     #+begin_src emacs-lisp
     (use-package org-pdftools
@@ -579,6 +581,20 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
       (setq evil-want-keybinding nil)
       :config 
+      (defmacro define-and-bind-text-object (key start-regex end-regex)
+        (let ((inner-name (make-symbol "inner-name"))
+              (outer-name (make-symbol "outer-name")))
+          `(progn
+             (evil-define-text-object ,inner-name (count &optional beg end type)
+               (evil-select-paren ,start-regex ,end-regex beg end type count nil))
+             (evil-define-text-object ,outer-name (count &optional beg end type)
+               (evil-select-paren ,start-regex ,end-regex beg end type count t))
+             (define-key evil-inner-text-objects-map ,key (quote ,inner-name))
+             (define-key evil-outer-text-objects-map ,key (quote ,outer-name)))))
+      ;; create "il"/"al" (inside/around) line text objects:
+      (define-and-bind-text-object "l" "^\\s-*" "\\s-*$")
+      ;; create "ie"/"ae" (inside/around) entire buffer text objects:
+      (define-and-bind-text-object "e" "\\`\\s-*" "\\s-*\\'")
       ;; Make evil-mode up/down operate in screen lines instead of logical lines
       (evil-mode t)
       (define-key evil-normal-state-map "Q" (kbd "@q"))
@@ -722,16 +738,15 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      :diminish helm-mode
      :bind
      (:map helm-map
-      ("C-j" . helm-next-line)
-      ("C-k" . helm-previous-line))
+           ("C-j" . helm-next-line)
+           ("C-k" . helm-previous-line))
      (:map helm-find-files-map
-      ("C-h" . helm-find-files-up-one-level)
-      ("C-l" . helm-execute-persistent-action))
+           ("C-h" . helm-find-files-up-one-level)
+           ("C-l" . helm-execute-persistent-action))
      :init
      (setq helm-completion-style 'emacs)
-     (setq completion-styles '(helm-flex))
+     (setq completion-styles '(flex))
      :config 
-     (global-set-key (kbd "M-x") 'helm-M-x)
      (helm-mode t))
    ;; (use-package helm-files
    ;;   :bind
@@ -774,55 +789,62 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    (use-package ein)
    #+end_src
    
-** company
+** company/lsp
    #+begin_src emacs-lisp
-     (use-package company
-       :diminish company-mode
-       :bind
-       (:map company-active-map
-             ("C-w" . 'evil-delete-backward-word)
-             ("<RET>" . company-complete-selection))
-       :config
-       (add-hook 'after-init-hook 'global-company-mode))
+   (use-package company
+     :diminish company-mode
+     :bind
+     (:map company-active-map
+           ("C-w" . 'evil-delete-backward-word)
+           ("<RET>" . company-complete-selection))
+     :config
+     (add-hook 'after-init-hook 'global-company-mode))
 
-     ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-     (setq lsp-keymap-prefix "s-l")
+   ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+   (setq lsp-keymap-prefix "s-l")
 
-     (use-package lsp-mode
-       :config 
-       (require 'lsp-imenu)
-       (setq lsp-auto-require-clients t)
-       (setq lsp-auto-configure t)
-       ;; (lsp-register-client
-       ;;  (make-lsp-client :new-connection (lsp-tramp-connection "<insert your LS's binary name or path here>")
-       ;;                   :major-modes '(python-mode)
-       ;;                   :remote? t
-       ;;                   :server-id 'pyls-remote))
-       :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-              (c++-mode . lsp)
-              (python-mode . lsp)
-              )
-       :commands lsp)
+   (use-package lsp-mode
+     :config 
+     (setq lsp-auto-require-clients t)
+     (setq lsp-auto-configure t)
+     (setq lsp-ui-doc-enable nil)
+     (lsp-register-client
+      (make-lsp-client :new-connection (lsp-tramp-connection "clangd-10")
+                       :major-modes '(c-mode c++-mode)
+                       :remote? t
+                       :server-id 'clangd-remote))
+     :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+            (c++-mode . lsp)
+            (c-mode . lsp)
+            (python-mode . lsp)
+            (tex-mode . lsp)
+            (latex-mode . lsp)
+            )
+     :commands lsp)
 
-     ;; optionally
+   ;; optionally
    (use-package lsp-ui
      :ensure t
      :config
      (setq lsp-ui-sideline-ignore-duplicate t)
      (add-hook 'lsp-mode-hook 'lsp-ui-mode))   ;; if you are helm user
-     (use-package helm-lsp :commands helm-lsp-workspace-symbol)
-     (defun ketan0/prog-mode-setup ()
-       (push 'company-lsp company-backends))
+   (use-package helm-lsp :commands helm-lsp-workspace-symbol)
+   (defun ketan0/prog-mode-setup ()
+     (push 'company-lsp company-backends))
 
-     (use-package company-lsp
-       :commands company-lsp
-       :config
-       (add-hook 'prog-mode-hook #'ketan0/prog-mode-setup))
-     ;; Company completions for org-roam
-     (use-package company-org-roam
-       :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master"))
+   (use-package company-lsp
+     :commands company-lsp
+     :config
+     (add-hook 'prog-mode-hook #'ketan0/prog-mode-setup))
+   ;; Company completions for org-roam
+   (use-package company-org-roam
+     :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master"))
    #+end_src 
-   
+*** lsp-latex 
+    #+begin_src emacs-lisp
+    (use-package lsp-latex
+      :straight (:host github :repo "ROCKTAKEY/lsp-latex" :branch "master"))
+    #+end_src
 ** clojure-mode
    currently, only use this to fontify [[file:~/.dotfiles/karabiner.edn][karabiner.edn]]
    #+begin_src emacs-lisp
@@ -849,7 +871,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    
 ** auctex
    #+begin_src emacs-lisp
-   (use-package auctex
+   (use-package tex-site
+     :straight auctex
      :config
      (setq-default TeX-master nil)
      (setq TeX-save-query nil)
@@ -927,7 +950,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    #+begin_src emacs-lisp
    (use-package adaptive-wrap
      :diminish adaptive-wrap-prefix-mode
-     :init (adaptive-wrap-prefix-mode))
+     :config (add-hook 'after-save-hook 'adaptive-wrap-prefix-mode))
    #+end_src
    
 ** org-rifle
@@ -950,16 +973,24 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    (use-package s)
    #+end_src
 ** yasnippet 
- #+begin_src emacs-lisp
- (use-package yasnippet
-   :config
-   (yas-global-mode t))
- #+end_src
+   #+begin_src emacs-lisp
+   (use-package yasnippet
+     :config
+     (yas-global-mode t))
+   #+end_src
 ** org-pomodoro 
- #+begin_src emacs-lisp
- (use-package org-pomodoro)
- #+end_src
+   #+begin_src emacs-lisp
+   (use-package org-pomodoro)
+   #+end_src
 ** rainbow-delimiters 
- #+begin_src emacs-lisp
- (use-package rainbow-delimiters)
- #+end_src
+   #+begin_src emacs-lisp
+   (use-package rainbow-delimiters)
+   #+end_src
+** ccls 
+   #+begin_src emacs-lisp
+   (use-package ccls
+     :hook ((c-mode c++-mode objc-mode cuda-mode) .
+            (lambda () (require 'ccls) (lsp)))
+     :config
+     (setq ccls-executable "/Users/ketanagrawal/ccls/Release/ccls"))
+   #+end_src
