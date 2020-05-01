@@ -1,9 +1,11 @@
 #!/bin/env zsh
 
 # If you come from bash you might have to change your $PATH.
+export PATH="/usr/local/opt/llvm/bin:/Users/ketanagrawal/doom-emacs/bin:$PATH"
 # >>> conda initialize >>>
 # !! Contents within this block are managed by 'conda init' !!
-export PATH="/usr/local/opt/llvm/bin:$PATH"
+
+export PKG_CONFIG_PATH=/usr/local/Cellar/zlib/1.2.8/lib/pkgconfig:/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
 __conda_setup="$('/Users/ketanagrawal/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
@@ -115,8 +117,9 @@ bindkey -M menuselect '^M' .accept-line
 # For a full list of active aliases, run `alias`.
 #
 # Example aliases
-# alias zshconfig="mate ~/.zshrc"
-# alias ohmyzsh="mate ~/.oh-my-zsh"
+alias ez="nvim ~/.zshrc"
+alias sz="source ~/.zshrc"
+alias ohmyzsh="nvim ~/.oh-my-zsh"
 
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh" || true

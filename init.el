@@ -1,18 +1,18 @@
 (defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
   "Personal dotfiles directory.")
 
-(defvar bootstrap-version)
-(let ((bootstrap-file
-       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-      (bootstrap-version 5))
-  (unless (file-exists-p bootstrap-file)
-    (with-current-buffer
-        (url-retrieve-synchronously
-         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-         'silent 'inhibit-cookies)
-      (goto-char (point-max))
-      (eval-print-last-sexp)))
-  (load bootstrap-file nil 'nomessage))
+;; (defvar bootstrap-version)
+;; (let ((bootstrap-file
+;;        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+;;       (bootstrap-version 5))
+;;   (unless (file-exists-p bootstrap-file)
+;;     (with-current-buffer
+;;         (url-retrieve-synchronously
+;;          "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+;;          'silent 'inhibit-cookies)
+;;       (goto-char (point-max))
+;;       (eval-print-last-sexp)))
+;;   (load bootstrap-file nil 'nomessage))
 (straight-use-package 'use-package)
 (setq straight-use-package-by-default t)
 
@@ -56,6 +56,10 @@ tangled, and the tangled file is compiled."
 (add-hook 'after-save-hook 'tangle-karabiner)
 (add-hook 'after-save-hook 'source-yabairc)
 
+(use-package exec-path-from-shell)
+(when (memq window-system '(mac ns x))
+  (exec-path-from-shell-initialize))
+
 (defun get-string-from-file (filePath)
   "Return filePath's file content."
   (with-temp-buffer
@@ -77,12 +81,11 @@ tangled, and the tangled file is compiled."
 (define-key key-translation-map (kbd "<up>") (kbd "C-k")) 
 (define-key key-translation-map (kbd "<right>") (kbd "C-l"))
 
-(global-set-key (kbd "A-<backspace>") 'backward-kill-word)
 (global-set-key (kbd "M-m") 'suspend-frame)
 (global-set-key (kbd "M-q") 'save-buffers-kill-emacs)
-(global-set-key (kbd "C-M-f") 'toggle-frame-fullscreen)
-(global-set-key (kbd "˙") 'switch-to-prev-buffer) ;; A-h
-(global-set-key (kbd "¬") 'switch-to-next-buffer) ;; A-l
+(global-set-key (kbd "C-s-f") 'toggle-frame-fullscreen)
+(global-set-key (kbd "s-h") 'switch-to-prev-buffer) ;; A-h
+(global-set-key (kbd "s-l") 'switch-to-next-buffer) ;; A-l
 
 ;;TODO: work on making this work
 ;; (defun ketan0/find-certain-file (filepath)
@@ -165,76 +168,77 @@ i.e. change right window to bottom, or change bottom window to right."
 
 (set-frame-font "Fira Code 12" nil t)
 ;;Fira Code ligatures
-(if (and (string-equal system-type "darwin") (boundp 'mac-auto-operator-composition-mode))
-    (mac-auto-operator-composition-mode t))
+;; Sadly not using the mac port anymore so can't have nice things like ligatures rip
+;; (if (and (string-equal system-type "darwin") (boundp 'mac-auto-operator-composition-mode))
+;;     (mac-auto-operator-composition-mode t))
 
 (defun switch-theme (theme)
-  "Disables any currently active themes and loads THEME."
-  ;; This interactive call is taken from `load-theme'
-  (interactive
-   (list
-    (intern (completing-read "Load custom theme: "
-                             (mapc 'symbol-name
-                                   (custom-available-themes))))))
-  (let ((enabled-themes custom-enabled-themes))
-    (mapc #'disable-theme custom-enabled-themes)
-    (load-theme theme t)
-    (load-theme 'airline-luna t)))
+    "Disables any currently active themes and loads THEME."
+    ;; This interactive call is taken from `load-theme'
+    (interactive
+     (list
+      (intern (completing-read "Load custom theme: "
+                               (mapc 'symbol-name
+                                     (custom-available-themes))))))
+    (let ((enabled-themes custom-enabled-themes))
+      (mapc #'disable-theme custom-enabled-themes)
+      (load-theme theme t)
+      (load-theme 'airline-luna t)))
 
-(defun disable-active-themes ()
-  "Disables any currently active themes listed in `custom-enabled-themes'."
-  (interactive)
-  (mapc #'disable-theme custom-enabled-themes))
+  (defun disable-active-themes ()
+    "Disables any currently active themes listed in `custom-enabled-themes'."
+    (interactive)
+    (mapc #'disable-theme custom-enabled-themes))
 
-(use-package doom-themes
-  :defer t
-  :no-require t)
+  (use-package doom-themes
+    :defer t
+    :no-require t)
 
-(use-package apropospriate-theme
-  :defer t
-  :no-require t)
+  (use-package apropospriate-theme
+    :defer t
+    :no-require t)
 
-(use-package cyberpunk-theme
-  :defer t
-  :no-require t)
+  (use-package cyberpunk-theme
+    :defer t
+    :no-require t)
 
-(use-package oldlace-theme
-  :defer t
-  :no-require t)
+  (use-package oldlace-theme
+    :defer t
+    :no-require t)
 
-(use-package spacemacs-theme
-  :defer t
-  :no-require t)
+  (use-package spacemacs-theme
+    :defer t
+    :no-require t)
 
-(use-package leuven-theme
-  :defer t
-  :no-require t)
+  (use-package leuven-theme
+    :defer t
+    :no-require t)
 
-(use-package constant-theme
-  :defer t
-  :no-require t)
+  (use-package constant-theme
+    :defer t
+    :no-require t)
 
-(use-package cherry-blossom-theme
-  :defer t
-  :no-require t)
+  (use-package cherry-blossom-theme
+    :defer t
+    :no-require t)
 
-(use-package gruvbox-theme
-  :defer t
-  :no-require t)
+  (use-package gruvbox-theme
+    :defer t
+    :no-require t)
 
-(use-package dracula-theme
-  :defer t
-  :no-require t)
+  (use-package dracula-theme
+    :defer t
+    :no-require t)
 
-(use-package bubbleberry-theme
-  :defer t
-  :no-require t)
+  (use-package bubbleberry-theme
+    :defer t
+    :no-require t)
 
-(use-package airline-themes
-  :config (load-theme 'airline-luna))
+  (use-package airline-themes
+    :config (load-theme 'airline-luna))
 
 
-(switch-theme 'doom-acario-dark)
+;;  (switch-theme 'doom-acario-dark)
 
 (setq gc-cons-threshold 100000000) ;;100mb; default setting is too low for lsp-mode et al.
 (setq read-process-output-max (* 1024 1024)) ;; 1mb
@@ -452,9 +456,10 @@ i.e. change right window to bottom, or change bottom window to right."
 
 (use-package org-journal
   :init
-  (setq org-journal-find-file 'find-file)
-  (setq org-journal-dir "~/org/")
-  (setq org-journal-date-format "%A, %d %B %Y"))
+  (setq org-journal-find-file 'find-file
+        org-journal-dir "~/org/"
+        org-journal-carryover-items nil
+        org-journal-date-format "%A, %d %B %Y"))
 
 (use-package org-super-agenda
   :config
@@ -469,7 +474,7 @@ i.e. change right window to bottom, or change bottom window to right."
   :init
   (setq org-pdftools-root-dir "~/Dropbox/Apps/GoodNotes 5/GoodNotes/"
         org-pdftools-search-string-separator "??")
-  :after org
+  :after (org pdf-tools)
   :config
   (org-link-set-parameters "pdftools"
                            :follow #'org-pdftools-open
@@ -487,6 +492,9 @@ i.e. change right window to bottom, or change bottom window to right."
   :init
   (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
   (setq evil-want-keybinding nil)
+
+  ;;if I visual select only part of a line and do :s, only replace the selected part of the line
+  (setq evil-ex-visual-char-range t) 
   :config 
   (defmacro define-and-bind-text-object (key start-regex end-regex)
     (let ((inner-name (make-symbol "inner-name"))
@@ -615,6 +623,7 @@ i.e. change right window to bottom, or change bottom window to right."
   :diminish helm-mode
   :bind
   (:map helm-map
+        ("C-l" . helm-execute-persistent-action)
         ("C-j" . helm-next-line)
         ("C-k" . helm-previous-line))
   (:map helm-find-files-map
@@ -724,7 +733,9 @@ i.e. change right window to bottom, or change bottom window to right."
 
 (use-package tex-site
   :straight auctex
+  :functions TeX-revert-document-buffer
   :config
+  (require 'tex)
   (setq-default TeX-master nil)
   (setq TeX-save-query nil)
   (setq TeX-auto-save t)

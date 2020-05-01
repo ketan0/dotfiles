@@ -19,20 +19,20 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    
 ** Straight.el bootstrap
    #+begin_src emacs-lisp
-   (defvar bootstrap-version)
-   (let ((bootstrap-file
-          (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-         (bootstrap-version 5))
-     (unless (file-exists-p bootstrap-file)
-       (with-current-buffer
-           (url-retrieve-synchronously
-            "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-            'silent 'inhibit-cookies)
-         (goto-char (point-max))
-         (eval-print-last-sexp)))
-     (load bootstrap-file nil 'nomessage))
-   (straight-use-package 'use-package)
-   (setq straight-use-package-by-default t)
+     ;; (defvar bootstrap-version)
+     ;; (let ((bootstrap-file
+     ;;        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+     ;;       (bootstrap-version 5))
+     ;;   (unless (file-exists-p bootstrap-file)
+     ;;     (with-current-buffer
+     ;;         (url-retrieve-synchronously
+     ;;          "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+     ;;          'silent 'inhibit-cookies)
+     ;;       (goto-char (point-max))
+     ;;       (eval-print-last-sexp)))
+     ;;   (load bootstrap-file nil 'nomessage))
+     (straight-use-package 'use-package)
+     (setq straight-use-package-by-default t)
    #+end_src
     
 ** Tangle source code
@@ -80,6 +80,12 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 
    #+end_src
     
+** Set PATH from shell
+   #+begin_src emacs-lisp
+   (use-package exec-path-from-shell)
+   (when (memq window-system '(mac ns x))
+     (exec-path-from-shell-initialize))
+   #+end_src
 ** Move frame to right half of screen
    Right-aligns my emacs window. (Why isn't this working on startup...)
    #+begin_src emacs-lisp
@@ -115,12 +121,11 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
   #+end_src
   Other convenience functions
   #+begin_src emacs-lisp
-  (global-set-key (kbd "A-<backspace>") 'backward-kill-word)
   (global-set-key (kbd "M-m") 'suspend-frame)
   (global-set-key (kbd "M-q") 'save-buffers-kill-emacs)
-  (global-set-key (kbd "C-M-f") 'toggle-frame-fullscreen)
-  (global-set-key (kbd "˙") 'switch-to-prev-buffer) ;; A-h
-  (global-set-key (kbd "¬") 'switch-to-next-buffer) ;; A-l
+  (global-set-key (kbd "C-s-f") 'toggle-frame-fullscreen)
+  (global-set-key (kbd "s-h") 'switch-to-prev-buffer) ;; A-h
+  (global-set-key (kbd "s-l") 'switch-to-next-buffer) ;; A-l
 
   ;;TODO: work on making this work
   ;; (defun ketan0/find-certain-file (filepath)
@@ -208,8 +213,9 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
   #+begin_src emacs-lisp
   (set-frame-font "Fira Code 12" nil t)
   ;;Fira Code ligatures
-  (if (and (string-equal system-type "darwin") (boundp 'mac-auto-operator-composition-mode))
-      (mac-auto-operator-composition-mode t))
+  ;; Sadly not using the mac port anymore so can't have nice things like ligatures rip
+  ;; (if (and (string-equal system-type "darwin") (boundp 'mac-auto-operator-composition-mode))
+  ;;     (mac-auto-operator-composition-mode t))
 
   #+end_src
   
@@ -281,7 +287,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
     :config (load-theme 'airline-luna))
 
 
-  (switch-theme 'doom-acario-dark)
+;;  (switch-theme 'doom-acario-dark)
   #+end_src
   
 * Defaults
@@ -364,7 +370,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
     (global-display-line-numbers-mode))
   #+end_src
   
-* Packsges
+* Packages
 ** centered-window
    #+begin_src emacs-lisp
    (use-package centered-window
@@ -526,10 +532,11 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
     #+begin_src emacs-lisp
     (use-package org-journal
       :init
-      (setq org-journal-find-file 'find-file)
-      (setq org-journal-dir "~/org/")
-      (setq org-journal-date-format "%A, %d %B %Y"))
-    #+end_src 
+      (setq org-journal-find-file 'find-file
+            org-journal-dir "~/org/"
+            org-journal-carryover-items nil
+            org-journal-date-format "%A, %d %B %Y"))
+      #+end_src 
     
 *** org-super-agenda
     Sort agenda items by category (i.e., filename.)
@@ -546,13 +553,14 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
     #+begin_src emacs-lisp
     (use-package org-ql)
     #+end_src
+    
 *** org-pdftools
     #+begin_src emacs-lisp
     (use-package org-pdftools
       :init
       (setq org-pdftools-root-dir "~/Dropbox/Apps/GoodNotes 5/GoodNotes/"
             org-pdftools-search-string-separator "??")
-      :after org
+      :after (org pdf-tools)
       :config
       (org-link-set-parameters "pdftools"
                                :follow #'org-pdftools-open
@@ -580,6 +588,9 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       :init
       (setq evil-want-integration t) ;; This is optional since it's already set to t by default.
       (setq evil-want-keybinding nil)
+
+      ;;if I visual select only part of a line and do :s, only replace the selected part of the line
+      (setq evil-ex-visual-char-range t) 
       :config 
       (defmacro define-and-bind-text-object (key start-regex end-regex)
         (let ((inner-name (make-symbol "inner-name"))
@@ -738,6 +749,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      :diminish helm-mode
      :bind
      (:map helm-map
+           ("C-l" . helm-execute-persistent-action)
            ("C-j" . helm-next-line)
            ("C-k" . helm-previous-line))
      (:map helm-find-files-map
@@ -845,6 +857,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
     (use-package lsp-latex
       :straight (:host github :repo "ROCKTAKEY/lsp-latex" :branch "master"))
     #+end_src
+    
 ** clojure-mode
    currently, only use this to fontify [[file:~/.dotfiles/karabiner.edn][karabiner.edn]]
    #+begin_src emacs-lisp
@@ -873,7 +886,9 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    #+begin_src emacs-lisp
    (use-package tex-site
      :straight auctex
+     :functions TeX-revert-document-buffer
      :config
+     (require 'tex)
      (setq-default TeX-master nil)
      (setq TeX-save-query nil)
      (setq TeX-auto-save t)
@@ -906,6 +921,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      (add-hook 'LaTeX-mode-hook 'ketan0/latex-mode-setup)
      (add-hook 'org-mode-hook 'ketan0/org-mode-setup))
    #+end_src 
+   
 ** pdf-tools
    #+begin_src emacs-lisp
    (use-package pdf-tools
@@ -972,20 +988,24 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    #+begin_src emacs-lisp
    (use-package s)
    #+end_src
+   
 ** yasnippet 
    #+begin_src emacs-lisp
    (use-package yasnippet
      :config
      (yas-global-mode t))
    #+end_src
+   
 ** org-pomodoro 
    #+begin_src emacs-lisp
    (use-package org-pomodoro)
    #+end_src
+   
 ** rainbow-delimiters 
    #+begin_src emacs-lisp
    (use-package rainbow-delimiters)
    #+end_src
+   
 ** ccls 
    #+begin_src emacs-lisp
    (use-package ccls
@@ -994,3 +1014,5 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      :config
      (setq ccls-executable "/Users/ketanagrawal/ccls/Release/ccls"))
    #+end_src
+   
+   

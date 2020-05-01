@@ -6,6 +6,7 @@
 - link:
     ~/.emacs.d/init.el: init.el
     ~/.emacs.d/init.org: init.org
+    ~/.doom.d:
     ~/.gitconfig:
     ~/.yabairc:
     ~/.config/karabiner.edn: karabiner.edn
