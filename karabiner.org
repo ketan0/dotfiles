@@ -223,6 +223,7 @@ inspiration taken from:
 ** tab-mode (tab)
    #+begin_src clojure
    :tab-mode
+   [:spacebar :!CTspacebar]
    [:f8 [:km "Open Spotify"]]
    [:c [:km "Open Chrome"]]
    [:e [:km "Open Emacs"]]

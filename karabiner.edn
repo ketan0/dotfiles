@@ -149,6 +149,7 @@
    ;; [:l :!COup_arrow]
 
    :tab-mode
+   [:spacebar :!CTspacebar]
    [:f8 [:km "Open Spotify"]]
    [:c [:km "Open Chrome"]]
    [:e [:km "Open Emacs"]]
