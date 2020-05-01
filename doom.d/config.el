@@ -9,6 +9,8 @@
 (setq user-full-name "Ketan Agrawal"
       user-mail-address "agrawalk@stanford.edu")
 
+(defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
+     "Personal dotfiles directory.")
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
 ;;
@@ -186,3 +188,28 @@
   :after org-roam
   :config
   (set-company-backend! 'org-mode '(company-org-roam company-yasnippet company-dabbrev)))
+
+(defun tangle-karabiner ()
+  "If the current buffer is 'karabiner.org' the code-blocks are
+   tangled, and the tangled file is compiled."
+  (when (equal (buffer-file-name)
+               (expand-file-name (concat ketan0/dotfiles-dir "karabiner.org")))
+    ;; Avoid running hooks when tangling.
+    (let ((prog-mode-hook nil))
+      (org-babel-tangle-file
+       (expand-file-name (concat ketan0/dotfiles-dir "karabiner.org"))
+       (expand-file-name (concat ketan0/dotfiles-dir "karabiner.edn"))))
+    (message (concat "Goku output: " (shell-command-to-string "goku")))))
+
+(defun source-yabairc ()
+  "If the current buffer is 'karabiner.org' the code-blocks are
+   tangled, and the tangled file is compiled."
+  (when (equal (buffer-file-name)
+               (expand-file-name (concat ketan0/dotfiles-dir "yabairc")))
+    ;; Avoid running hooks when tangling.
+    (message (concat "yabairc has been sourced"
+                     (shell-command-to-string
+                      "launchctl kickstart -k \"gui/${UID}/homebrew.mxcl.yabai\"")))))
+
+(add-hook 'after-save-hook 'tangle-karabiner)
+(add-hook 'after-save-hook 'source-yabairc)
