@@ -101,20 +101,16 @@ inspiration taken from:
    #+begin_src clojure
    [:left_command :left_command nil {:alone :!Ctab}]
    #+end_src
-** shift+delete deletes a word
-   #+begin_src clojure
-   [:!Sdelete_or_backspace :!Odelete_or_backspace]
-   #+end_src
-** caps lock rules
-*** alone = escape
+** caps lock alone = escape
     #+begin_src clojure
     [:caps_lock :caps_lock nil {:alone :escape}]
     #+end_src
-*** ctrl-mode (caps)
+** ctrl-mode (caps)
     #+begin_src clojure
     :ctrl-mode
     [:delete_or_backspace :!Odelete_or_backspace] ;;caps+delete to delete a word
     [:open_bracket :!Topen_bracket]
+    [:return_or_enter :!Treturn_or_enter]
     [:close_bracket :!Tclose_bracket]
     [:semicolon :!Tsemicolon]
     [:quote :!Tquote]
