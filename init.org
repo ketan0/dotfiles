@@ -813,10 +813,11 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      (add-hook 'after-init-hook 'global-company-mode))
 
    ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-   (setq lsp-keymap-prefix "s-l")
 
    (use-package lsp-mode
-     :config 
+     :init
+     (setq lsp-keymap-prefix "s-l")
+     :config
      (setq lsp-auto-require-clients t)
      (setq lsp-auto-configure t)
      (setq lsp-ui-doc-enable nil)
@@ -834,23 +835,23 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
             )
      :commands lsp)
 
-   ;; optionally
-   (use-package lsp-ui
-     :ensure t
-     :config
-     (setq lsp-ui-sideline-ignore-duplicate t)
-     (add-hook 'lsp-mode-hook 'lsp-ui-mode))   ;; if you are helm user
-   (use-package helm-lsp :commands helm-lsp-workspace-symbol)
-   (defun ketan0/prog-mode-setup ()
-     (push 'company-lsp company-backends))
+;; optionally
+(use-package lsp-ui
+  :ensure t
+  :config
+  (setq lsp-ui-sideline-ignore-duplicate t)
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode))   ;; if you are helm user
+(use-package helm-lsp :commands helm-lsp-workspace-symbol)
+(defun ketan0/prog-mode-setup ()
+  (push 'company-lsp company-backends))
 
-   (use-package company-lsp
-     :commands company-lsp
-     :config
-     (add-hook 'prog-mode-hook #'ketan0/prog-mode-setup))
-   ;; Company completions for org-roam
-   (use-package company-org-roam
-     :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master"))
+(use-package company-lsp
+  :commands company-lsp
+  :config
+  (add-hook 'prog-mode-hook #'ketan0/prog-mode-setup))
+;; Company completions for org-roam
+(use-package company-org-roam
+  :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master"))
    #+end_src 
 *** lsp-latex 
     #+begin_src emacs-lisp
