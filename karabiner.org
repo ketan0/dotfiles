@@ -13,6 +13,7 @@ inspiration taken from:
 - [[https://gist.github.com/kaushikgopal/ff7a92bbc887e59699c804b59074a126][kaushikgopal]]
 
 * TODO Proper documentation--there's a reason this is in an org buffer.
+* TODO Fix the bug where chrome always opens a new window
 * Guide
   Guide lifted from [[https://gist.github.com/kaushikgopal/ff7a92bbc887e59699c804b59074a126][kaushikgopal]] 
 
