@@ -26,7 +26,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-rouge)
+(setq doom-theme 'doom-horizon)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -53,6 +53,22 @@
 ;;
 ;; You can also try 'gd' (or 'C-c g d') to jump to their definition and see how
 ;; they are implemented.
+
+;; use visual lines + relative numbering
+(setq vc-handled-backends '(Git))
+
+(setq display-line-numbers-type t)
+
+(map! :map evil-motion-state-map "gj" 'evil-next-line)
+(map! :map evil-motion-state-map "gk" 'evil-previous-line)
+
+(map! :map evil-motion-state-map "k" 'evil-previous-visual-line)
+
+(map! :map evil-motion-state-map "j" 'evil-next-visual-line)
+(map! :map evil-motion-state-map "k" 'evil-previous-visual-line)
+(map! :map evil-visual-state-map "j" 'evil-next-visual-line)
+(map! :map evil-visual-state-map "k" 'evil-previous-visual-line)
+(map! :map evil-normal-state-map "Q" (kbd "@q"))
 
 (use-package! org-super-agenda
   :defer t
@@ -213,3 +229,32 @@
 
 (add-hook 'after-save-hook 'tangle-karabiner)
 (add-hook 'after-save-hook 'source-yabairc)
+
+(use-package! lsp-mode
+  :init
+  (setq lsp-keymap-prefix "s-l")
+  :config
+  (setq lsp-auto-require-clients t)
+  (setq lsp-auto-configure t)
+  (setq lsp-ui-doc-enable nil)
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-tramp-connection "clangd-10")
+                    :major-modes '(c-mode c++-mode)
+                    :remote? t
+                    :server-id 'clangd-remote))
+  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+         ;; (c++-mode . lsp)
+         ;; (c-mode . lsp)
+         (python-mode . lsp)
+         (tex-mode . lsp)
+         (latex-mode . lsp)
+         )
+  :commands lsp)
+
+;; optionally
+(use-package! lsp-ui
+  :config
+  (setq lsp-ui-sideline-ignore-duplicate t)
+  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+
+(use-package! org-pomodoro)
