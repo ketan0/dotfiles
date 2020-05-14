@@ -117,6 +117,8 @@ bindkey -M menuselect '^M' .accept-line
 # For a full list of active aliases, run `alias`.
 #
 # Example aliases
+alias ds="doom sync"
+alias e="emacs --with-profile doom &"
 alias ez="nvim ~/.zshrc"
 alias sz="source ~/.zshrc"
 alias ohmyzsh="nvim ~/.oh-my-zsh"
