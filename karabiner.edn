@@ -1,24 +1,24 @@
-    {;;beginning bracket for whole data structure!
+{;;beginning bracket for whole data structure!
 
      :profiles {
                 :Ketan {:default true
                           :sim     60    ;; simultaneous_threshold_milliseconds (def: 50)
-                          ;; keys need to be pressed within this threshold to be considered simultaneous
+
                           :delay   80    ;; to_delayed_action_delay_milliseconds (def: 500)
-                          ;; basically it means time after which the key press is count delayed
-                          :alone   300    ;; to_if_alone_timeout_milliseconds (def: 1000)
-                          ;; hold for 995s and single tap registered; hold for 1005s and seen as modifier
+
+                          :alone   100    ;; to_if_alone_timeout_milliseconds (def: 1000)
+
                           :held    50   ;; to_if_held_down_threshold_milliseconds (def: 500)
-                          ;; key is fired twice when 500 ms is elapsed (otherwise seen as a hold command)
+
                           }
                 } ;; profiles
 
-    :templates {
+:templates {
                 :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\"'"
                 :open "open \"%s\""
                 } ;; templates
 
-    :layers {
+:layers {
 
     :tab-mode {:key :tab
                :afterup [{:set ["yabai-move-mode" 0]}
@@ -31,7 +31,7 @@
     :chrome-movement-mode {:key :t :condi :tab-mode} ;;TODO make this work
     :chrome-history-mode {:key :g :condi :tab-mode} ;;TODO make this work
     :chrome-rearrange-tab-mode {:key :r :condi :tab-mode}
-    :ctrl-mode {:key :caps_lock}
+    :vim-mode {:key :z}
 
     }
 
@@ -41,72 +41,15 @@
 
     }
 
-   :main [{
+:main [{
    :des "see karabiner.org for documentation.",
    :rules [
 
-   [:left_command :left_command nil {:alone :!Ctab}]
+[:##right_command :right_command nil {:alone :!Ctab}]
 
-    [:caps_lock :caps_lock nil {:alone :escape}]
+[:##caps_lock :left_control nil {:alone :escape}]
 
-    :ctrl-mode
-    [:delete_or_backspace :!Odelete_or_backspace] ;;caps+delete to delete a word
-    [:open_bracket :!Topen_bracket]
-    [:return_or_enter :!Treturn_or_enter]
-    [:close_bracket :!Tclose_bracket]
-    [:semicolon :!Tsemicolon]
-    [:quote :!Tquote]
-    [:comma :!Tcomma]
-    [:period :!Tperiod]
-    [:slash :!Tslash]
-    [:a :!Ta]
-    [:b :!Tb]
-    [:c :!Tc]
-    [:d :!Td]
-    [:e :!Te]
-    [:f :!Tf]
-    [:g :!Tg]
-    [:i :!Ti]
-    ;;TODO: really wish the whole exclude Emacs thing worked here
-    ;;TODO: navigate by words
-    ;;TODO: implement f+char?!
-    [:#Sh :left_arrow] ;; hjkl navigation everywhere + Shift
-    [:#Sj :down_arrow]
-    [:#Sk :up_arrow]
-    [:#Sl :right_arrow]
-    [:m :!Tm]
-    [:n :!Tn]
-    [:o :!To]
-    [:p :!Tp]
-    [:q :!Tq]
-    [:r :!Tr]
-    [:s :!Ts]
-    [:t :!Tt]
-    [:u :!Tu]
-    [:v :!Tv]
-    [:w :!Tw]
-    [:x :!Tx]
-    [:y :!Ty]
-    [:z :!Tz]
-    [:1 :!T1]
-    [:2 :!T2]
-    [:3 :!T3]
-    [:4 :!T4]
-    [:5 :!T5]
-    [:6 :!T6]
-    [:7 :!T7]
-    [:8 :!T8]
-    [:9 :!T9]
-    [:0 :!T0]
-
-   ;; :yabai-insert-mode
-   ;; [:h "/usr/local/bin/yabai -m window --insert west"]
-   ;; [:j "/usr/local/bin/yabai -m window --insert south"]
-   ;; [:k "/usr/local/bin/yabai -m window --insert north"]
-   ;; [:l "/usr/local/bin/yabai -m window --insert east"]
-
-   ;; move windows
-   :yabai-move-mode
+:yabai-move-mode
    [:b "/usr/local/bin/yabai -m space --balance"]
    [:h "/usr/local/bin/yabai -m window --warp west"]
    [:j "/usr/local/bin/yabai -m window --warp south"]
@@ -115,16 +58,7 @@
    [:p "/usr/local/bin/yabai -m window --toggle float"]
    [:s "/usr/local/bin/yabai -m window --toggle split"]
 
-   ;; ;; ;; scale windows
-   ;; :yabai-scale-mode
-   ;; [:h "/usr/local/bin/yabai -m window --resize left"]
-   ;; [:j "/usr/local/bin/yabai -m window --resize down"]
-   ;; [:k "/usr/local/bin/yabai -m window --resize up"]
-   ;; [:l "/usr/local/bin/yabai -m window --resize right"]
-
-   ;; directionally navigate windows/spaces
-   ;; space<=="g", {"h" "j" "k" "l"}, ";"==>space
-   :yabai-focus-mode
+:yabai-focus-mode
    [:g "/usr/local/bin/yabai -m space --focus prev"]
    [:h "/usr/local/bin/yabai -m window --focus west"]
    [:j "/usr/local/bin/yabai -m window --focus south"]
@@ -132,23 +66,21 @@
    [:l "/usr/local/bin/yabai -m window --focus east"]
    [:semicolon "/usr/local/bin/yabai -m space --focus next"]
 
-   :chrome-history-mode
+:chrome-history-mode
    [:h :!Copen_bracket]
    [:l :!Cclose_bracket]
 
-   :chrome-movement-mode
+:chrome-movement-mode
    [:h :!TStab]
    [:l :!Ttab]
 
-   ;;NOTE: need the Chrome extension for this to work
-   :chrome-rearrange-tab-mode
-   ;; [:h :!COdown_arrow]
+:chrome-rearrange-tab-mode
+
 
    [:h :!TSleft_arrow]
    [:l :!TSright_arrow]
-   ;; [:l :!COup_arrow]
 
-   :tab-mode
+:tab-mode
    [:spacebar :!CTspacebar]
    [:f8 [:km "Open Spotify"]]
    [:c [:km "Open Chrome"]]
@@ -162,12 +94,21 @@
    [:y [:km "Open Keyboard Maestro"]]
    [:z [:km "Open Zoom"]]
 
-     :jupyter-mode
+:vim-mode
+[:#Sh :left_arrow] ;; hjkl navigation everywhere + Shift
+[:#Sj :down_arrow]
+[:#Sk :up_arrow]
+[:#Sl :right_arrow]
+[:#Sb :!Oleft_arrow]
+[:#Sw :!Oright_arrow]
+[:delete_or_backspace :!Odelete_or_backspace]
+
+:jupyter-mode
      [:l [:km "Start or Go to Existing Jupyter Lab Server"]]
 
-    ]}] ;;end main
+]}] ;;end main
 
-    :applications [
+:applications [
 
     :Emacs ["^org\\.gnu\\.Emacs$"]
     :Chrome ["^com\\.google\\.Chrome$", "^org\\.chromium\\.Chromium$", "^com\\.google\\.Chrome\\.canary$"]
