@@ -1,26 +1,9 @@
-#!/bin/env zsh
-
 # If you come from bash you might have to change your $PATH.
-export PATH="/usr/local/opt/llvm/bin:/Users/ketanagrawal/doom-emacs/bin:$PATH"
-# >>> conda initialize >>>
-# !! Contents within this block are managed by 'conda init' !!
-
-export PKG_CONFIG_PATH=/usr/local/Cellar/zlib/1.2.8/lib/pkgconfig:/usr/local/lib/pkgconfig:/opt/X11/lib/pkgconfig
-__conda_setup="$('/Users/ketanagrawal/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
-if [ $? -eq 0 ]; then
-    eval "$__conda_setup"
-else
-    if [ -f "/Users/ketanagrawal/miniconda3/etc/profile.d/conda.sh" ]; then
-        . "/Users/ketanagrawal/miniconda3/etc/profile.d/conda.sh"
-    else
-        export PATH="/Users/ketanagrawal/miniconda3/bin:$PATH"
-    fi
-fi
-unset __conda_setup
-# <<< conda initialize <<<
+# export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH=$HOME/doom-emacs/bin:$PATH
 
 # Path to your oh-my-zsh installation.
-export ZSH="/Users/ketanagrawal/.oh-my-zsh"
+export ZSH=$HOME/.oh-my-zsh
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -30,7 +13,7 @@ ZSH_THEME="typewritten"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
-# a theme from this variable instead of looking in ~/.oh-my-zsh/themes/
+# a theme from this variable instead of looking in $ZSH/themes/
 # If set to an empty array, this variable will have no effect.
 # ZSH_THEME_RANDOM_CANDIDATES=( "robbyrussell" "agnoster" )
 
@@ -82,8 +65,8 @@ ZSH_THEME="typewritten"
 # ZSH_CUSTOM=/path/to/new-custom-folder
 
 # Which plugins would you like to load?
-# Standard plugins can be found in ~/.oh-my-zsh/plugins/*
-# Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
+# Standard plugins can be found in $ZSH/plugins/
+# Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(git)
@@ -91,10 +74,6 @@ plugins=(git)
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
-
-# Only press enter once to (1) exit autocomplete menu and (2) execute command
-bindkey -M menuselect '^M' .accept-line
-
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
@@ -117,18 +96,5 @@ bindkey -M menuselect '^M' .accept-line
 # For a full list of active aliases, run `alias`.
 #
 # Example aliases
-alias ds="doom sync"
-alias e="emacs --with-profile doom &"
-alias ez="nvim ~/.zshrc"
-alias sz="source ~/.zshrc"
-alias ohmyzsh="nvim ~/.oh-my-zsh"
-
-
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh" || true
-
-
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/ketanagrawal/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/ketanagrawal/Downloads/google-cloud-sdk/path.zsh.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/Users/ketanagrawal/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/ketanagrawal/Downloads/google-cloud-sdk/completion.zsh.inc'; fi
+# alias zshconfig="mate ~/.zshrc"
+# alias ohmyzsh="mate ~/.oh-my-zsh"
