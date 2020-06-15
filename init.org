@@ -16,7 +16,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    (defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
      "Personal dotfiles directory.")
    #+end_src
-   
+
 ** Straight.el bootstrap
    #+begin_src emacs-lisp
      ;; (defvar bootstrap-version)
@@ -34,7 +34,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      (straight-use-package 'use-package)
      (setq straight-use-package-by-default t)
    #+end_src
-    
+
 ** Tangle source code
    #+begin_src emacs-lisp
 
@@ -47,7 +47,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
        (let ((prog-mode-hook nil))
          (org-babel-tangle-file
           (expand-file-name (concat ketan0/dotfiles-dir "init.org"))
-          (expand-file-name (concat ketan0/dotfiles-dir "init.el")) 
+          (expand-file-name (concat ketan0/dotfiles-dir "init.el"))
           "emacs-lisp")
          (byte-compile-file (concat user-emacs-directory "init.el")))))
    ;;TODO: add dotfiles variable and stuffs
@@ -79,7 +79,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    (add-hook 'after-save-hook 'source-yabairc)
 
    #+end_src
-    
+
 ** Set PATH from shell
    #+begin_src emacs-lisp
    (use-package exec-path-from-shell)
@@ -110,14 +110,14 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
    (setq custom-file (concat user-emacs-directory "custom.el"))
    (load custom-file)
    #+end_src
-   
+
 * General Convenience
   Because of the vim-mode modifications in [[file:~/.dotfiles/karabiner.edn][karabiner.edn]]...
   #+begin_src emacs-lisp
-  (define-key key-translation-map (kbd "<left>") (kbd "C-h")) 
-  (define-key key-translation-map (kbd "<down>") (kbd "C-j")) 
-  (define-key key-translation-map (kbd "<up>") (kbd "C-k")) 
-  (define-key key-translation-map (kbd "<right>") (kbd "C-l")) 
+  (define-key key-translation-map (kbd "<left>") (kbd "C-h"))
+  (define-key key-translation-map (kbd "<down>") (kbd "C-j"))
+  (define-key key-translation-map (kbd "<up>") (kbd "C-k"))
+  (define-key key-translation-map (kbd "<right>") (kbd "C-l"))
   #+end_src
   Other convenience functions
   #+begin_src emacs-lisp
@@ -206,8 +206,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       (setq buffer-offer-save t)
       $buf))
 
-  #+end_src 
-   
+  #+end_src
+
 * Appearances
   Fira Code is a pleasing font.
   #+begin_src emacs-lisp
@@ -218,7 +218,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
   ;;     (mac-auto-operator-composition-mode t))
 
   #+end_src
-  
+
   My current color theme and powerline theme.
   #+begin_src emacs-lisp
   (defun switch-theme (theme)
@@ -289,10 +289,10 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 
 ;;  (switch-theme 'doom-acario-dark)
   #+end_src
-  
+
 * Defaults
   Some sane defaults, mostly taken from [[https://github.com/danielmai/.emacs.d/blob/master/config.org][Daniel Mai]]
-  #+begin_src emacs-lisp 
+  #+begin_src emacs-lisp
   (setq gc-cons-threshold 100000000) ;;100mb; default setting is too low for lsp-mode et al.
   (setq read-process-output-max (* 1024 1024)) ;; 1mb
 
@@ -369,21 +369,21 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
   (when (version<= "26.0.50" emacs-version)
     (global-display-line-numbers-mode))
   #+end_src
-  
+
 * Packages
 ** centered-window
    #+begin_src emacs-lisp
    (use-package centered-window
      :straight (:host github :repo "ketan0/centered-window-mode" :branch "center-on-frame-size-change")
-     :config 
+     :config
      (centered-window-mode t))
-   #+end_src 
-   
+   #+end_src
+
 ** bind-key
    #+begin_src emacs-lisp
    (require 'bind-key)
-   #+end_src 
-   
+   #+end_src
+
 ** diminish
    #+begin_src emacs-lisp
    (use-package diminish
@@ -391,8 +391,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      (diminish 'undo-tree-mode)
      (diminish 'yas/minor-mode)
      (diminish 'auto-revert-mode))
-   #+end_src 
-   
+   #+end_src
+
 ** Org
 *** org
     #+begin_src emacs-lisp
@@ -439,11 +439,11 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       (setq org-emphasis-alist ;;different ways to emphasize text
             '(("!"  (:foreground "red") )
               ("*" (bold :foreground "Orange" ))
-              ("/" italic "<i>" "</i>") 
+              ("/" italic "<i>" "</i>")
               ("_" underline "<span style=\"text-decoration:underline;\">" "</span>")
               ("-" (:overline t) "<span style=\"text-decoration:overline;\">" "</span>")
               ("~" org-code "<code>" "</code>" verbatim)
-              ("=" org-verbatim "<code>" "</code>" verbatim) 
+              ("=" org-verbatim "<code>" "</code>" verbatim)
               ("+" (:strike-through t) "<del>" "</del>")))
 
       ;;stores changes from dropbox
@@ -469,7 +469,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 
       ;;refile headlines to any other agenda files
       (setq org-refile-use-cache t) ;;speeds up loading refile targets
-      (setq org-refile-targets '((org-agenda-files :maxlevel . 3))) 
+      (setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
       (setq org-refile-allow-creating-parent-nodes 'confirm)
 
       (setq org-refile-use-outline-path 'file) ;;see whole path (not just headline)
@@ -485,22 +485,22 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
               ("t" "todo" entry
                (file "~/org/capture.org")
                "* TODO %?")
-              ("c" "coronavirus" entry (file+datetree 
+              ("c" "coronavirus" entry (file+datetree
                                         "~/org/20200314210447_coronavirus.org")
                "* %^{Heading}")
-              ("k" "CS 520: Knowledge Graphs" entry (file+datetree 
+              ("k" "CS 520: Knowledge Graphs" entry (file+datetree
                                                      "~/org/20200331194240-cs520_knowledge_graphs.org")
                "* %^{Heading}")
-              ("l" "Linguist 167: Languages of the World" entry (file+datetree 
+              ("l" "Linguist 167: Languages of the World" entry (file+datetree
                                                                  "~/org/20200406225041-linguist_167_languages_of_the_world.org")
                "* %^{Heading}")
-              ("m" "CS 229: Machine Learning" entry (file+datetree 
+              ("m" "CS 229: Machine Learning" entry (file+datetree
                                                      "~/org/20200403043734-cs229_machine_learning.org")
                "* %^{Heading}")
-              ("p" "CS 110: Principles of Computer Systems" entry (file+datetree 
+              ("p" "CS 110: Principles of Computer Systems" entry (file+datetree
                                                                    "~/org/20200403044116-cs110_principles_of_computer_systems.org")
                "* %^{Heading}")
-              ("u" "new package" entry (file+headline 
+              ("u" "new package" entry (file+headline
                                         "~/.emacs.d/init.org" "Packages")
                "* %^{package name} \n#+begin_src emacs-lisp\n(use-package %\\1)\n#+end_src\n")))
 
@@ -509,8 +509,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       (global-set-key (kbd "C-c l") 'org-store-link)
       (global-set-key (kbd "C-c a") 'org-agenda)
       (global-set-key (kbd "C-c c") 'org-capture))
-    #+end_src 
-     
+    #+end_src
+
 *** org-roam
     :PROPERTIES:
     :ID:       D2D0F738-E9C0-4A84-B1B5-660BC7B8DB3E
@@ -519,15 +519,15 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
     (use-package org-roam
       :after org
       :diminish org-roam-mode
-      :hook 
+      :hook
       (after-init . org-roam-mode)
       :straight (:host github :repo "jethrokuan/org-roam" :branch "master")
       :config
       (setq org-roam-graphviz-executable "/usr/local/bin/dot")
       (setq org-roam-graph-viewer "/Applications/Google Chrome.app/")
       (setq org-roam-directory "~/org/"))
-    #+end_src 
-    
+    #+end_src
+
 *** org-journal
     #+begin_src emacs-lisp
     (use-package org-journal
@@ -536,8 +536,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
             org-journal-dir "~/org/"
             org-journal-carryover-items nil
             org-journal-date-format "%A, %d %B %Y"))
-      #+end_src 
-    
+      #+end_src
+
 *** org-super-agenda
     Sort agenda items by category (i.e., filename.)
     #+begin_src emacs-lisp
@@ -548,12 +548,12 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       (setq org-super-agenda-groups '((:auto-category t)))
       (setq org-super-agenda-header-map (make-sparse-keymap))) ;;the header keymaps conflict w/ evil-org keymaps
     #+end_src
-    
-*** org-ql 
+
+*** org-ql
     #+begin_src emacs-lisp
     (use-package org-ql)
     #+end_src
-    
+
 *** org-pdftools
     #+begin_src emacs-lisp
     (use-package org-pdftools
@@ -569,18 +569,18 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
                                :export #'org-pdftools-export)
       (add-hook 'org-store-link-functions 'org-pdftools-store-link))
     #+end_src
-    
+
 *** org-bullets
     #+begin_src emacs-lisp
     (use-package org-bullets
       :hook (org-mode . (lambda () (org-bullets-mode t))))
-    #+end_src 
-    
+    #+end_src
+
 *** ox-pandoc
     #+begin_src emacs-lisp
     (use-package ox-pandoc)
     #+end_src
-    
+
 ** Evil
 *** evil
     #+begin_src emacs-lisp
@@ -590,8 +590,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       (setq evil-want-keybinding nil)
 
       ;;if I visual select only part of a line and do :s, only replace the selected part of the line
-      (setq evil-ex-visual-char-range t) 
-      :config 
+      (setq evil-ex-visual-char-range t)
+      :config
       (defmacro define-and-bind-text-object (key start-regex end-regex)
         (let ((inner-name (make-symbol "inner-name"))
               (outer-name (make-symbol "outer-name")))
@@ -616,8 +616,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       (define-key evil-visual-state-map "j" 'evil-next-visual-line)
       (define-key evil-visual-state-map "k" 'evil-previous-visual-line))
 
-    #+end_src 
-    
+    #+end_src
+
 *** evil-collection
     #+begin_src emacs-lisp
     (use-package evil-collection
@@ -625,8 +625,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       :config
       (evil-collection-init))
 
-    #+end_src 
-    
+    #+end_src
+
 *** evil-org
     #+begin_src emacs-lisp
     (use-package evil-org
@@ -649,8 +649,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       (evil-org-agenda-set-keys))
     ;; (setq evil-want-C-i-jump nil) ;; C-i and TAB are same in terminal
 
-    #+end_src 
-    
+    #+end_src
+
 *** evil-magit
     #+begin_src emacs-lisp
     (use-package evil-magit
@@ -658,23 +658,23 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
       :config
       (evil-magit-init))
     #+end_src
-    
+
 *** evil-visualstar
     #+begin_src emacs-lisp
     (use-package evil-visualstar
       :config
       (global-evil-visualstar-mode))
-    #+end_src 
-    
+    #+end_src
+
 *** evil-commentary
     #+begin_src emacs-lisp
     (use-package evil-commentary
       :after evil
-      :config 
+      :config
       (evil-commentary-mode t))
 
-    #+end_src 
-    
+    #+end_src
+
 *** evil-leader
     Syntactic sugar for creating vim-like leader keybindings.
     #+begin_src emacs-lisp
@@ -715,7 +715,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
         "s l" 'evil-window-right
         "s s" 'helm-projectile-rg
         "s f" 'helm-org-rifle-current-buffer
-        "s t" 'window-toggle-split-direction 
+        "s t" 'window-toggle-split-direction
         "t l" 'load-theme
         "t s" 'switch-theme
         "t d" 'disable-theme
@@ -728,21 +728,21 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
         "r o" 'org-open-at-point
         "v" 'find-vision-file)
       (evil-leader/set-key-for-mode 'LaTeX-mode
-        "c a" 'LaTeX-command-run-all 
+        "c a" 'LaTeX-command-run-all
         "c c" 'LaTeX-command-master
         "c e" 'LaTeX-environment)
       (global-evil-leader-mode t))
 
-    #+end_src 
-    
+    #+end_src
+
 *** evil-surround
     #+begin_src emacs-lisp
     (use-package evil-surround
       :after evil
       :config
       (global-evil-surround-mode t))
-    #+end_src 
-    
+    #+end_src
+
 ** helm
    #+begin_src emacs-lisp
    (use-package helm
@@ -758,7 +758,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      :init
      (setq helm-completion-style 'emacs)
      (setq completion-styles '(flex))
-     :config 
+     :config
      (helm-mode t))
    ;; (use-package helm-files
    ;;   :bind
@@ -776,8 +776,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 
    (use-package helm-rg
      :after helm-mode)
-   #+end_src 
-   
+   #+end_src
+
 ** projectile
    #+begin_src emacs-lisp
    (use-package projectile
@@ -786,8 +786,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      (define-key projectile-mode-map (kbd "s-p") 'projectile-command-map)
      (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
      (projectile-mode +1))
-   #+end_src 
-   
+   #+end_src
+
 ** pyvenv
    #+begin_src emacs-lisp
    (use-package pyvenv
@@ -795,12 +795,12 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      (setenv "WORKON_HOME" "/Users/ketanagrawal/miniconda3/envs")
      (pyvenv-mode))
    #+end_src
-   
+
 ** ein
    #+begin_src emacs-lisp
    (use-package ein)
    #+end_src
-   
+
 ** company/lsp
    #+begin_src emacs-lisp
    (use-package company
@@ -852,19 +852,19 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 ;; Company completions for org-roam
 (use-package company-org-roam
   :straight (:host github :repo "jethrokuan/company-org-roam" :branch "master"))
-   #+end_src 
-*** lsp-latex 
+   #+end_src
+*** lsp-latex
     #+begin_src emacs-lisp
     (use-package lsp-latex
       :straight (:host github :repo "ROCKTAKEY/lsp-latex" :branch "master"))
     #+end_src
-    
+
 ** clojure-mode
    currently, only use this to fontify [[file:~/.dotfiles/karabiner.edn][karabiner.edn]]
    #+begin_src emacs-lisp
    (use-package clojure-mode)
    #+end_src
-   
+
 ** flycheck
    #+begin_src emacs-lisp
    (use-package flycheck
@@ -874,7 +874,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      (setq flycheck-global-modes '(not org-src-mode)) ;; no flycheck when doing code snippets
      (setq flycheck-indication-mode nil))
    #+end_src
-   
+
 ** google-this
    #+begin_src emacs-lisp
    (use-package google-this
@@ -882,7 +882,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      :config
      (google-this-mode t))
    #+end_src
-   
+
 ** auctex
    #+begin_src emacs-lisp
    (use-package tex-site
@@ -895,7 +895,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      (setq TeX-auto-save t)
 
      ;; Use pdf-tools to open PDF files
-     (setq TeX-view-program-selection '((output-pdf "PDF Tools")) 
+     (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
            TeX-source-correlate-start-server t)
 
      ;; Update PDF buffers after successful LaTeX runs
@@ -921,8 +921,8 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      :init
      (add-hook 'LaTeX-mode-hook 'ketan0/latex-mode-setup)
      (add-hook 'org-mode-hook 'ketan0/org-mode-setup))
-   #+end_src 
-   
+   #+end_src
+
 ** pdf-tools
    #+begin_src emacs-lisp
    (use-package pdf-tools
@@ -930,7 +930,7 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo")
      (pdf-tools-install))
    #+end_src
-   
+
 ** markdown-mode
    #+begin_src emacs-lisp
    (use-package markdown-mode
@@ -943,71 +943,71 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
 ** magit
    #+begin_src emacs-lisp
    (use-package magit)
-   #+end_src 
-   
+   #+end_src
+
 ** mac-pseudo-daemon
    #+begin_src emacs-lisp
    (use-package mac-pseudo-daemon
      :straight (mac-pseudo-daemon :type git :host github :repo "DarwinAwardWinner/mac-pseudo-daemon")
      :config
      (mac-pseudo-daemon-mode t))
-   #+end_src 
-   
+   #+end_src
+
 ** ssh-config-mode
    #+begin_src emacs-lisp
    (use-package ssh-config-mode)
-   #+end_src 
-   
+   #+end_src
+
 ** link-hint
    #+begin_src emacs-lisp
    (use-package link-hint)
    #+end_src
-   
+
 ** adaptive-wrap
    #+begin_src emacs-lisp
    (use-package adaptive-wrap
      :diminish adaptive-wrap-prefix-mode
      :config (add-hook 'after-save-hook 'adaptive-wrap-prefix-mode))
    #+end_src
-   
+
 ** org-rifle
    #+begin_src emacs-lisp
    (use-package helm-org-rifle)
    #+end_src
-   
+
 ** dash
    #+begin_src emacs-lisp
    (use-package dash)
    #+end_src
-   
+
 ** f
    #+begin_src emacs-lisp
    (use-package f)
    #+end_src
-   
+
 ** s
    #+begin_src emacs-lisp
    (use-package s)
    #+end_src
-   
-** yasnippet 
+
+** yasnippet
    #+begin_src emacs-lisp
    (use-package yasnippet
      :config
      (yas-global-mode t))
    #+end_src
-   
-** org-pomodoro 
+
+** org-pomodoro
    #+begin_src emacs-lisp
    (use-package org-pomodoro)
    #+end_src
-   
-** rainbow-delimiters 
+
+** rainbow-delimiters
    #+begin_src emacs-lisp
    (use-package rainbow-delimiters)
    #+end_src
-   
-** ccls 
+
+** ccls
    #+begin_src emacs-lisp
    (use-package ccls
      :hook ((c-mode c++-mode objc-mode cuda-mode) .
@@ -1015,5 +1015,3 @@ Inspirations for this org-based setup comes from [[https://github.com/larstvei/d
      :config
      (setq ccls-executable "/Users/ketanagrawal/ccls/Release/ccls"))
    #+end_src
-   
-   
