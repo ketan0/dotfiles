@@ -4,6 +4,7 @@
 ;; To install a package with Doom you must declare them here, run 'doom sync' on
 ;; the command line, then restart Emacs for the changes to take effect.
 ;; Alternatively, use M-x doom/reload.
+(package! evil-extra-operator)
 
 (package! org-super-agenda)
 (package! org-journal)

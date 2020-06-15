@@ -126,3 +126,9 @@ alias ohmyzsh="nvim ~/.oh-my-zsh"
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh" || true
 
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/ketanagrawal/Downloads/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/ketanagrawal/Downloads/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/ketanagrawal/Downloads/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/ketanagrawal/Downloads/google-cloud-sdk/completion.zsh.inc'; fi

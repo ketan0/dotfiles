@@ -10,7 +10,7 @@
       user-mail-address "agrawalk@stanford.edu")
 
 (defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
-     "Personal dotfiles directory.")
+  "Personal dotfiles directory.")
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
 ;;
@@ -59,6 +59,15 @@
 
 (setq display-line-numbers-type t)
 
+(map! :map prog-mode-map :nm "<tab>" '+fold/toggle)
+(defvar ketan0/fold-state nil
+  "HACK: keep track of whether everything in the buffer is folded")
+(defun ketan0/fold-toggle-all ()
+  (interactive)
+  (if ketan0/fold-state (+fold/open-all) (+fold/close-all))
+  (setq-local ketan0/fold-state (not ketan0/fold-state)))
+(map! :map prog-mode-map :nm "<S-tab>" 'ketan0/fold-toggle-all)
+
 (map! :map evil-motion-state-map "gj" 'evil-next-line)
 (map! :map evil-motion-state-map "gk" 'evil-previous-line)
 
@@ -68,6 +77,7 @@
 (map! :map evil-motion-state-map "k" 'evil-previous-visual-line)
 (map! :map evil-visual-state-map "j" 'evil-next-visual-line)
 (map! :map evil-visual-state-map "k" 'evil-previous-visual-line)
+
 (map! :map evil-normal-state-map "Q" (kbd "@q"))
 
 (use-package! org-super-agenda
@@ -134,9 +144,9 @@
   (setq org-agenda-block-separator nil)
   (setq org-agenda-log-mode-items '(closed clock state))
   (setq org-agenda-format-date (lambda (date) (concat "\n"
-                                                 (make-string (/ (window-width) 2) 9472)
-                                                 "\n"
-                                                 (org-agenda-format-date-aligned date))))
+                                                      (make-string (/ (window-width) 2) 9472)
+                                                      "\n"
+                                                      (org-agenda-format-date-aligned date))))
   (setq org-agenda-window-setup 'only-window) ;;agenda take up whole frame
   ;;don't show warnings for deadlines
   (setq org-deadline-warning-days 0) ;;don't show upcoming tasks in today view
@@ -183,13 +193,16 @@
 (defun ketan0/latex-mode-setup ()
   (setq-local company-backends
               (push '(company-math-symbols-latex company-latex-commands)
-                    company-backends)))
+                    company-backends))
+  (push '(?$ . ("$ " . " $")) evil-surround-pairs-alist))
 
 (use-package! tex
   :defer t
+
   :config
   (setq-default TeX-master nil)
   ;; Use pdf-tools to open PDF files
+  (setq latex-run-command "pdflatex")
   (setq TeX-save-query nil)
   (setq TeX-auto-save t)
   (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
@@ -237,6 +250,7 @@
   (setq lsp-auto-require-clients t)
   (setq lsp-auto-configure t)
   (setq lsp-ui-doc-enable nil)
+  (setq lsp-eldoc-hook nil)
   (lsp-register-client
    (make-lsp-client :new-connection (lsp-tramp-connection "clangd-10")
                     :major-modes '(c-mode c++-mode)
@@ -258,3 +272,20 @@
   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
 (use-package! org-pomodoro)
+
+(use-package! ein
+  :config
+  (map! :map ein:notebook-mode-map "<S-return>" 'ein:worksheet-execute-cell-and-goto-next-km)
+  ;;TODO make below thing work
+  (map! :map ein:notebook-mode-map "<C-return>" 'ein:worksheet-execute-cell-km)
+  (map! :map ein:notebook-mode-map :nm "<down>" 'ein:worksheet-goto-next-input-km)
+  (map! :map ein:notebook-mode-map :nm "<down>" 'ein:worksheet-goto-next-input-km)
+  (map! :map ein:notebook-mode-map :nm "<up>" 'ein:worksheet-goto-prev-input-km))
+
+(use-package! evil-extra-operator
+  :init
+  (map! :m "gz" 'evil-operator-google-search))
+
+(use-package! rtags
+  :config
+  (setq rtags-tramp-enabled t))
