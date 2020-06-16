@@ -70,11 +70,13 @@ inspiration taken from:
     :tab-mode {:key :tab
                :afterup [{:set ["yabai-move-mode" 0]}
                          {:set ["yabai-focus-mode" 0]}
+                         {:set ["yabai-display-mode" 0]}
                          {:set ["chrome-movement-mode" 0]}
                          {:set ["chrome-rearrange-tab-mode" 0]}]}
 
     :yabai-move-mode {:key :w :condi :tab-mode}
     :yabai-focus-mode {:key :f :condi :tab-mode}
+    :yabai-display-mode {:key :d :condi :tab-mode}
     :chrome-movement-mode {:key :t :condi :tab-mode} ;;TODO make this work
     :chrome-history-mode {:key :g :condi :tab-mode} ;;TODO make this work
     :chrome-rearrange-tab-mode {:key :r :condi :tab-mode}
@@ -146,6 +148,15 @@ inspiration taken from:
    [:semicolon "/usr/local/bin/yabai -m space --focus next"]
    #+end_src
 
+** yabai-display-mode
+   #+begin_src clojure
+   :yabai-display-mode
+   [:j "/usr/local/bin/yabai -m window --display prev && /usr/local/bin/yabai -m display --focus prev"]
+   [:k "/usr/local/bin/yabai -m window --display next && /usr/local/bin/yabai -m display --focus next"]
+   [:h "/usr/local/bin/yabai -m display --focus prev"]
+   [:l "/usr/local/bin/yabai -m display --focus next"]
+   #+end_src
+
 ** chrome-history-mode (tab+{g}+{hjkl})
    #+begin_src clojure
    :chrome-history-mode
@@ -178,10 +189,10 @@ inspiration taken from:
    [:i [:km "Open iTerm"]]
    [:m [:km "Open Messages"]]
    [:n [:km "Open Notes"]]
-   [:q [:km "Open Qutebrowser"]]
-   [:x [:km "Open Xcode"]]
-   [:w [:km "Open Word"]]
-   [:y [:km "Open Keyboard Maestro"]]
+   ;; [:q [:km "Open Qutebrowser"]]
+   ;; [:x [:km "Open Xcode"]]
+   ;; [:w [:km "Open Word"]]
+   ;; [:y [:km "Open Keyboard Maestro"]]
    [:z [:km "Open Zoom"]]
 
    #+end_src
