@@ -140,7 +140,25 @@
   ;;settings for TODOs
   (setq org-log-done 'time) ;;record time a task is done
 
-  (setq org-agenda-files '("~/org/"))
+  (setq org-agenda-files '("~/org/capture.org"
+                           "~/org/todos.org"))
+
+  ;;https://github.com/jethrokuan/.emacs.d/blob/master/init.el
+  (setq ketan0/org-agenda-todo-view
+        `(" " "Ketan's Custom Agenda"
+          ((agenda ""
+                   ((org-agenda-span 'day)
+                    (org-deadline-warning-days 365)))
+           (todo "TODO"
+                 ((org-agenda-overriding-header "To Refile")
+                  (org-agenda-files '("~/org/capture.org"))))
+           (todo "STRT"
+                 ((org-agenda-overriding-header "In Progress")
+                  (org-agenda-files '("~/org/todo.org"))))
+           nil)))
+
+  (add-to-list 'org-agenda-custom-commands `,ketan0/org-agenda-todo-view)
+
   (setq org-agenda-block-separator nil)
   (setq org-agenda-log-mode-items '(closed clock state))
   (setq org-agenda-format-date (lambda (date) (concat "\n"
