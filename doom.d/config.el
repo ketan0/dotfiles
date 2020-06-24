@@ -57,6 +57,10 @@
 ;; use visual lines + relative numbering
 (setq vc-handled-backends '(Git))
 
+(setq auto-revert-remote-files t)
+(setq global-auto-revert-mode t)
+
+
 (setq display-line-numbers-type t)
 
 (map! :map prog-mode-map :nm "<tab>" '+fold/toggle)
@@ -335,3 +339,4 @@
 (use-package! rtags
   :config
   (setq rtags-tramp-enabled t))
+)
