@@ -80,13 +80,13 @@
 
 (map! :map evil-normal-state-map "Q" (kbd "@q"))
 
-(use-package! org-super-agenda
-  :defer t
-  :config
-  (org-super-agenda-mode t)
-  (setq org-super-agenda-header-separator "\n")
-  (setq org-super-agenda-groups '((:auto-category t)))
-  (setq org-super-agenda-header-map (make-sparse-keymap))) ;;the header keymaps conflict w/ evil-org keymaps
+;; (use-package! org-super-agenda
+;;   :defer t
+;;   :config
+;;   (org-super-agenda-mode t)
+;;   (setq org-super-agenda-header-separator "\n")
+;;   (setq org-super-agenda-groups '((:auto-category t)))
+;;   (setq org-super-agenda-header-map (make-sparse-keymap))) ;;the header keymaps conflict w/ evil-org keymaps
 
 (use-package! org-journal
   :defer t
@@ -110,16 +110,17 @@
 (use-package! company-math)
 
 (defun ketan0/org-mode-setup ()
-  (message "Running org-mode hook!")
+  ;; (message "Running org-mode hook!")
   (setq-local company-backends
               (push '(company-math-symbols-unicode company-org-roam)
                     company-backends)))
 
-(use-package! org
+(use-package org
+  :defer nil
   :mode ("\\.org\\'" . org-mode)
   :config
   (setq org-ellipsis "…")
-  (setq org-directory "~/org")
+  (setq org-directory "~/org/")
   (setq org-return-follows-link t)
 
   (setq org-emphasis-alist ;;different ways to emphasize text
@@ -135,29 +136,54 @@
   ;;stores changes from dropbox
   (setq org-mobile-inbox-for-pull "~/org/flagged.org")
   ;;Organ (my app)'s store
-  (setq org-mobile-directory "~/Dropbox/Apps/Organ/")
-
+  (setq org-mobile-directory "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/")
+  (setq org-mobile-checksum-files "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/checksums.dat")
   ;;settings for TODOs
   (setq org-log-done 'time) ;;record time a task is done
 
   (setq org-agenda-files '("~/org/capture.org"
-                           "~/org/todos.org"))
+                           "~/org/todos.org"
+                           "~/org/20200514213715-the_document_2.org"))
+
+  (setq org-agenda-span 'day)
 
   ;;https://github.com/jethrokuan/.emacs.d/blob/master/init.el
   (setq ketan0/org-agenda-todo-view
         `(" " "Ketan's Custom Agenda"
           ((agenda ""
                    ((org-agenda-span 'day)
-                    (org-deadline-warning-days 365)))
+                    (org-deadline-warning-days 10)))
            (todo "TODO"
                  ((org-agenda-overriding-header "To Refile")
                   (org-agenda-files '("~/org/capture.org"))))
            (todo "STRT"
-                 ((org-agenda-overriding-header "In Progress")
-                  (org-agenda-files '("~/org/todo.org"))))
+                 ((org-agenda-overriding-header "Queue")
+                  (org-agenda-files '("~/org/todos.org"))))
            nil)))
 
+
+  (setq ketan0/org-agenda-todo-view-remote
+        `("r" "Ketan's Custom Agenda"
+          ((agenda ""
+                   ((org-agenda-span 'day)
+                    (org-deadline-warning-days 10)
+                    (org-agenda-files '("/ssh:ketanmba:~/org/capture.org"
+                                        "/ssh:ketanmba:~/org/todos.org"
+                                        "/ssh:ketanmba:~/org/20200514213715-the_document_2.org"))))
+           (todo "TODO"
+                 ((org-agenda-overriding-header "To Refile")
+                  (org-agenda-files '("/ssh:ketanmba:~/org/capture.org"))))
+           (todo "STRT"
+                 ((org-agenda-overriding-header "Queue")
+                  (org-agenda-files '("/ssh:ketanmba:~/org/todos.org"))))
+           nil)))
+
+  (setq org-agenda-custom-commands
+        '(("n" "Agenda and all TODOs"
+          ((agenda "")
+           (alltodo "")))))
   (add-to-list 'org-agenda-custom-commands `,ketan0/org-agenda-todo-view)
+  (add-to-list 'org-agenda-custom-commands `,ketan0/org-agenda-todo-view-remote)
 
   (setq org-agenda-block-separator nil)
   (setq org-agenda-log-mode-items '(closed clock state))
@@ -173,8 +199,10 @@
 
   ;;refile headlines to any other agenda files
   (setq org-refile-use-cache t) ;;speeds up loading refile targets
-  (setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
+  (setq ketan0/org-files (file-expand-wildcards "~/org/*org"))
+  (setq org-refile-targets '((ketan0/org-files :maxlevel . 3)))
   (setq org-refile-allow-creating-parent-nodes 'confirm)
+
 
   (setq org-refile-use-outline-path 'file) ;;see whole path (not just headline)
   (setq org-outline-path-complete-in-steps nil) ;;easy to complete in one go w/ helm
