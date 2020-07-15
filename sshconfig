@@ -54,6 +54,14 @@ Host vm-1-vm.us-central1-b.turing-guard-265002
 
 # End of Google Compute Engine Section
 
+Host sail
+    User agrawalk
+    Hostname sc.stanford.edu
+    GSSAPIAuthentication yes
+    ControlMaster auto
+    ControlPersist yes
+    ControlPath ~/.ssh/%l%r@%h:%p
+
 Host clouddesk
     HostName dev-dsk-agrketan-2c-0b3617f7.us-west-2.amazon.com
     User agrketan

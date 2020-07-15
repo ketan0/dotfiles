@@ -11,6 +11,16 @@
 
 (defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
   "Personal dotfiles directory.")
+(defvar ketan0/fold-state nil
+  "HACK: keep track of whether everything in the buffer is folded")
+(defun ketan0/fold-toggle-all ()
+  (interactive)
+  (if ketan0/fold-state (+fold/open-all) (+fold/close-all))
+  (setq-local ketan0/fold-state (not ketan0/fold-state)))
+(defvar ketan0/tramp-prefix
+  (if (s-equals? (shell-command-to-string "hostname") "ketanmba.local\n")
+      "" "/ssh:ketanmba:")
+  "append tramp prefix if on remote machine")
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
 ;;
@@ -30,7 +40,6 @@
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/org/")
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -64,12 +73,7 @@
 (setq display-line-numbers-type t)
 
 (map! :map prog-mode-map :nm "<tab>" '+fold/toggle)
-(defvar ketan0/fold-state nil
-  "HACK: keep track of whether everything in the buffer is folded")
-(defun ketan0/fold-toggle-all ()
-  (interactive)
-  (if ketan0/fold-state (+fold/open-all) (+fold/close-all))
-  (setq-local ketan0/fold-state (not ketan0/fold-state)))
+
 (map! :map prog-mode-map :nm "<S-tab>" 'ketan0/fold-toggle-all)
 
 (map! :map evil-motion-state-map "gj" 'evil-next-line)
@@ -84,7 +88,7 @@
 
 (map! :map evil-normal-state-map "Q" (kbd "@q"))
 
-;; (use-package! org-super-agenda
+(use-package! org-super-agenda)
 ;;   :defer t
 ;;   :config
 ;;   (org-super-agenda-mode t)
@@ -97,7 +101,7 @@
   :init
   (map! :map doom-leader-map "j" 'org-journal-new-entry)
   (setq org-journal-find-file 'find-file
-        org-journal-dir "~/org/"
+        org-journal-dir org-directory
         org-journal-carryover-items nil
         org-journal-date-format "%A, %d %B %Y"))
 
@@ -108,8 +112,8 @@
   :diminish org-roam-mode
   :config
   (setq org-roam-graphviz-executable "/usr/local/bin/dot")
-  (setq org-roam-graph-viewer "/Applications/Google Chrome.app/")
-  (setq org-roam-directory "~/org/"))
+  (setq org-roam-graph-viewer nil)
+  (setq org-roam-directory org-directory))
 
 (use-package! company-math)
 
@@ -124,7 +128,7 @@
   :mode ("\\.org\\'" . org-mode)
   :config
   (setq org-ellipsis "…")
-  (setq org-directory "~/org/")
+  (setq org-directory (concat ketan0/tramp-prefix "~/org/"))
   (setq org-return-follows-link t)
 
   (setq org-emphasis-alist ;;different ways to emphasize text
@@ -138,56 +142,73 @@
           ("+" (:strike-through t) "<del>" "</del>")))
 
   ;;stores changes from dropbox
-  (setq org-mobile-inbox-for-pull "~/org/flagged.org")
+  (setq org-mobile-inbox-for-pull (concat org-directory "flagged.org"))
   ;;Organ (my app)'s store
-  (setq org-mobile-directory "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/")
-  (setq org-mobile-checksum-files "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/checksums.dat")
+  (setq org-mobile-directory (concat ketan0/tramp-prefix "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/"))
+
+  (setq org-mobile-checksum-files (concat ketan0/tramp-prefix "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/checksums.dat"))
   ;;settings for TODOs
   (setq org-log-done 'time) ;;record time a task is done
 
-  (setq org-agenda-files '("~/org/capture.org"
-                           "~/org/todos.org"
-                           "~/org/20200514213715-the_document_2.org"))
+  (setq org-agenda-files '((concat org-directory "capture.org")
+                           (concat org-directory "todos.org")))
 
   (setq org-agenda-span 'day)
+  (setq org-agenda-start-day "+0d")
 
-  ;;https://github.com/jethrokuan/.emacs.d/blob/master/init.el
+  (defun ketan0/create-gtd-project-block (project-name)
+    `(org-ql-block '(and (todo "STRT")
+                         (path "todos.org")
+                         (ancestors ,project-name))
+                   ((org-ql-block-header ,project-name))))
+  ;; initial inspiration for custom agenda https://github.com/jethrokuan/.emacs.d/blob/master/init.el
   (setq ketan0/org-agenda-todo-view
         `(" " "Ketan's Custom Agenda"
           ((agenda ""
                    ((org-agenda-span 'day)
                     (org-deadline-warning-days 10)))
-           (todo "TODO"
-                 ((org-agenda-overriding-header "To Refile")
-                  (org-agenda-files '("~/org/capture.org"))))
-           (todo "STRT"
-                 ((org-agenda-overriding-header "Queue")
-                  (org-agenda-files '("~/org/todos.org"))))
+           ;; my definition of a 'stuck' project:
+           ;; todo state PROJ, has TODOs within, but no next (STRT) actions
+           (org-ql-block '(and (todo "DONE")
+                               (path "todos.org")
+                               (closed :on today))
+                         ((org-ql-block-header "Finished Today")))
+           (org-ql-block '(and (todo "PROJ")
+                               (not (done))
+                               (descendants (todo "TODO"))
+                               (not (descendants (todo "STRT")))
+                               (not (descendants (scheduled))))
+                         ((org-ql-block-header "Stuck Projects")))
+           (org-ql-block '(path "capture.org")
+                         ((org-ql-block-header "To Refile")))
+           ,(ketan0/create-gtd-project-block "Amazon")
+           ,(ketan0/create-gtd-project-block "Langcog")
+           ,(ketan0/create-gtd-project-block "PAC")
+           ,(ketan0/create-gtd-project-block "Emacs")
+           ,(ketan0/create-gtd-project-block "Neo4j backend")
+           ,(ketan0/create-gtd-project-block "Knowledge graph")
+           ,(ketan0/create-gtd-project-block "GTD")
+           ,(ketan0/create-gtd-project-block "Shortcuts")
+           ,(ketan0/create-gtd-project-block "Misc")
            nil)))
+  (setq org-agenda-custom-commands `(,ketan0/org-agenda-todo-view))
 
+  ;;TODO: why isn't this going into evil mode
+  (defun ketan0/gtd-daily-review ()
+    (interactive)
+    (org-ql-search (org-agenda-files)
+      '(and (ts :from -3 :to today) (done))
+      :title "Recent Items"
+      :sort '(date priority todo)
+      :super-groups '((:auto-ts t)))
+    (end-of-buffer))
 
-  (setq ketan0/org-agenda-todo-view-remote
-        `("r" "Ketan's Custom Agenda"
-          ((agenda ""
-                   ((org-agenda-span 'day)
-                    (org-deadline-warning-days 10)
-                    (org-agenda-files '("/ssh:ketanmba:~/org/capture.org"
-                                        "/ssh:ketanmba:~/org/todos.org"
-                                        "/ssh:ketanmba:~/org/20200514213715-the_document_2.org"))))
-           (todo "TODO"
-                 ((org-agenda-overriding-header "To Refile")
-                  (org-agenda-files '("/ssh:ketanmba:~/org/capture.org"))))
-           (todo "STRT"
-                 ((org-agenda-overriding-header "Queue")
-                  (org-agenda-files '("/ssh:ketanmba:~/org/todos.org"))))
-           nil)))
-
-  (setq org-agenda-custom-commands
-        '(("n" "Agenda and all TODOs"
-          ((agenda "")
-           (alltodo "")))))
-  (add-to-list 'org-agenda-custom-commands `,ketan0/org-agenda-todo-view)
-  (add-to-list 'org-agenda-custom-commands `,ketan0/org-agenda-todo-view-remote)
+  (map! "<f5>" #'ketan0/gtd-daily-review)
+  (map! "<f4>" #'ketan0/switch-to-agenda)
+  ;;thanks jethro
+  (defun ketan0/switch-to-agenda ()
+    (interactive)
+    (org-agenda nil " "))
 
   (setq org-agenda-block-separator nil)
   (setq org-agenda-log-mode-items '(closed clock state))
@@ -203,7 +224,7 @@
 
   ;;refile headlines to any other agenda files
   (setq org-refile-use-cache t) ;;speeds up loading refile targets
-  (setq ketan0/org-files (file-expand-wildcards "~/org/*org"))
+  (setq ketan0/org-files (file-expand-wildcards (concat org-directory "*org")))
   (setq org-refile-targets '((ketan0/org-files :maxlevel . 3)))
   (setq org-refile-allow-creating-parent-nodes 'confirm)
 
@@ -211,40 +232,31 @@
   (setq org-refile-use-outline-path 'file) ;;see whole path (not just headline)
   (setq org-outline-path-complete-in-steps nil) ;;easy to complete in one go w/ helm
 
-  (setq org-archive-location (concat (file-name-as-directory org-directory) "archive.org::datetree/")) ;;archive done tasks to datetree in archive.org
+  (setq org-archive-location (concat org-directory "archive.org::datetree/")) ;;archive done tasks to datetree in archive.org
 
   (setq org-catch-invisible-edits (quote show-and-error)) ;;avoid accidental edits in folded areas, links, etc.
-  (setq org-default-notes-file (concat (file-name-as-directory org-directory) "capture.org"))
+  (setq org-default-notes-file (concat org-directory "capture.org"))
 
   (setq org-capture-templates
         '(;; other entries
           ("t" "todo" entry
-           (file "~/org/capture.org")
+           (file org-default-notes-file)
            "* TODO %?")
+          ("s" "strt" entry
+           (file org-default-notes-file)
+           "* STRT %?")
+          ("d" "done" entry
+           (file org-default-notes-file)
+           "* DONE %?") ;;TODO: put CLOSED + timestamp
           ("c" "coronavirus" entry (file+datetree
-                                    "~/org/20200314210447_coronavirus.org")
-           "* %^{Heading}")
-          ("k" "CS 520: Knowledge Graphs" entry (file+datetree
-                                                 "~/org/20200331194240-cs520_knowledge_graphs.org")
-           "* %^{Heading}")
-          ("l" "Linguist 167: Languages of the World" entry (file+datetree
-                                                             "~/org/20200406225041-linguist_167_languages_of_the_world.org")
-           "* %^{Heading}")
-          ("m" "CS 229: Machine Learning" entry (file+datetree
-                                                 "~/org/20200403043734-cs229_machine_learning.org")
-           "* %^{Heading}")
-          ("p" "CS 110: Principles of Computer Systems" entry (file+datetree
-                                                               "~/org/20200403044116-cs110_principles_of_computer_systems.org")
-           "* %^{Heading}")
-          ("u" "new package" entry (file+headline
-                                    "~/.emacs.d/init.org" "Packages")
-           "* %^{package name} \n#+begin_src emacs-lisp\n(use-package %\\1)\n#+end_src\n"))))
+                                    (concat org-directory "20200314210447_coronavirus.org"))
+           "* %^{Heading}")))
 
-(defun ketan0/latex-mode-setup ()
-  (setq-local company-backends
-              (push '(company-math-symbols-latex company-latex-commands)
-                    company-backends))
-  (push '(?$ . ("$ " . " $")) evil-surround-pairs-alist))
+  (defun ketan0/latex-mode-setup ()
+    (setq-local company-backends
+                (push '(company-math-symbols-latex company-latex-commands)
+                      company-backends))
+    (push '(?$ . ("$ " . " $")) evil-surround-pairs-alist)))
 
 (use-package! tex
   :defer t
@@ -339,4 +351,38 @@
 (use-package! rtags
   :config
   (setq rtags-tramp-enabled t))
-)
+
+(use-package! org-ql)
+
+;; shamelessly taken from magnars
+(defun toggle-window-split ()
+  (interactive)
+  (if (= (count-windows) 2)
+      (let* ((this-win-buffer (window-buffer))
+             (next-win-buffer (window-buffer (next-window)))
+             (this-win-edges (window-edges (selected-window)))
+             (next-win-edges (window-edges (next-window)))
+             (this-win-2nd (not (and (<= (car this-win-edges)
+                                         (car next-win-edges))
+                                     (<= (cadr this-win-edges)
+                                         (cadr next-win-edges)))))
+             (splitter
+              (if (= (car this-win-edges)
+                     (car (window-edges (next-window))))
+                  'split-window-horizontally
+                'split-window-vertically)))
+        (delete-other-windows)
+        (let ((first-win (selected-window)))
+          (funcall splitter)
+          (if this-win-2nd (other-window 1))
+          (set-window-buffer (selected-window) this-win-buffer)
+          (set-window-buffer (next-window) next-win-buffer)
+          (select-window first-win)
+          (if this-win-2nd (other-window 1))))))
+
+(use-package! om)
+
+(use-package! request)
+
+(use-package! org-thoughtset
+  :load-path (concat ketan0/tramp-prefix "/Users/ketanagrawal/emacs-packages/org-thoughtset"))

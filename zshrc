@@ -1,15 +1,31 @@
+[[ $TERM == "dumb" ]] && unsetopt zle && PS1='$ ' && return
+
 # If you come from bash you might have to change your $PATH.
-# export PATH=$HOME/bin:/usr/local/bin:$PATH
+export PATH=$HOME/bin:/usr/local/bin:$PATH
 export PATH=$HOME/doom-emacs/bin:$PATH
-export PATH=~/Library/Android/sdk/tools:$PATH
-export PATH=~/Library/Android/sdk/platform-tools:$PATH
-export PATH=$HOME/.toolbox/bin:$PATH
-export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
-export PATH="/Users/agrketan/.ebcli-virtual-env/executables:$PATH"
-export PATH=/Users/agrketan/.pyenv/versions/3.7.2/bin:$PATH
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+if [ "$HOSTNAME" = ketanmba.local ]; then
+__conda_setup="$('/Users/ketanagrawal/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/Users/ketanagrawal/miniconda3/etc/profile.d/conda.sh" ]; then
+        . "/Users/ketanagrawal/miniconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/Users/ketanagrawal/miniconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+else
+    export PATH=~/Library/Android/sdk/tools:$PATH
+    export PATH=~/Library/Android/sdk/platform-tools:$PATH
+    export PATH=$HOME/.toolbox/bin:$PATH
+    export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+    export PATH="/Users/agrketan/.ebcli-virtual-env/executables:$PATH"
+    export PATH=/Users/agrketan/.pyenv/versions/3.7.2/bin:$PATH
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+fi
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
 
