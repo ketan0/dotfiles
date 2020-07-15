@@ -64,7 +64,7 @@
    [:j "/usr/local/bin/yabai -m window --warp south"]
    [:k "/usr/local/bin/yabai -m window --warp north"]
    [:l "/usr/local/bin/yabai -m window --warp east"]
-   [:a :"/usr/local/bin/yabai -m window --toggle float"]
+   [:a "/usr/local/bin/yabai -m window --toggle float"]
    [:s "/usr/local/bin/yabai -m window --toggle split"]
 
    ;; ;; ;; scale windows
@@ -107,6 +107,8 @@
    ;; [:l :!COup_arrow]
 
    :tab-mode
+   [:a :f4]
+   [:q :f5]
    [:spacebar :!CTspacebar]
    [:f8 [:km "Open Spotify"]]
    [:c [:km "Open Chrome"]]
