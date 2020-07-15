@@ -11,6 +11,12 @@
 (package! org-roam)
 (package! company-org-roam)
 (package! org-pomodoro)
+(package! org-ql)
+;; (package! smsn-mode :recipe (:host github :repo "synchrony/smsn-mode"))
+;; (package! indent-guide)
+;; (package! latex-math-preview)
+(package! request)
+(package! om :recipe (:host github :repo "ndwarshuis/om.el"))
 ;; Doom's packages are pinned to a specific commit and updated from release to
 ;; release. The `unpin!' macro allows you to unpin single packages...
 ;(unpin! pinned-package)
