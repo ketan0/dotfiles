@@ -18,7 +18,7 @@
   (if ketan0/fold-state (+fold/open-all) (+fold/close-all))
   (setq-local ketan0/fold-state (not ketan0/fold-state)))
 (defvar ketan0/tramp-prefix
-  (if (s-equals? (shell-command-to-string "hostname") "ketanmba.local\n")
+  (if (string= (shell-command-to-string "hostname") "ketanmba.local\n")
       "" "/ssh:ketanmba:")
   "append tramp prefix if on remote machine")
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
@@ -36,7 +36,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-horizon)
+(setq doom-theme 'doom-city-lights)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -88,33 +88,6 @@
 
 (map! :map evil-normal-state-map "Q" (kbd "@q"))
 
-(use-package! org-super-agenda)
-;;   :defer t
-;;   :config
-;;   (org-super-agenda-mode t)
-;;   (setq org-super-agenda-header-separator "\n")
-;;   (setq org-super-agenda-groups '((:auto-category t)))
-;;   (setq org-super-agenda-header-map (make-sparse-keymap))) ;;the header keymaps conflict w/ evil-org keymaps
-
-(use-package! org-journal
-  :defer t
-  :init
-  (map! :map doom-leader-map "j" 'org-journal-new-entry)
-  (setq org-journal-find-file 'find-file
-        org-journal-dir org-directory
-        org-journal-carryover-items nil
-        org-journal-date-format "%A, %d %B %Y"))
-
-(use-package! org-roam
-  :init
-  (map! :map doom-leader-map "r" 'org-roam-find-file)
-  (org-roam-mode)
-  :diminish org-roam-mode
-  :config
-  (setq org-roam-graphviz-executable "/usr/local/bin/dot")
-  (setq org-roam-graph-viewer nil)
-  (setq org-roam-directory org-directory))
-
 (use-package! company-math)
 
 (defun ketan0/org-mode-setup ()
@@ -123,12 +96,12 @@
               (push '(company-math-symbols-unicode company-org-roam)
                     company-backends)))
 
-(use-package org
+(use-package! org
   :defer nil
   :mode ("\\.org\\'" . org-mode)
   :config
   (setq org-ellipsis "…")
-  (setq org-directory (concat ketan0/tramp-prefix "~/org/"))
+  (setq org-directory  "~/org/")
   (setq org-return-follows-link t)
 
   (setq org-emphasis-alist ;;different ways to emphasize text
@@ -150,8 +123,8 @@
   ;;settings for TODOs
   (setq org-log-done 'time) ;;record time a task is done
 
-  (setq org-agenda-files '((concat org-directory "capture.org")
-                           (concat org-directory "todos.org")))
+  (setq org-agenda-files `(,(concat ketan0/tramp-prefix org-directory "capture.org")
+                           ,(concat ketan0/tramp-prefix org-directory "todos.org")))
 
   (setq org-agenda-span 'day)
   (setq org-agenda-start-day "+0d")
@@ -251,6 +224,34 @@
           ("c" "coronavirus" entry (file+datetree
                                     (concat org-directory "20200314210447_coronavirus.org"))
            "* %^{Heading}")))
+
+(use-package! org-super-agenda)
+;;   :defer t
+;;   :config
+;;   (org-super-agenda-mode t)
+;;   (setq org-super-agenda-header-separator "\n")
+;;   (setq org-super-agenda-groups '((:auto-category t)))
+;;   (setq org-super-agenda-header-map (make-sparse-keymap))) ;;the header keymaps conflict w/ evil-org keymaps
+
+(use-package! org-journal
+  :defer t
+  :init
+  (map! :map doom-leader-map "j" 'org-journal-new-entry)
+  (setq org-journal-find-file 'find-file
+        org-journal-dir (concat ketan0/tramp-prefix org-directory)
+        org-journal-carryover-items nil
+        org-journal-date-format "%A, %d %B %Y"))
+
+(use-package! org-roam
+  :init
+  (map! :map doom-leader-map "r" 'org-roam-find-file)
+  (org-roam-mode)
+  :diminish org-roam-mode
+  :config
+  (setq org-roam-graphviz-executable "/usr/local/bin/dot")
+  (setq org-roam-graph-viewer nil)
+  (setq org-roam-directory org-directory))
+
 
   (defun ketan0/latex-mode-setup ()
     (setq-local company-backends
@@ -384,5 +385,10 @@
 
 (use-package! request)
 
-(use-package! org-thoughtset
-  :load-path (concat ketan0/tramp-prefix "/Users/ketanagrawal/emacs-packages/org-thoughtset"))
+;; (setq ketan0/org-thoughtset-package-path (concat ketan0/tramp-prefix "/Users/ketanagrawal/emacs-packages/org-thoughtset"))
+;; (use-package! org-thoughtset
+;;   :load-path ketan0/org-thoughtset-package-path)
+
+(use-package! dash)
+(use-package! s)
+(use-package! f)
