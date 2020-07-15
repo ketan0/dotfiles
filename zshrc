@@ -1,7 +1,15 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 export PATH=$HOME/doom-emacs/bin:$PATH
-
+export PATH=~/Library/Android/sdk/tools:$PATH
+export PATH=~/Library/Android/sdk/platform-tools:$PATH
+export PATH=$HOME/.toolbox/bin:$PATH
+export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+export PATH="/Users/agrketan/.ebcli-virtual-env/executables:$PATH"
+export PATH=/Users/agrketan/.pyenv/versions/3.7.2/bin:$PATH
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 # Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
 
