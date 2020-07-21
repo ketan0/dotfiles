@@ -17,10 +17,10 @@
   (interactive)
   (if ketan0/fold-state (+fold/open-all) (+fold/close-all))
   (setq-local ketan0/fold-state (not ketan0/fold-state)))
-(defvar ketan0/tramp-prefix
-  (if (string= (shell-command-to-string "hostname") "ketanmba.local\n")
-      "" "/ssh:ketanmba:")
-  "append tramp prefix if on remote machine")
+;; (defvar ketan0/tramp-prefix
+;;   (if (string= (shell-command-to-string "hostname") "ketanmba.local\n")
+;;       "" "/ssh:ketanmba:")
+;;   "append tramp prefix if on remote machine")
 ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
 ;; are the three important ones:
 ;;
@@ -90,6 +90,8 @@
 
 (use-package! company-math)
 
+(add-hook 'after-save-hook 'org-save-all-org-buffers)
+
 (defun ketan0/org-mode-setup ()
   ;; (message "Running org-mode hook!")
   (setq-local company-backends
@@ -101,7 +103,7 @@
   :mode ("\\.org\\'" . org-mode)
   :config
   (setq org-ellipsis "…")
-  (setq org-directory  "~/org/")
+  (setq org-directory  "~/Sync/org/")
   (setq org-return-follows-link t)
 
   (setq org-emphasis-alist ;;different ways to emphasize text
@@ -117,14 +119,14 @@
   ;;stores changes from dropbox
   (setq org-mobile-inbox-for-pull (concat org-directory "flagged.org"))
   ;;Organ (my app)'s store
-  (setq org-mobile-directory (concat ketan0/tramp-prefix "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/"))
+  (setq org-mobile-directory "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/")
 
-  (setq org-mobile-checksum-files (concat ketan0/tramp-prefix "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/checksums.dat"))
+  (setq org-mobile-checksum-files "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/checksums.dat")
   ;;settings for TODOs
   (setq org-log-done 'time) ;;record time a task is done
 
-  (setq org-agenda-files `(,(concat ketan0/tramp-prefix org-directory "capture.org")
-                           ,(concat ketan0/tramp-prefix org-directory "todos.org")))
+  (setq org-agenda-files `(,org-default-notes-file
+                           ,(concat org-directory "todos.org")))
 
   (setq org-agenda-span 'day)
   (setq org-agenda-start-day "+0d")
@@ -198,7 +200,7 @@
 
   ;;refile headlines to any other agenda files
   (setq org-refile-use-cache t) ;;speeds up loading refile targets
-  (setq ketan0/org-files (file-expand-wildcards (concat ketan0/tramp-prefix org-directory "*org")))
+  (setq ketan0/org-files (file-expand-wildcards (concat org-directory "*org")))
   (setq org-refile-targets '((ketan0/org-files :maxlevel . 3)))
   (setq org-refile-allow-creating-parent-nodes 'confirm)
 
@@ -209,7 +211,7 @@
   (setq org-archive-location (concat org-directory "archive.org::datetree/")) ;;archive done tasks to datetree in archive.org
 
   (setq org-catch-invisible-edits (quote show-and-error)) ;;avoid accidental edits in folded areas, links, etc.
-  (setq org-default-notes-file (concat ketan0/tramp-prefix org-directory "capture.org"))
+  (setq org-default-notes-file (concat org-directory "capture.org"))
 
   (setq org-capture-templates
         '(;; other entries
@@ -221,7 +223,7 @@
            "* STRT %?")
           ("d" "done" entry
            (file org-default-notes-file)
-           "* DONE %?") ;;TODO: put CLOSED + timestamp
+           "* DONE %?\nCLOSED: %U") ;;TODO: put CLOSED + timestamp
           ("c" "coronavirus" entry (file+datetree
                                     (concat org-directory "20200314210447_coronavirus.org"))
            "* %^{Heading}"))))
@@ -239,7 +241,7 @@
   :init
   (map! :map doom-leader-map "j" 'org-journal-new-entry)
   (setq org-journal-find-file 'find-file
-        org-journal-dir (concat ketan0/tramp-prefix org-directory)
+        org-journal-dir org-directory
         org-journal-carryover-items nil
         org-journal-date-format "%A, %d %B %Y"))
 
@@ -254,9 +256,9 @@
   :config
   (setq org-roam-graphviz-executable "/usr/local/bin/dot")
   (setq org-roam-graph-viewer nil)
-  (setq org-roam-directory (concat ketan0/tramp-prefix org-directory)))
+  (setq org-roam-directory org-directory))
 
-(setq ketan0/org-thoughtset-package-path (concat ketan0/tramp-prefix "/Users/ketanagrawal/emacs-packages/org-thoughtset"))
+(setq ketan0/org-thoughtset-package-path "/Users/ketanagrawal/emacs-packages/org-thoughtset")
 (use-package! org-thoughtset
   :load-path ketan0/org-thoughtset-package-path)
 
