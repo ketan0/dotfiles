@@ -90,7 +90,6 @@
 
 (use-package! company-math)
 
-(add-hook 'after-save-hook 'org-save-all-org-buffers)
 
 (defun ketan0/org-mode-setup ()
   ;; (message "Running org-mode hook!")
@@ -99,7 +98,6 @@
                     company-backends)))
 
 (use-package! org
-  :defer nil
   :mode ("\\.org\\'" . org-mode)
   :config
   (setq org-ellipsis "…")
@@ -226,7 +224,8 @@
            "* DONE %?\nCLOSED: %U") ;;TODO: put CLOSED + timestamp
           ("c" "coronavirus" entry (file+datetree
                                     (concat org-directory "20200314210447_coronavirus.org"))
-           "* %^{Heading}"))))
+           "* %^{Heading}")))
+  (add-hook 'after-save-hook 'org-save-all-org-buffers))
 
 (use-package! org-super-agenda)
 ;;   :defer t
