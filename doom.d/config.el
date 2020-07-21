@@ -125,6 +125,7 @@
   ;;settings for TODOs
   (setq org-log-done 'time) ;;record time a task is done
 
+  (setq org-default-notes-file (concat org-directory "capture.org"))
   (setq org-agenda-files `(,org-default-notes-file
                            ,(concat org-directory "todos.org")))
 
@@ -211,7 +212,6 @@
   (setq org-archive-location (concat org-directory "archive.org::datetree/")) ;;archive done tasks to datetree in archive.org
 
   (setq org-catch-invisible-edits (quote show-and-error)) ;;avoid accidental edits in folded areas, links, etc.
-  (setq org-default-notes-file (concat org-directory "capture.org"))
 
   (setq org-capture-templates
         '(;; other entries
