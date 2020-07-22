@@ -54,9 +54,18 @@ Host vm-1-vm.us-central1-b.turing-guard-265002
 
 # End of Google Compute Engine Section
 
+Host ai
+    User agrawalk
+    Hostname ai.stanford.edu
+    GSSAPIAuthentication yes
+    ControlMaster auto
+    ControlPersist yes
+    ControlPath ~/.ssh/%l%r@%h:%p
+
 Host sail
     User agrawalk
     Hostname sc.stanford.edu
+    ProxyJump ai
     GSSAPIAuthentication yes
     ControlMaster auto
     ControlPersist yes
