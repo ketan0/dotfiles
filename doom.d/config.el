@@ -165,24 +165,34 @@
            ,(ketan0/create-gtd-project-block "Shortcuts")
            ,(ketan0/create-gtd-project-block "Misc")
            nil)))
-  (setq org-agenda-custom-commands `(,ketan0/org-agenda-todo-view))
+  (setq ketan0/org-agenda-amzn-view
+        `("z" "Amazon TODO"
+          (
+           ;; my definition of a 'stuck' project:
+           ;; todo state PROJ, has TODOs within, but no next (STRT) actions
+           ,(ketan0/create-gtd-project-block "Amazon")
+           nil)))
+  (setq org-agenda-custom-commands `(,ketan0/org-agenda-todo-view ,ketan0/org-agenda-amzn-view))
 
   ;;TODO: why isn't this going into evil mode
   (defun ketan0/gtd-daily-review ()
     (interactive)
     (org-ql-search (org-agenda-files)
-      '(and (ts :from -3 :to today) (done))
+      '(and (ts :from -14 :to today) (done))
       :title "Recent Items"
       :sort '(date priority todo)
       :super-groups '((:auto-ts t)))
     (end-of-buffer))
-
-  (map! "<f5>" #'ketan0/gtd-daily-review)
-  (map! "<f4>" #'ketan0/switch-to-agenda)
   ;;thanks jethro
   (defun ketan0/switch-to-agenda ()
     (interactive)
     (org-agenda nil " "))
+  (defun ketan0/switch-to-amazon-na ()
+    (interactive)
+    (org-agenda nil "z"))
+  (map! "<f5>" #'ketan0/gtd-daily-review)
+  (map! "<f4>" #'ketan0/switch-to-agenda)
+  (map! "<f6>" #'ketan0/switch-to-amazon-na)
 
   (setq org-agenda-block-separator nil)
   (setq org-agenda-log-mode-items '(closed clock state))
@@ -212,7 +222,7 @@
   (setq org-catch-invisible-edits (quote show-and-error)) ;;avoid accidental edits in folded areas, links, etc.
 
   (setq org-capture-templates
-        '(;; other entries
+        `(;; other entries
           ("t" "todo" entry
            (file org-default-notes-file)
            "* TODO %?")
@@ -222,6 +232,9 @@
           ("d" "done" entry
            (file org-default-notes-file)
            "* DONE %?\nCLOSED: %U") ;;TODO: put CLOSED + timestamp
+          ("i" "idea" entry
+           (file ,(concat org-directory "ideas.org"))
+           "* %?") ;;TODO: put CLOSED + timestamp
           ("c" "coronavirus" entry (file+datetree
                                     (concat org-directory "20200314210447_coronavirus.org"))
            "* %^{Heading}")))
@@ -257,9 +270,9 @@
   (setq org-roam-graph-viewer nil)
   (setq org-roam-directory org-directory))
 
-(setq ketan0/org-thoughtset-package-path "/Users/ketanagrawal/emacs-packages/org-thoughtset")
-(use-package! org-thoughtset
-  :load-path ketan0/org-thoughtset-package-path)
+;; (setq ketan0/org-thoughtset-package-path "/Users/ketanagrawal/emacs-packages/org-thoughtset")
+;; (use-package! org-thoughtset
+;;   :load-path ketan0/org-thoughtset-package-path)
 
 
 (defun ketan0/latex-mode-setup ()
@@ -395,3 +408,25 @@
 (use-package! dash)
 (use-package! s)
 (use-package! f)
+(use-package web-mode
+  :mode
+  ("\\.html?$". web-mode)
+  ("\\.css$". web-mode)
+  ("\\.js$". web-mode)
+  ("\\.jsx$". web-mode)
+  ("\\.ts$". web-mode)
+  ("\\.tsx$". web-mode)
+  :config
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+  (defun my/tsx-setup ()
+    (when (and (stringp buffer-file-name)
+               (or (string-match "\\.tsx$" buffer-file-name)
+                   (string-match "\\.ts$" buffer-file-name)))
+      (tide-setup)))
+  (add-hook 'web-mode-hook 'my/tsx-setup))
+
+(use-package! evil-matchit
+  :config
+  (global-evil-matchit-mode 1))
