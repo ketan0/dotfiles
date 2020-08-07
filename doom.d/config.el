@@ -72,6 +72,9 @@
 
 (setq display-line-numbers-type t)
 
+(setq max-specpdl-size (* 30 1600))
+(setq max-lisp-eval-depth (* 60 800))
+
 (map! :map prog-mode-map :nm "<tab>" '+fold/toggle)
 
 (map! :map prog-mode-map :nm "<S-tab>" 'ketan0/fold-toggle-all)
@@ -163,6 +166,8 @@
            ,(ketan0/create-gtd-project-block "Knowledge graph")
            ,(ketan0/create-gtd-project-block "GTD")
            ,(ketan0/create-gtd-project-block "Shortcuts")
+           ,(ketan0/create-gtd-project-block "Academics")
+           ,(ketan0/create-gtd-project-block "Grad school")
            ,(ketan0/create-gtd-project-block "Misc")
            nil)))
   (setq ketan0/org-agenda-amzn-view
@@ -221,6 +226,32 @@
 
   (setq org-catch-invisible-edits (quote show-and-error)) ;;avoid accidental edits in folded areas, links, etc.
 
+  (defun my/org-checkbox-todo ()
+    "Switch header TODO state to DONE when all checkboxes are ticked, to TODO otherwise"
+    (let ((todo-state (org-get-todo-state)) beg end)
+      (unless (not todo-state)
+        (save-excursion
+          (org-back-to-heading t)
+          (setq beg (point))
+          (end-of-line)
+          (setq end (point))
+          (goto-char beg)
+          (if (re-search-forward "\\[\\([0-9]*%\\)\\]\\|\\[\\([0-9]*\\)/\\([0-9]*\\)\\]"
+                                 end t)
+              (if (match-end 1)
+                  (if (equal (match-string 1) "100%")
+                      (unless (string-equal todo-state "DONE")
+                        (org-todo 'done))
+                    (unless (string-equal todo-state "TODO")
+                      (org-todo 'todo)))
+                (if (and (> (match-end 2) (match-beginning 2))
+                         (equal (match-string 2) (match-string 3)))
+                    (unless (string-equal todo-state "DONE")
+                      (org-todo 'done))
+                  (unless (string-equal todo-state "TODO")
+                    (org-todo 'todo)))))))))
+  (add-hook 'org-checkbox-statistics-hook 'my/org-checkbox-todo)
+
   (setq org-capture-templates
         `(;; other entries
           ("t" "todo" entry
@@ -236,7 +267,7 @@
            (file ,(concat org-directory "ideas.org"))
            "* %?") ;;TODO: put CLOSED + timestamp
           ("c" "coronavirus" entry (file+datetree
-                                    (concat org-directory "20200314210447_coronavirus.org"))
+                                    ,(concat org-directory "20200314210447_coronavirus.org"))
            "* %^{Heading}")))
   (add-hook 'after-save-hook 'org-save-all-org-buffers))
 
@@ -255,10 +286,12 @@
   (setq org-journal-find-file 'find-file
         org-journal-dir org-directory
         org-journal-carryover-items nil
+        org-journal-file-format "%Y%m%d.org"
         org-journal-date-format "%A, %d %B %Y"))
 
 (use-package! org-ql)
-(use-package! om)
+(use-package! org-ml)
+(use-package! json-pointer)
 
 (use-package! org-roam
   :init
@@ -404,10 +437,14 @@
 
 
 (use-package! request)
-
 (use-package! dash)
 (use-package! s)
 (use-package! f)
+
+(use-package! multifiles
+  :init
+  (map! :map doom-leader-map "e" 'mf/mirror-region-in-multifile))
+
 (use-package web-mode
   :mode
   ("\\.html?$". web-mode)

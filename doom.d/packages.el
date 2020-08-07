@@ -22,7 +22,9 @@
 ;; (package! indent-guide)
 ;; (package! latex-math-preview)
 (package! request)
-(package! om :recipe (:host github :repo "ndwarshuis/om.el"))
+(package! org-ml :recipe (:host github :repo "ndwarshuis/org-ml"))
+(package! multifiles :recipe (:host github :repo "magnars/multifiles.el"))
+(package! json-pointer :recipe (:host github :repo "syohex/emacs-json-pointer"))
 ;; Doom's packages are pinned to a specific commit and updated from release to
 ;; release. The `unpin!' macro allows you to unpin single packages...
 ;(unpin! pinned-package)
