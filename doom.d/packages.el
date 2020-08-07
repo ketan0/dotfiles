@@ -16,6 +16,8 @@
 (package! dash)
 (package! s)
 (package! f)
+(package! web-mode)
+(package! evil-matchit)
 ;; (package! smsn-mode :recipe (:host github :repo "synchrony/smsn-mode"))
 ;; (package! indent-guide)
 ;; (package! latex-math-preview)

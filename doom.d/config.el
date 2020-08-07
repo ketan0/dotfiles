@@ -170,24 +170,34 @@
            ,(ketan0/create-gtd-project-block "Grad school")
            ,(ketan0/create-gtd-project-block "Misc")
            nil)))
-  (setq org-agenda-custom-commands `(,ketan0/org-agenda-todo-view))
+  (setq ketan0/org-agenda-amzn-view
+        `("z" "Amazon TODO"
+          (
+           ;; my definition of a 'stuck' project:
+           ;; todo state PROJ, has TODOs within, but no next (STRT) actions
+           ,(ketan0/create-gtd-project-block "Amazon")
+           nil)))
+  (setq org-agenda-custom-commands `(,ketan0/org-agenda-todo-view ,ketan0/org-agenda-amzn-view))
 
   ;;TODO: why isn't this going into evil mode
   (defun ketan0/gtd-daily-review ()
     (interactive)
     (org-ql-search (org-agenda-files)
-      '(and (ts :from -7 :to today) (done))
+      '(and (ts :from -14 :to today) (done))
       :title "Recent Items"
       :sort '(date priority todo)
       :super-groups '((:auto-ts t)))
     (end-of-buffer))
-
-  (map! "<f5>" #'ketan0/gtd-daily-review)
-  (map! "<f4>" #'ketan0/switch-to-agenda)
   ;;thanks jethro
   (defun ketan0/switch-to-agenda ()
     (interactive)
     (org-agenda nil " "))
+  (defun ketan0/switch-to-amazon-na ()
+    (interactive)
+    (org-agenda nil "z"))
+  (map! "<f5>" #'ketan0/gtd-daily-review)
+  (map! "<f4>" #'ketan0/switch-to-agenda)
+  (map! "<f6>" #'ketan0/switch-to-amazon-na)
 
   (setq org-agenda-block-separator nil)
   (setq org-agenda-log-mode-items '(closed clock state))
@@ -293,9 +303,9 @@
   (setq org-roam-graph-viewer nil)
   (setq org-roam-directory org-directory))
 
-(setq ketan0/org-thoughtset-package-path "/Users/ketanagrawal/emacs-packages/org-thoughtset")
-(use-package! org-thoughtset
-  :load-path ketan0/org-thoughtset-package-path)
+;; (setq ketan0/org-thoughtset-package-path "/Users/ketanagrawal/emacs-packages/org-thoughtset")
+;; (use-package! org-thoughtset
+;;   :load-path ketan0/org-thoughtset-package-path)
 
 
 (defun ketan0/latex-mode-setup ()
@@ -431,27 +441,29 @@
 (use-package! s)
 (use-package! f)
 
-;; (defun make-queue
-;;   (lambda ()
-;;     (let ((front '()) (back '()))
-;;       (lambda (cmd . data)
-;;         (defun exchange
-;;           (lambda ()
-;;             (set! front (reverse back))
-;;             (set! back '())))
-;;         (case cmd
-;;           ((push) (push (car data) back))
-;;           ((pop) (or (pop front)
-;;                      (begin
-;;                       (exchange)
-;;                       (pop front))))
-;;           ((peek) (unless (pair? front)
-;;                     (exchange))
-;;            (car front))
-;;           ((show) (format #t "~s\n" (append front (reverse back))))
-;;           ((fb) (format #t "front: ~s, back: ~s\n" front back))
-;;           (else (error "Illegal cmd to queue object" cmd)))))))
-
 (use-package! multifiles
   :init
   (map! :map doom-leader-map "e" 'mf/mirror-region-in-multifile))
+
+(use-package web-mode
+  :mode
+  ("\\.html?$". web-mode)
+  ("\\.css$". web-mode)
+  ("\\.js$". web-mode)
+  ("\\.jsx$". web-mode)
+  ("\\.ts$". web-mode)
+  ("\\.tsx$". web-mode)
+  :config
+  (setq web-mode-markup-indent-offset 2)
+  (setq web-mode-css-indent-offset 2)
+  (setq web-mode-code-indent-offset 2)
+  (defun my/tsx-setup ()
+    (when (and (stringp buffer-file-name)
+               (or (string-match "\\.tsx$" buffer-file-name)
+                   (string-match "\\.ts$" buffer-file-name)))
+      (tide-setup)))
+  (add-hook 'web-mode-hook 'my/tsx-setup))
+
+(use-package! evil-matchit
+  :config
+  (global-evil-matchit-mode 1))
