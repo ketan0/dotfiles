@@ -144,12 +144,12 @@
           ((agenda ""
                    ((org-agenda-span 'day)
                     (org-deadline-warning-days 10)))
-           ;; my definition of a 'stuck' project:
-           ;; todo state PROJ, has TODOs within, but no next (STRT) actions
            (org-ql-block '(and (todo "DONE")
                                (path "todos.org")
                                (closed :on today))
                          ((org-ql-block-header "Finished Today")))
+           ;; my definition of a 'stuck' project:
+           ;; todo state PROJ, has TODOs within, but no next (STRT) actions
            (org-ql-block '(and (todo "PROJ")
                                (not (done))
                                (descendants (todo "TODO"))
@@ -172,11 +172,8 @@
            nil)))
   (setq ketan0/org-agenda-amzn-view
         `("z" "Amazon TODO"
-          (
-           ;; my definition of a 'stuck' project:
-           ;; todo state PROJ, has TODOs within, but no next (STRT) actions
-           ,(ketan0/create-gtd-project-block "Amazon")
-           nil)))
+          (,(ketan0/create-gtd-project-block "Add Page - Add DSN")
+           ,(ketan0/create-gtd-project-block "Admin Verification Page - New DSN") nil)))
   (setq org-agenda-custom-commands `(,ketan0/org-agenda-todo-view ,ketan0/org-agenda-amzn-view))
 
   ;;TODO: why isn't this going into evil mode
@@ -444,25 +441,6 @@
 (use-package! multifiles
   :init
   (map! :map doom-leader-map "e" 'mf/mirror-region-in-multifile))
-
-(use-package web-mode
-  :mode
-  ("\\.html?$". web-mode)
-  ("\\.css$". web-mode)
-  ("\\.js$". web-mode)
-  ("\\.jsx$". web-mode)
-  ("\\.ts$". web-mode)
-  ("\\.tsx$". web-mode)
-  :config
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-  (setq web-mode-code-indent-offset 2)
-  (defun my/tsx-setup ()
-    (when (and (stringp buffer-file-name)
-               (or (string-match "\\.tsx$" buffer-file-name)
-                   (string-match "\\.ts$" buffer-file-name)))
-      (tide-setup)))
-  (add-hook 'web-mode-hook 'my/tsx-setup))
 
 (use-package! evil-matchit
   :config
