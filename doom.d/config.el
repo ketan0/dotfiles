@@ -69,6 +69,16 @@
 (setq auto-revert-remote-files t)
 (setq global-auto-revert-mode t)
 
+;; from https://www.emacswiki.org/emacs/RevertBuffer
+(defun revert-all-buffers ()
+  "Refreshes all open buffers from their respective files."
+  (interactive)
+  (dolist (buf (buffer-list))
+    (with-current-buffer buf
+      (when (and (buffer-file-name) (file-exists-p (buffer-file-name)) (not (buffer-modified-p)))
+        (revert-buffer t t t) )))
+  (message "Refreshed open files.") )
+(map! :map evil-motion-state-map "gb" 'revert-all-buffers)
 
 (setq display-line-numbers-type t)
 
