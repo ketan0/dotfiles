@@ -142,6 +142,7 @@
 
   (setq org-agenda-span 'day)
   (setq org-agenda-start-day "+0d")
+  (add-hook 'org-agenda-mode-hook #'doom-mark-buffer-as-real-h)
 
   (defun ketan0/create-gtd-project-block (project-name)
     `(org-ql-block '(and (todo "STRT")
@@ -182,8 +183,13 @@
            nil)))
   (setq ketan0/org-agenda-amzn-view
         `("z" "Amazon TODO"
-          (,(ketan0/create-gtd-project-block "Add Page - Add DSN")
-           ,(ketan0/create-gtd-project-block "Admin Verification Page - New DSN") nil)))
+          (,(ketan0/create-gtd-project-block "General/Management")
+           ,(ketan0/create-gtd-project-block "Login / Access Control")
+           ,(ketan0/create-gtd-project-block "Add Page - Add DSN")
+           ,(ketan0/create-gtd-project-block "Admin Verification Page - New DSN")
+           ,(ketan0/create-gtd-project-block "View/Modify/Delete Page - View status of requests")
+           ,(ketan0/create-gtd-project-block "JSON Edits Page")
+           nil)))
   (setq org-agenda-custom-commands `(,ketan0/org-agenda-todo-view ,ketan0/org-agenda-amzn-view))
 
   ;;TODO: why isn't this going into evil mode
@@ -455,3 +461,40 @@
 (use-package! evil-matchit
   :config
   (global-evil-matchit-mode 1))
+
+(use-package! tide
+  :config
+  (defun setup-tide-mode ()
+    (interactive)
+    (tide-setup)
+    (flycheck-mode +1)
+    (setq flycheck-check-syntax-automatically '(save mode-enabled))
+    (eldoc-mode +1)
+    (tide-hl-identifier-mode +1)
+    ;; company is an optional dependency. You have to
+    ;; install it separately via package-install
+    ;; `M-x package-install [ret] company`
+    (company-mode +1))
+
+  ;; aligns annotation to the right hand side
+  (setq company-tooltip-align-annotations t)
+
+  ;; formats the buffer before saving
+  (add-hook 'before-save-hook 'tide-format-before-save)
+  ;; (remove-hook 'before-save-hook 'tide-format-before-save)
+
+  (add-hook 'typescript-mode-hook #'setup-tide-mode))
+
+
+(require 'web-mode)
+(defun my-web-mode-hook ()
+  "Hooks for Web mode."
+  (setq web-mode-markup-indent-offset 2))
+(add-hook 'web-mode-hook  'my-web-mode-hook)
+(add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
+(add-hook 'web-mode-hook
+          (lambda ()
+            (when (string-equal "tsx" (file-name-extension buffer-file-name))
+              (setup-tide-mode))))
+;; enable typescript-tslint checker
+(flycheck-add-mode 'typescript-tslint 'web-mode)
