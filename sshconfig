@@ -65,7 +65,7 @@ Host ai
 Host sc
     User agrawalk
     Hostname sc.stanford.edu
-    # ProxyJump ai
+    ProxyJump ai
     GSSAPIAuthentication yes
     ControlMaster auto
     ControlPersist yes
