@@ -125,6 +125,11 @@
   (setq org-mobile-checksum-files "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/checksums.dat")
   ;;settings for TODOs
   (setq org-log-done 'time) ;;record time a task is done
+  (setq org-log-into-drawer t)
+  (setq org-treat-insert-todo-heading-as-state-change t)
+
+  (setq org-habit-show-all-today t)
+
 
   (setq org-default-notes-file (concat org-directory "capture.org"))
   (setq org-agenda-files `(,org-default-notes-file
@@ -179,7 +184,7 @@
   ;;TODO: why isn't this going into evil mode
   (defun ketan0/gtd-daily-review ()
     (interactive)
-    (org-ql-search (org-agenda-files)
+    (org-ql-search (cons (concat org-directory "archive.org") (org-agenda-files))
       '(and (ts :from -14 :to today) (done))
       :title "Recent Items"
       :sort '(date priority todo)
@@ -249,6 +254,8 @@
                     (org-todo 'todo)))))))))
   (add-hook 'org-checkbox-statistics-hook 'my/org-checkbox-todo)
 
+  (org-set-modules 'org-modules '(ol-bibtex org-habit))
+
   (setq org-capture-templates
         `(;; other entries
           ("t" "todo" entry
@@ -265,7 +272,10 @@
            "* %?") ;;TODO: put CLOSED + timestamp
           ("c" "coronavirus" entry (file+datetree
                                     ,(concat org-directory "20200314210447_coronavirus.org"))
-           "* %^{Heading}")))
+           "* %^{Heading}")
+          ("w" "Review: Weekly Review" entry (file+datetree ,(concat org-directory "reviews.org"))
+           (file ,(concat org-directory "20200816223343-weekly_review.org")))))
+
   (add-hook 'after-save-hook 'org-save-all-org-buffers))
 
 (use-package! org-super-agenda)
@@ -300,9 +310,14 @@
   (setq org-roam-graph-viewer nil)
   (setq org-roam-directory org-directory))
 
-;; (setq ketan0/org-thoughtset-package-path "/Users/ketanagrawal/emacs-packages/org-thoughtset")
-;; (use-package! org-thoughtset
-;;   :load-path ketan0/org-thoughtset-package-path)
+(setq ketan0/org-thoughtset-package-path "/Users/ketanagrawal/emacs-packages/org-thoughtset")
+
+(use-package! org-thoughtset
+  :load-path ketan0/org-thoughtset-package-path
+  :config
+  (add-hook 'org-cycle-hook 'org-thoughtset-grab-headline-children)
+  ;; (remove-hook 'org-cycle-hook 'org-thoughtset-grab-headline-children)
+  )
 
 
 (defun ketan0/latex-mode-setup ()
