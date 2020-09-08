@@ -32,11 +32,12 @@
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
 (setq doom-font (font-spec :family "Fira Code" :size 12))
+(mac-auto-operator-composition-mode)
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-dark+)
+(setq doom-theme 'doom-vibrant)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -174,28 +175,18 @@
                          ((org-ql-block-header "Stuck Projects")))
            (org-ql-block '(path "capture.org")
                          ((org-ql-block-header "To Refile")))
-           ,(ketan0/create-gtd-project-block "Amazon")
-           ,(ketan0/create-gtd-project-block "Langcog")
            ,(ketan0/create-gtd-project-block "PAC")
            ,(ketan0/create-gtd-project-block "Emacs")
            ,(ketan0/create-gtd-project-block "Neo4j backend")
            ,(ketan0/create-gtd-project-block "Knowledge graph")
+           ,(ketan0/create-gtd-project-block "website")
            ,(ketan0/create-gtd-project-block "GTD")
            ,(ketan0/create-gtd-project-block "Shortcuts")
-           ,(ketan0/create-gtd-project-block "Academics")
            ,(ketan0/create-gtd-project-block "Grad school")
+           ,(ketan0/create-gtd-project-block "Academics")
            ,(ketan0/create-gtd-project-block "Misc")
            nil)))
-  (setq ketan0/org-agenda-amzn-view
-        `("z" "Amazon TODO"
-          (,(ketan0/create-gtd-project-block "General/Management")
-           ,(ketan0/create-gtd-project-block "Login / Access Control")
-           ,(ketan0/create-gtd-project-block "Add Page - Add DSN")
-           ,(ketan0/create-gtd-project-block "Admin Verification Page - New DSN")
-           ,(ketan0/create-gtd-project-block "View/Modify/Delete Page - View status of requests")
-           ,(ketan0/create-gtd-project-block "JSON Edits Page")
-           nil)))
-  (setq org-agenda-custom-commands `(,ketan0/org-agenda-todo-view ,ketan0/org-agenda-amzn-view))
+  (setq org-agenda-custom-commands (list ketan0/org-agenda-todo-view))
 
   ;;TODO: why isn't this going into evil mode
   (defun ketan0/gtd-daily-review ()
@@ -213,9 +204,8 @@
   (defun ketan0/switch-to-amazon-na ()
     (interactive)
     (org-agenda nil "z"))
-  (map! "<f5>" #'ketan0/gtd-daily-review)
   (map! "<f4>" #'ketan0/switch-to-agenda)
-  (map! "<f6>" #'ketan0/switch-to-amazon-na)
+  (map! "<f5>" #'ketan0/gtd-daily-review)
 
   (setq org-agenda-block-separator nil)
   (setq org-agenda-log-mode-items '(closed clock state))
@@ -289,6 +279,8 @@
           ("c" "coronavirus" entry (file+datetree
                                     ,(concat org-directory "20200314210447_coronavirus.org"))
            "* %^{Heading}")
+          ("p" "org-protocol-capture" entry (file ,(concat org-directory "capture.org"))
+           "* TODO [[%:link][%:description]]\n\n %i" :immediate-finish t)
           ("w" "Review: Weekly Review" entry (file+datetree ,(concat org-directory "reviews.org"))
            (file ,(concat org-directory "20200816223343-weekly_review.org")))))
 
@@ -389,7 +381,7 @@
 (add-hook 'after-save-hook 'tangle-karabiner)
 (add-hook 'after-save-hook 'source-yabairc)
 
-(use-package! lsp-mode
+(use-package lsp-mode
   :init
   (setq lsp-keymap-prefix "s-l")
   :config
@@ -412,10 +404,10 @@
   :commands lsp)
 
 ;; optionally
-(use-package! lsp-ui
-  :config
-  (setq lsp-ui-sideline-ignore-duplicate t)
-  (add-hook 'lsp-mode-hook 'lsp-ui-mode))
+;; (use-package! lsp-ui
+;;   :config
+;;   (setq lsp-ui-sideline-ignore-duplicate t)
+;;   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
 (use-package! org-pomodoro)
 
@@ -477,39 +469,40 @@
   :config
   (global-evil-matchit-mode 1))
 
-(use-package! tide
-  :config
-  (defun setup-tide-mode ()
-    (interactive)
-    (tide-setup)
-    (flycheck-mode +1)
-    (setq flycheck-check-syntax-automatically '(save mode-enabled))
-    (eldoc-mode +1)
-    (tide-hl-identifier-mode +1)
-    ;; company is an optional dependency. You have to
-    ;; install it separately via package-install
-    ;; `M-x package-install [ret] company`
-    (company-mode +1))
+;; (use-package! tide
+;;   :config
+;;   (defun setup-tide-mode ()
+;;     (interactive)
+;;     (tide-setup)
+;;     (flycheck-mode +1)
+;;     (setq flycheck-check-syntax-automatically '(save mode-enabled))
+;;     (eldoc-mode +1)
+;;     (tide-hl-identifier-mode +1)
+;;     ;; company is an optional dependency. You have to
+;;     ;; install it separately via package-install
+;;     ;; `M-x package-install [ret] company`
+;;     (company-mode +1))
 
-  ;; aligns annotation to the right hand side
-  (setq company-tooltip-align-annotations t)
+;;   ;; aligns annotation to the right hand side
+;;   (setq company-tooltip-align-annotations t)
 
-  ;; formats the buffer before saving
-  (add-hook 'before-save-hook 'tide-format-before-save)
-  ;; (remove-hook 'before-save-hook 'tide-format-before-save)
+;;   ;; formats the buffer before saving
+;;   (add-hook 'before-save-hook 'tide-format-before-save)
+;;   ;; (remove-hook 'before-save-hook 'tide-format-before-save)
 
-  (add-hook 'typescript-mode-hook #'setup-tide-mode))
+;;   (add-hook 'typescript-mode-hook #'setup-tide-mode))
 
 
-(require 'web-mode)
-(defun my-web-mode-hook ()
-  "Hooks for Web mode."
-  (setq web-mode-markup-indent-offset 2))
-(add-hook 'web-mode-hook  'my-web-mode-hook)
-(add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
-(add-hook 'web-mode-hook
-          (lambda ()
-            (when (string-equal "tsx" (file-name-extension buffer-file-name))
-              (setup-tide-mode))))
+;; (require 'web-mode)
+;; (defun my-web-mode-hook ()
+;;   "Hooks for Web mode."
+;;   (setq web-mode-markup-indent-offset 2))
+;; (add-hook 'web-mode-hook  'my-web-mode-hook)
+;; (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
+;; (add-hook 'web-mode-hook
+;;           (lambda ()
+;;             (when (string-equal "tsx" (file-name-extension buffer-file-name))
+;;               (setup-tide-mode))))
+
 ;; enable typescript-tslint checker
-(flycheck-add-mode 'typescript-tslint 'web-mode)
+;; (flycheck-add-mode 'typescript-tslint 'web-mode)
