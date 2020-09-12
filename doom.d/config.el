@@ -105,19 +105,19 @@
 (use-package! company-math)
 
 
-(defun ketan0/org-mode-setup ()
-  ;; (message "Running org-mode hook!")
-  (setq-local company-backends
-              (push '(company-math-symbols-unicode company-org-roam)
-                    company-backends)))
+;; (defun ketan0/org-mode-setup ()
+;;   ;; (message "Running org-mode hook!")
+;;   (setq-local company-backends
+;;               (push '(company-math-symbols-unicode company-org-roam)
+;;                     company-backends)))
 
 (use-package! org
   :mode ("\\.org\\'" . org-mode)
+  :init
+  (setq org-directory  "~/Sync/org/")
   :config
   (setq org-ellipsis "…")
-  (setq org-directory  "~/Sync/org/")
   (setq org-return-follows-link t)
-
   (setq org-emphasis-alist ;;different ways to emphasize text
         '(("!"  (:foreground "red") )
           ("*" (bold :foreground "Orange" ))
@@ -127,25 +127,16 @@
           ("~" org-code "<code>" "</code>" verbatim)
           ("=" org-verbatim "<code>" "</code>" verbatim)
           ("+" (:strike-through t) "<del>" "</del>")))
-
-  ;;stores changes from dropbox
   (setq org-mobile-inbox-for-pull (concat org-directory "flagged.org"))
-  ;;Organ (my app)'s store
   (setq org-mobile-directory "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/")
-
   (setq org-mobile-checksum-files "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/checksums.dat")
-  ;;settings for TODOs
   (setq org-log-done 'time) ;;record time a task is done
   (setq org-log-into-drawer t)
   (setq org-treat-insert-todo-heading-as-state-change t)
-
   (setq org-habit-show-all-today t)
-
-
   (setq org-default-notes-file (concat org-directory "capture.org"))
   (setq org-agenda-files `(,org-default-notes-file
                            ,(concat org-directory "todos.org")))
-
   (setq org-agenda-span 'day)
   (setq org-agenda-start-day "+0d")
   (add-hook 'org-agenda-mode-hook #'doom-mark-buffer-as-real-h)
@@ -184,10 +175,10 @@
            ,(ketan0/create-gtd-project-block "Shortcuts")
            ,(ketan0/create-gtd-project-block "Grad school")
            ,(ketan0/create-gtd-project-block "Academics")
+           ,(ketan0/create-gtd-project-block "Reading List")
            ,(ketan0/create-gtd-project-block "Misc")
            nil)))
   (setq org-agenda-custom-commands (list ketan0/org-agenda-todo-view))
-
   ;;TODO: why isn't this going into evil mode
   (defun ketan0/gtd-daily-review ()
     (interactive)
@@ -206,6 +197,7 @@
     (org-agenda nil "z"))
   (map! "<f4>" #'ketan0/switch-to-agenda)
   (map! "<f5>" #'ketan0/gtd-daily-review)
+  (map! :map doom-leader-map "a" 'counsel-org-goto-all)
 
   (setq org-agenda-block-separator nil)
   (setq org-agenda-log-mode-items '(closed clock state))
@@ -213,11 +205,9 @@
                                                       (make-string (/ (window-width) 2) 9472)
                                                       "\n"
                                                       (org-agenda-format-date-aligned date))))
-
   (setq org-agenda-window-setup 'only-window) ;;agenda take up whole frame
   ;;don't show warnings for deadlines
   (setq org-deadline-warning-days 0) ;;don't show upcoming tasks in today view
-
   (setq org-edit-src-content-indentation 0) ;;don't indent src blocks further
 
   ;;refile headlines to any other agenda files
@@ -225,15 +215,10 @@
   (setq ketan0/org-files (file-expand-wildcards (concat org-directory "*org")))
   (setq org-refile-targets '((ketan0/org-files :maxlevel . 3)))
   (setq org-refile-allow-creating-parent-nodes 'confirm)
-
-
   (setq org-refile-use-outline-path 'file) ;;see whole path (not just headline)
   (setq org-outline-path-complete-in-steps nil) ;;easy to complete in one go w/ helm
-
   (setq org-archive-location (concat org-directory "archive.org::datetree/")) ;;archive done tasks to datetree in archive.org
-
   (setq org-catch-invisible-edits (quote show-and-error)) ;;avoid accidental edits in folded areas, links, etc.
-
   (defun my/org-checkbox-todo ()
     "Switch header TODO state to DONE when all checkboxes are ticked, to TODO otherwise"
     (let ((todo-state (org-get-todo-state)) beg end)
@@ -262,6 +247,10 @@
 
   (org-set-modules 'org-modules '(ol-bibtex org-habit))
 
+  (defun transform-square-brackets-to-round-ones(string-to-transform)
+    "Transforms [ into ( and ] into ), other chars left unchanged."
+    (concat
+     (mapcar #'(lambda (c) (if (equal c ?\[) ?\( (if (equal c ?\]) ?\) c))) string-to-transform)))
   (setq org-capture-templates
         `(;; other entries
           ("t" "todo" entry
@@ -279,26 +268,51 @@
           ("c" "coronavirus" entry (file+datetree
                                     ,(concat org-directory "20200314210447_coronavirus.org"))
            "* %^{Heading}")
-          ("p" "org-protocol-capture" entry (file ,(concat org-directory "capture.org"))
-           "* TODO [[%:link][%:description]]\n\n %i" :immediate-finish t)
           ("w" "Review: Weekly Review" entry (file+datetree ,(concat org-directory "reviews.org"))
-           (file ,(concat org-directory "20200816223343-weekly_review.org")))))
+           (file ,(concat org-directory "20200816223343-weekly_review.org")))
+          ("p" "Protocol" entry (file ,org-default-notes-file)
+           "* TODO [[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n"
+           :immediate-finish t)
+          ("L" "Protocol Link" entry (file ,org-default-notes-file)
+           "* TODO [[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]] \n\n"
+           :immediate-finish t)))
 
   (add-hook 'after-save-hook 'org-save-all-org-buffers))
 
-(use-package! org-super-agenda)
-;;   :defer t
-;;   :config
-;;   (org-super-agenda-mode t)
-;;   (setq org-super-agenda-header-separator "\n")
-;;   (setq org-super-agenda-groups '((:auto-category t)))
-;;   (setq org-super-agenda-header-map (make-sparse-keymap))) ;;the header keymaps conflict w/ evil-org keymaps
+(use-package! ox-hugo
+  :config
+  ;; Populates only the EXPORT_FILE_NAME property in the inserted headline.
+  (with-eval-after-load 'org-capture
+    (defun org-hugo-new-subtree-post-capture-template ()
+      "Returns `org-capture' template string for new Hugo post.
+See `org-capture-templates' for more information."
+      (let* ((title (read-from-minibuffer "Post Title: ")) ;Prompt to enter the post title
+             (fname (org-hugo-slug title)))
+        (mapconcat #'identity
+                   `(
+                     ,(concat "* TODO " title)
+                     ":PROPERTIES:"
+                     ,(concat ":EXPORT_FILE_NAME: " fname)
+                     ":END:"
+                     "%?\n")          ;Place the cursor here finally
+                   "\n")))
+
+    (add-to-list 'org-capture-templates
+                 '("h"                ;`org-capture' binding + h
+                   "Hugo post"
+                   entry
+                   ;; It is assumed that below file is present in `org-directory'
+                   ;; and that it has a "Blog Ideas" heading. It can even be a
+                   ;; symlink pointing to the actual location of all-posts.org!
+                   (file+olp "~/blog/content-org/blog.org" "Blog Posts")
+                   (function org-hugo-new-subtree-post-capture-template)))))
 
 (use-package! org-journal
-  :defer t
+  :after org
   :init
   (map! :map doom-leader-map "j" 'org-journal-new-entry)
   (setq org-journal-find-file 'find-file
+        org-journal-date-prefix "#+title: "
         org-journal-dir org-directory
         org-journal-carryover-items nil
         org-journal-file-format "%Y%m%d.org"
@@ -311,8 +325,8 @@
 (use-package! org-roam
   :init
   (map! :map doom-leader-map "r" 'org-roam-find-file)
-  (org-roam-mode)
-  :diminish org-roam-mode
+  :hook
+  (after-init . org-roam-mode)
   :config
   (setq org-roam-graphviz-executable "/usr/local/bin/dot")
   (setq org-roam-graph-viewer nil)
@@ -334,27 +348,18 @@
                     company-backends))
   (push '(?$ . ("$ " . " $")) evil-surround-pairs-alist))
 
-(use-package! tex
-  :defer t
-
-  :config
-  (setq-default TeX-master nil)
-  ;; Use pdf-tools to open PDF files
-  (setq latex-run-command "pdflatex")
-  (setq TeX-save-query nil)
-  (setq TeX-auto-save t)
-  (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
-        TeX-source-correlate-start-server t)
-
-  ;; Update PDF buffers after successful LaTeX runs
-  (add-hook 'TeX-after-compilation-finished-functions
-            #'TeX-revert-document-buffer))
-
-(use-package! company-org-roam
-  :when (featurep! :completion company)
-  :after org-roam
-  :config
-  (set-company-backend! 'org-mode '(company-org-roam company-yasnippet company-dabbrev)))
+;; (use-package! tex
+;;   :config
+;;   (setq-default TeX-master nil)
+;;   ;; Use pdf-tools to open PDF files
+;;   (setq latex-run-command "pdflatex")
+;;   (setq TeX-save-query nil)
+;;   (setq TeX-auto-save t)
+;;   (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
+;;         TeX-source-correlate-start-server t)
+;;   ;; Update PDF buffers after successful LaTeX runs
+;;   (add-hook 'TeX-after-compilation-finished-functions
+;;             #'TeX-revert-document-buffer))
 
 (defun tangle-karabiner ()
   "If the current buffer is 'karabiner.org' the code-blocks are
@@ -374,34 +379,34 @@
   (when (equal (buffer-file-name)
                (expand-file-name (concat ketan0/dotfiles-dir "yabairc")))
     ;; Avoid running hooks when tangling.
-    (message (concat "yabairc has been sourced"
+    (message (concat "Sourcing yabairc..."
                      (shell-command-to-string
                       "launchctl kickstart -k \"gui/${UID}/homebrew.mxcl.yabai\"")))))
 
 (add-hook 'after-save-hook 'tangle-karabiner)
 (add-hook 'after-save-hook 'source-yabairc)
 
-(use-package lsp-mode
-  :init
-  (setq lsp-keymap-prefix "s-l")
-  :config
-  (setq lsp-auto-require-clients t)
-  (setq lsp-auto-configure t)
-  (setq lsp-ui-doc-enable nil)
-  (setq lsp-eldoc-hook nil)
-  (lsp-register-client
-   (make-lsp-client :new-connection (lsp-tramp-connection "clangd-10")
-                    :major-modes '(c-mode c++-mode)
-                    :remote? t
-                    :server-id 'clangd-remote))
-  :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-         ;; (c++-mode . lsp)
-         ;; (c-mode . lsp)
-         (python-mode . lsp)
-         (tex-mode . lsp)
-         (latex-mode . lsp)
-         )
-  :commands lsp)
+;; (use-package! lsp-mode
+;;   :init
+;;   (setq lsp-keymap-prefix "s-l")
+;;   :config
+;;   (setq lsp-auto-require-clients t)
+;;   (setq lsp-auto-configure t)
+;;   (setq lsp-ui-doc-enable nil)
+;;   (setq lsp-eldoc-hook nil)
+;;   (lsp-register-client
+;;    (make-lsp-client :new-connection (lsp-tramp-connection "clangd-10")
+;;                     :major-modes '(c-mode c++-mode)
+;;                     :remote? t
+;;                     :server-id 'clangd-remote))
+;;   :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+;;          ;; (c++-mode . lsp)
+;;          ;; (c-mode . lsp)
+;;          (python-mode . lsp)
+;;          (tex-mode . lsp)
+;;          (latex-mode . lsp)
+;;          )
+;;   :commands lsp)
 
 ;; optionally
 ;; (use-package! lsp-ui
@@ -409,27 +414,20 @@
 ;;   (setq lsp-ui-sideline-ignore-duplicate t)
 ;;   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
 
-(use-package! org-pomodoro)
-
-(use-package! ein
-  :config
-  (map! :map ein:notebook-mode-map "<S-return>" 'ein:worksheet-execute-cell-and-goto-next-km)
-  ;;TODO make below thing work
-  (map! :map ein:notebook-mode-map "<C-return>" 'ein:worksheet-execute-cell-km)
-  (map! :map ein:notebook-mode-map :nm "<down>" 'ein:worksheet-goto-next-input-km)
-  (map! :map ein:notebook-mode-map :nm "<down>" 'ein:worksheet-goto-next-input-km)
-  (map! :map ein:notebook-mode-map :nm "<up>" 'ein:worksheet-goto-prev-input-km))
+;; (use-package! ein
+;;   :config
+;;   (map! :map ein:notebook-mode-map "<S-return>" 'ein:worksheet-execute-cell-and-goto-next-km)
+;;   ;;TODO make below thing work
+;;   (map! :map ein:notebook-mode-map "<C-return>" 'ein:worksheet-execute-cell-km)
+;;   (map! :map ein:notebook-mode-map :nm "<down>" 'ein:worksheet-goto-next-input-km)
+;;   (map! :map ein:notebook-mode-map :nm "<down>" 'ein:worksheet-goto-next-input-km)
+;;   (map! :map ein:notebook-mode-map :nm "<up>" 'ein:worksheet-goto-prev-input-km))
 
 (use-package! evil-extra-operator
   :init
   (map! :m "gz" 'evil-operator-google-search))
 
-(use-package! rtags
-  :config
-  (setq rtags-tramp-enabled t))
-
-
-;; shamelessly taken from magnars
+;; taken from magnars
 (defun toggle-window-split ()
   (interactive)
   (if (= (count-windows) 2)
@@ -454,12 +452,6 @@
           (set-window-buffer (next-window) next-win-buffer)
           (select-window first-win)
           (if this-win-2nd (other-window 1))))))
-
-
-(use-package! request)
-(use-package! dash)
-(use-package! s)
-(use-package! f)
 
 (use-package! multifiles
   :init
@@ -506,3 +498,39 @@
 
 ;; enable typescript-tslint checker
 ;; (flycheck-add-mode 'typescript-tslint 'web-mode)
+
+(defun org-peek-link-activate-func (start end path bracketp)
+  (remove-overlays start end)
+  (when (file-exists-p path)
+    (let ((overlay (make-overlay start end nil t)))
+      (overlay-put overlay 'display
+                   (with-temp-buffer
+                     (insert-file-contents path)
+                     (buffer-string)))
+      (overlay-put overlay 'before-string (concat "PEEK: " path "\n"))
+      (overlay-put overlay 'face 'org-quote)
+      (overlay-put overlay 'evaporate t))))
+
+(defun org-peek-link-complete (&optional arg)
+  "Create a peek link using completion.
+Modified version of `org-file-complete-link'."
+  (let ((file (read-file-name "File: "))
+	(pwd (file-name-as-directory (expand-file-name ".")))
+	(pwd1 (file-name-as-directory (abbreviate-file-name
+				       (expand-file-name ".")))))
+    (cond ((equal arg '(16))
+	   (concat "peek:"
+		   (abbreviate-file-name (expand-file-name file))))
+	  ((string-match
+	    (concat "^" (regexp-quote pwd1) "\\(.+\\)") file)
+	   (concat "peek:" (match-string 1 file)))
+	  ((string-match
+	    (concat "^" (regexp-quote pwd) "\\(.+\\)")
+	    (expand-file-name file))
+	   (concat "peek:"
+		   (match-string 1 (expand-file-name file))))
+	  (t (concat "peek:" file)))))
+
+(org-link-set-parameters "peek"
+                         :activate-func 'org-peek-link-activate-func
+                         :complete 'org-peek-link-complete)
