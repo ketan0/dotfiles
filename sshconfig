@@ -1,4 +1,6 @@
 # -*- mode: ssh-config -*-
+Host *
+    ServerAliveInterval 60
 
 Host myth
     User agrawalk
