@@ -135,8 +135,8 @@
   (setq org-treat-insert-todo-heading-as-state-change t)
   (setq org-habit-show-all-today t)
   (setq org-default-notes-file (concat org-directory "capture.org"))
-  (setq org-agenda-files `(,org-default-notes-file
-                           ,(concat org-directory "todos.org")))
+  (setq ketan0/org-todos-file (concat org-directory "todos.org"))
+  (setq org-agenda-files `(,org-default-notes-file ,ketan0/org-todos-file))
   (setq org-agenda-span 'day)
   (setq org-agenda-start-day "+0d")
   (add-hook 'org-agenda-mode-hook #'doom-mark-buffer-as-real-h)
@@ -180,14 +180,6 @@
            nil)))
   (setq org-agenda-custom-commands (list ketan0/org-agenda-todo-view))
   ;;TODO: why isn't this going into evil mode
-  (defun ketan0/gtd-daily-review ()
-    (interactive)
-    (org-ql-search (cons (concat org-directory "archive.org") (org-agenda-files))
-      '(and (ts :from -14 :to today) (done))
-      :title "Recent Items"
-      :sort '(date priority todo)
-      :super-groups '((:auto-ts t)))
-    (end-of-buffer))
   ;;thanks jethro
   (defun ketan0/switch-to-agenda ()
     (interactive)
@@ -195,17 +187,18 @@
   (defun ketan0/switch-to-amazon-na ()
     (interactive)
     (org-agenda nil "z"))
-  (map! "<f4>" #'ketan0/switch-to-agenda)
-  (map! "<f5>" #'ketan0/gtd-daily-review)
+
   (map! :map doom-leader-map "a" 'counsel-org-goto-all)
 
   (setq org-agenda-block-separator nil)
   (setq org-agenda-log-mode-items '(closed clock state))
-  (setq org-agenda-format-date (lambda (date) (concat "\n"
-                                                      (make-string (/ (window-width) 2) 9472)
-                                                      "\n"
-                                                      (org-agenda-format-date-aligned date))))
-  (setq org-agenda-window-setup 'only-window) ;;agenda take up whole frame
+  (setq org-agenda-format-date
+        (lambda (date)
+          (concat "\n"
+                  (make-string (/ (window-width) 2) 9472)
+                  "\n"
+                  (org-agenda-format-date-aligned date))))
+  (setq org-agenda-window-setup 'current-window) ;;agenda take up whole frame
   ;;don't show warnings for deadlines
   (setq org-deadline-warning-days 0) ;;don't show upcoming tasks in today view
   (setq org-edit-src-content-indentation 0) ;;don't indent src blocks further
@@ -318,7 +311,40 @@ See `org-capture-templates' for more information."
         org-journal-file-format "%Y%m%d.org"
         org-journal-date-format "%A, %d %B %Y"))
 
-(use-package! org-ql)
+(use-package! org-ql
+  :config
+  ;;display org-ql-search/view in the same window
+  (setq org-ql-view-display-buffer-action (cons #'display-buffer-same-window nil))
+  ;;the headers in org-ql views should inherit evil-org-agenda keybinds, not standard org-agenda keybinds.
+  (defun ketan0/next-actions ()
+    (interactive)
+    (org-ql-search
+      org-agenda-files
+      '(or (path "capture.org")
+           (and (todo "STRT")
+                (path "todos.org")
+                (tags "pac" "langcog" "emacs" "gtd" "shortcuts" "classes" "structure")))
+      :super-groups (list '(:auto-outline-path))
+      :narrow nil
+      :sort 'priority
+      :title "Next Actions"
+      :buffer nil))
+  (map! "<f4>" #'ketan0/next-actions)
+
+  (defun ketan0/gtd-daily-review ()
+    (interactive)
+    (org-ql-search (cons (concat org-directory "archive.org") (org-agenda-files))
+      '(and (ts :from -14 :to today) (done))
+      :title "Recent Items"
+      :sort '(date priority todo)
+      :super-groups '((:auto-ts t)))
+    (end-of-buffer))
+  (map! "<f5>" #'ketan0/gtd-daily-review)
+
+  (with-eval-after-load
+      'org-super-agenda
+    (setq org-super-agenda-header-map (copy-keymap evil-org-agenda-mode-map))))
+
 (use-package! org-ml)
 (use-package! json-pointer)
 
@@ -515,21 +541,21 @@ See `org-capture-templates' for more information."
   "Create a peek link using completion.
 Modified version of `org-file-complete-link'."
   (let ((file (read-file-name "File: "))
-	(pwd (file-name-as-directory (expand-file-name ".")))
-	(pwd1 (file-name-as-directory (abbreviate-file-name
-				       (expand-file-name ".")))))
+        (pwd (file-name-as-directory (expand-file-name ".")))
+        (pwd1 (file-name-as-directory (abbreviate-file-name
+                                       (expand-file-name ".")))))
     (cond ((equal arg '(16))
-	   (concat "peek:"
-		   (abbreviate-file-name (expand-file-name file))))
-	  ((string-match
-	    (concat "^" (regexp-quote pwd1) "\\(.+\\)") file)
-	   (concat "peek:" (match-string 1 file)))
-	  ((string-match
-	    (concat "^" (regexp-quote pwd) "\\(.+\\)")
-	    (expand-file-name file))
-	   (concat "peek:"
-		   (match-string 1 (expand-file-name file))))
-	  (t (concat "peek:" file)))))
+           (concat "peek:"
+                   (abbreviate-file-name (expand-file-name file))))
+          ((string-match
+            (concat "^" (regexp-quote pwd1) "\\(.+\\)") file)
+           (concat "peek:" (match-string 1 file)))
+          ((string-match
+            (concat "^" (regexp-quote pwd) "\\(.+\\)")
+            (expand-file-name file))
+           (concat "peek:"
+                   (match-string 1 (expand-file-name file))))
+          (t (concat "peek:" file)))))
 
 (org-link-set-parameters "peek"
                          :activate-func 'org-peek-link-activate-func
