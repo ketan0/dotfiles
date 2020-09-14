@@ -7,8 +7,7 @@
 #+PROPERTY: header-args :tangle ~/.dotfiles/karabiner.edn
 Created by Ketan Agrawal
 
-
-inspiration taken from: 
+inspiration taken from:
 - [[https://github.com/yqrashawn/yqdotfiles/blob/master/.config/karabiner.edn][yqrashawn]]
 - [[https://github.com/nikitavoloboev/dotfiles/blob/master/karabiner/karabiner.edn][nikitavoloboev]]
 - [[https://gist.github.com/kaushikgopal/ff7a92bbc887e59699c804b59074a126][kaushikgopal]]
@@ -82,7 +81,7 @@ inspiration taken from:
     :chrome-history-mode {:key :g :condi :tab-mode} ;;TODO make this work
     :chrome-rearrange-tab-mode {:key :r :condi :tab-mode}
     :vim-mode {:key :z}
-
+    :slash-mode {:key :slash}
     }
 
     :simlayers {
@@ -100,7 +99,7 @@ inspiration taken from:
    :des "see karabiner.org for documentation.",
    :rules [
    #+end_src
-** left cmd => cmd+tab
+** right cmd => cmd+tab
    press left command alone to switch to the previous app.
    #+begin_src clojure
    [:##right_command :right_command nil {:alone :!Ctab}]
@@ -183,22 +182,25 @@ inspiration taken from:
 ** tab-mode (tab)
    #+begin_src clojure
    :tab-mode
-   [:a :f4]
-   [:q :f5]
    [:spacebar :!CTspacebar]
-   [:f8 [:km "Open Spotify"]]
-   [:c [:km "Open Chrome"]]
-   [:e [:km "Open Emacs"]]
-   [:i [:km "Open iTerm"]]
-   [:m [:km "Open Messages"]]
-   [:n [:km "Open Notes"]]
    ;; [:q [:km "Open Qutebrowser"]]
    ;; [:x [:km "Open Xcode"]]
    ;; [:w [:km "Open Word"]]
    ;; [:y [:km "Open Keyboard Maestro"]]
-   [:z [:km "Open Zoom"]]
 
    #+end_src
+** slash-mode (forward slash)
+#+begin_src clojure
+:slash-mode
+[:s [:km "Open Spotify"]]
+[:c [:km "Open Chrome"]]
+[:k [:km "Open Keyboard Maestro"]]
+[:e [:km "Open Emacs"]]
+[:i [:km "Open iTerm"]]
+[:m [:km "Open Messages"]]
+[:n [:km "Open Notes"]]
+[:v [:km "Open Zoom"]]
+#+end_src
 
 ** vim-mode (z)
 #+begin_src clojure

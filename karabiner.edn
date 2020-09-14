@@ -34,7 +34,7 @@
     :chrome-history-mode {:key :g :condi :tab-mode} ;;TODO make this work
     :chrome-rearrange-tab-mode {:key :r :condi :tab-mode}
     :vim-mode {:key :z}
-
+    :slash-mode {:key :slash}
     }
 
     :simlayers {
@@ -107,20 +107,21 @@
    ;; [:l :!COup_arrow]
 
    :tab-mode
-   [:a :f4]
-   [:q :f5]
    [:spacebar :!CTspacebar]
-   [:f8 [:km "Open Spotify"]]
-   [:c [:km "Open Chrome"]]
-   [:e [:km "Open Emacs"]]
-   [:i [:km "Open iTerm"]]
-   [:m [:km "Open Messages"]]
-   [:n [:km "Open Notes"]]
    ;; [:q [:km "Open Qutebrowser"]]
    ;; [:x [:km "Open Xcode"]]
    ;; [:w [:km "Open Word"]]
    ;; [:y [:km "Open Keyboard Maestro"]]
-   [:z [:km "Open Zoom"]]
+
+:slash-mode
+[:s [:km "Open Spotify"]]
+[:c [:km "Open Chrome"]]
+[:k [:km "Open Keyboard Maestro"]]
+[:e [:km "Open Emacs"]]
+[:i [:km "Open iTerm"]]
+[:m [:km "Open Messages"]]
+[:n [:km "Open Notes"]]
+[:v [:km "Open Zoom"]]
 
 :vim-mode
 [:#Sh :left_arrow] ;; hjkl navigation everywhere + Shift
