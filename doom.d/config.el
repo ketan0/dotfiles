@@ -8,6 +8,7 @@
 ;; clients, file templates and snippets.
 (setq user-full-name "Ketan Agrawal"
       user-mail-address "agrawalk@stanford.edu")
+(setq browse-url-browser-function 'eww-browse-url)
 
 (defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
   "Personal dotfiles directory.")
@@ -37,7 +38,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-vibrant)
+(setq doom-theme 'doom-nord-light)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -118,15 +119,15 @@
   :config
   (setq org-ellipsis "…")
   (setq org-return-follows-link t)
-  (setq org-emphasis-alist ;;different ways to emphasize text
-        '(("!"  (:foreground "red") )
-          ("*" (bold :foreground "Orange" ))
-          ("/" italic "<i>" "</i>")
-          ("_" underline "<span style=\"text-decoration:underline;\">" "</span>")
-          ("-" (:overline t) "<span style=\"text-decoration:overline;\">" "</span>")
-          ("~" org-code "<code>" "</code>" verbatim)
-          ("=" org-verbatim "<code>" "</code>" verbatim)
-          ("+" (:strike-through t) "<del>" "</del>")))
+  ;; (setq org-emphasis-alist ;;different ways to emphasize text
+  ;;       '(("!"  (:foreground "red") )
+  ;;         ("*" (bold :foreground "Orange" ))
+  ;;         ("/" italic "<i>" "</i>")
+  ;;         ("_" underline "<span style=\"text-decoration:underline;\">" "</span>")
+  ;;         ("-" (:overline t) "<span style=\"text-decoration:overline;\">" "</span>")
+  ;;         ("~" org-code "<code>" "</code>" verbatim)
+  ;;         ("=" org-verbatim "<code>" "</code>" verbatim)
+  ;;         ("+" (:strike-through t) "<del>" "</del>")))
   (setq org-mobile-inbox-for-pull (concat org-directory "flagged.org"))
   (setq org-mobile-directory "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/")
   (setq org-mobile-checksum-files "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/checksums.dat")
@@ -141,43 +142,32 @@
   (setq org-agenda-start-day "+0d")
   (add-hook 'org-agenda-mode-hook #'doom-mark-buffer-as-real-h)
 
-  (defun ketan0/create-gtd-project-block (project-name)
+  (defun ketan0/create-gtd-project-block (tag-name)
     `(org-ql-block '(and (todo "STRT")
                          (path "todos.org")
-                         (ancestors ,project-name))
-                   ((org-ql-block-header ,project-name))))
+                         (tags ,tag-name))
+                   ((org-ql-block-header ,tag-name))))
   ;; initial inspiration for custom agenda https://github.com/jethrokuan/.emacs.d/blob/master/init.el
   (setq ketan0/org-agenda-todo-view
         `(" " "Ketan's Custom Agenda"
-          ((agenda ""
-                   ((org-agenda-span 'day)
-                    (org-deadline-warning-days 10)))
-           (org-ql-block '(and (todo "DONE")
-                               (path "todos.org")
-                               (closed :on today))
-                         ((org-ql-block-header "Finished Today")))
-           ;; my definition of a 'stuck' project:
-           ;; todo state PROJ, has TODOs within, but no next (STRT) actions
-           (org-ql-block '(and (todo "PROJ")
-                               (not (done))
-                               (descendants (todo "TODO"))
-                               (not (descendants (todo "STRT")))
-                               (not (descendants (scheduled))))
-                         ((org-ql-block-header "Stuck Projects")))
-           (org-ql-block '(path "capture.org")
-                         ((org-ql-block-header "To Refile")))
-           ,(ketan0/create-gtd-project-block "PAC")
-           ,(ketan0/create-gtd-project-block "Emacs")
-           ,(ketan0/create-gtd-project-block "Neo4j backend")
-           ,(ketan0/create-gtd-project-block "Knowledge graph")
-           ,(ketan0/create-gtd-project-block "website")
-           ,(ketan0/create-gtd-project-block "GTD")
-           ,(ketan0/create-gtd-project-block "Shortcuts")
-           ,(ketan0/create-gtd-project-block "Grad school")
-           ,(ketan0/create-gtd-project-block "Academics")
-           ,(ketan0/create-gtd-project-block "Reading List")
-           ,(ketan0/create-gtd-project-block "Misc")
-           nil)))
+          ,(append '((agenda ""
+                             ((org-agenda-span 'day)
+                              (org-deadline-warning-days 10)))
+                     (org-ql-block '(and (todo "DONE")
+                                         (path "todos.org")
+                                         (closed :on today))
+                                   ((org-ql-block-header "Finished Today")))
+                     ;; my definition of a 'stuck' project:
+                     ;; todo state PROJ, has TODOs within, but no next (STRT) actions
+                     (org-ql-block '(and (todo "PROJ")
+                                         (not (done))
+                                         (descendants (todo "TODO"))
+                                         (not (descendants (todo "STRT")))
+                                         (not (descendants (scheduled))))
+                                   ((org-ql-block-header "Stuck Projects")))
+                     (org-ql-block '(path "capture.org")
+                                   ((org-ql-block-header "To Refile"))))
+                   (mapcar 'ketan0/create-gtd-project-block '("academic_zettel" "pac" "100_blocks")) nil)))
   (setq org-agenda-custom-commands (list ketan0/org-agenda-todo-view))
   ;;TODO: why isn't this going into evil mode
   ;;thanks jethro
@@ -305,31 +295,36 @@ See `org-capture-templates' for more information."
   :init
   (map! :map doom-leader-map "j" 'org-journal-new-entry)
   (setq org-journal-find-file 'find-file
-        org-journal-date-prefix "#+title: "
+        org-journal-date-prefix "* "
         org-journal-dir org-directory
         org-journal-carryover-items nil
         org-journal-file-format "%Y%m%d.org"
         org-journal-date-format "%A, %d %B %Y"))
 
-(use-package! org-ql
+(use-package org-ql
   :config
-  ;;display org-ql-search/view in the same window
-  (setq org-ql-view-display-buffer-action (cons #'display-buffer-same-window nil))
-  ;;the headers in org-ql views should inherit evil-org-agenda keybinds, not standard org-agenda keybinds.
   (defun ketan0/next-actions ()
     (interactive)
     (org-ql-search
       org-agenda-files
-      '(or (path "capture.org")
+      '(or (and (path "capture.org") (parent))
            (and (todo "STRT")
                 (path "todos.org")
-                (tags "pac" "langcog" "emacs" "gtd" "shortcuts" "classes" "structure")))
-      :super-groups (list '(:auto-outline-path))
-      :narrow nil
+                (ancestors (todo "PROJ"))))
+      :super-groups (list
+                     '(:auto-outline-path)
+                     '(:name "Today"  ; Optionally specify section name
+                      :time-grid t
+                      )  ; Items that have this TODO keyword
+                     )
       :sort 'priority
-      :title "Next Actions"
-      :buffer nil))
-  (map! "<f4>" #'ketan0/next-actions)
+      :title "Next Actions"))
+  ;; (map! "<f4>" #'ketan0/next-actions)
+  (map! "<f4>" #'ketan0/switch-to-agenda)
+
+  ;;display org-ql-search/view in the same window
+  (setq org-ql-view-display-buffer-action (cons #'display-buffer-same-window nil))
+  ;;the headers in org-ql views should inherit evil-org-agenda keybinds, not standard org-agenda keybinds.
 
   (defun ketan0/gtd-daily-review ()
     (interactive)
@@ -339,21 +334,26 @@ See `org-capture-templates' for more information."
       :sort '(date priority todo)
       :super-groups '((:auto-ts t)))
     (end-of-buffer))
-  (map! "<f5>" #'ketan0/gtd-daily-review)
+  (map! "<f5>" #'ketan0/gtd-daily-review))
 
-  (with-eval-after-load
-      'org-super-agenda
-    (setq org-super-agenda-header-map (copy-keymap evil-org-agenda-mode-map))))
+(use-package! org-super-agenda
+  :config
+  (require 'evil-org-agenda)
+  (setq org-super-agenda-header-map (copy-keymap evil-org-agenda-mode-map)))
 
 (use-package! org-ml)
 (use-package! json-pointer)
 
 (use-package! org-roam
   :init
-  (map! :map doom-leader-map "r" 'org-roam-find-file)
   :hook
   (after-init . org-roam-mode)
   :config
+  (map! :leader :nm
+        "r r" #'org-roam-find-file
+        "r i" #'org-roam-insert-immediate
+        "r l" #'org-roam-insert
+        "r b" #'org-roam-buffer-activate)
   (setq org-roam-graphviz-executable "/usr/local/bin/dot")
   (setq org-roam-graph-viewer nil)
   (setq org-roam-directory org-directory))
@@ -478,6 +478,7 @@ See `org-capture-templates' for more information."
           (set-window-buffer (next-window) next-win-buffer)
           (select-window first-win)
           (if this-win-2nd (other-window 1))))))
+(map! :map evil-window-map "f" 'toggle-window-split)
 
 (use-package! multifiles
   :init
@@ -560,3 +561,10 @@ Modified version of `org-file-complete-link'."
 (org-link-set-parameters "peek"
                          :activate-func 'org-peek-link-activate-func
                          :complete 'org-peek-link-complete)
+
+(use-package! evil-snipe
+  :config
+  ;; don't use s/S to repeat (sometimes I like to mess around and do multiple searches)
+  (setq evil-snipe-repeat-keys nil)
+  ;; search the whole buffer, not just the line
+  (setq evil-snipe-scope 'buffer))

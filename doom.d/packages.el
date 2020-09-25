@@ -25,6 +25,7 @@
 (package! org-ml :recipe (:host github :repo "ndwarshuis/org-ml"))
 (package! multifiles :recipe (:host github :repo "magnars/multifiles.el"))
 (package! json-pointer :recipe (:host github :repo "syohex/emacs-json-pointer"))
+(package! poet :recipe (:host github :repo "kunalb/poet"))
 
 ;; (package! lsp-mode :recipe (:host github :repo "emacs-lsp/lsp-mode"))
 ;; Doom's packages are pinned to a specific commit and updated from release to
