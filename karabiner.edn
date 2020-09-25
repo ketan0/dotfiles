@@ -1,17 +1,18 @@
-    {;;beginning bracket for whole data structure!
+{;;beginning bracket for whole data structure!
 
-     :profiles {
-                :Ketan {:default true
-                          :sim     60    ;; simultaneous_threshold_milliseconds (def: 50)
-                          ;; keys need to be pressed within this threshold to be considered simultaneous
-                          :delay   80    ;; to_delayed_action_delay_milliseconds (def: 500)
-                          ;; basically it means time after which the key press is count delayed
-                          :alone   200      ;; to_if_alone_timeout_milliseconds (def: 1000)
-                          ;; hold for 995s and single tap registered; hold for 1005s and seen as modifier
-                          :held    50   ;; to_if_held_down_threshold_milliseconds (def: 500)
-                          ;; key is fired twice when 500 ms is elapsed (otherwise seen as a hold command)
-                          }
-                } ;; profiles
+ :profiles {
+            :Ketan {
+                    :default true
+                    :sim     60    ;; simultaneous_threshold_milliseconds (def: 50)
+                    ;; keys need to be pressed within this threshold to be considered simultaneous
+                    :delay   80    ;; to_delayed_action_delay_milliseconds (def: 500)
+                    ;; basically it means time after which the key press is count delayed
+                    :alone   400      ;; to_if_alone_timeout_milliseconds (def: 1000)
+                    ;; hold for 995s and single tap registered; hold for 1005s and seen as modifier
+                    :held    50   ;; to_if_held_down_threshold_milliseconds (def: 500)
+                    ;; key is fired twice when 500 ms is elapsed (otherwise seen as a hold command)
+                    }
+            } ;; profiles
 
     :templates {
                 :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\"'"
@@ -34,13 +35,11 @@
     :chrome-history-mode {:key :g :condi :tab-mode} ;;TODO make this work
     :chrome-rearrange-tab-mode {:key :r :condi :tab-mode}
     :vim-mode {:key :z}
-    :slash-mode {:key :slash}
     }
 
     :simlayers {
-
+    :slash-mode {:key :slash}
     :jupyter-mode {:key :j}
-
     }
 
    :main [{
@@ -59,11 +58,11 @@
 
    ;; move windows
    :yabai-move-mode
-   [:b "/usr/local/bin/yabai -m space --balance"]
    [:h "/usr/local/bin/yabai -m window --warp west"]
    [:j "/usr/local/bin/yabai -m window --warp south"]
    [:k "/usr/local/bin/yabai -m window --warp north"]
    [:l "/usr/local/bin/yabai -m window --warp east"]
+   [:b "/usr/local/bin/yabai -m space --balance"]
    [:a "/usr/local/bin/yabai -m window --toggle float"]
    [:s "/usr/local/bin/yabai -m window --toggle split"]
 
@@ -85,9 +84,9 @@
    [:semicolon "/usr/local/bin/yabai -m space --focus next"]
 
    :yabai-display-mode
+   [:h "/usr/local/bin/yabai -m display --focus prev"]
    [:j "/usr/local/bin/yabai -m window --display prev && /usr/local/bin/yabai -m display --focus prev"]
    [:k "/usr/local/bin/yabai -m window --display next && /usr/local/bin/yabai -m display --focus next"]
-   [:h "/usr/local/bin/yabai -m display --focus prev"]
    [:l "/usr/local/bin/yabai -m display --focus next"]
 
    :chrome-history-mode
