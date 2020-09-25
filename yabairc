@@ -13,11 +13,11 @@ yabai -m rule --add app="^Spotify$" manage=off
 yabai -m config window_placement second_child
 
 # Set all padding and gaps to 15pt (default: 0)
-yabai -m config top_padding    15
-yabai -m config bottom_padding 15
-yabai -m config left_padding   15
-yabai -m config right_padding  15
-yabai -m config window_gap     15
+yabai -m config top_padding    20
+yabai -m config bottom_padding 20
+yabai -m config left_padding   20
+yabai -m config right_padding  20
+yabai -m config window_gap     20
 
 # on or off (default: off)
 yabai -m config auto_balance off
