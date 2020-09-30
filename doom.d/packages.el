@@ -26,7 +26,8 @@
 (package! multifiles :recipe (:host github :repo "magnars/multifiles.el"))
 (package! json-pointer :recipe (:host github :repo "syohex/emacs-json-pointer"))
 (package! poet :recipe (:host github :repo "kunalb/poet"))
-
+(package! texfrag :recipe (:host github :repo "TobiasZawada/texfrag"))
+(package! language-detection)
 ;; (package! lsp-mode :recipe (:host github :repo "emacs-lsp/lsp-mode"))
 ;; Doom's packages are pinned to a specific commit and updated from release to
 ;; release. The `unpin!' macro allows you to unpin single packages...
