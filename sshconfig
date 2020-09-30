@@ -81,15 +81,6 @@ Host nero
     ControlPersist yes
     ControlPath ~/.ssh/%l%r@%h:%p
 
-
-Host clouddesk
-    User agrketan
-    HostName dev-dsk-agrketan-2c-0b3617f7.us-west-2.amazon.com
-    GSSAPIAuthentication yes
-    ControlMaster auto
-    ControlPersist yes
-    ControlPath ~/.ssh/%r@%h:%p
-
 Host ketanmba
     HostName 10.0.1.6
     User ketanagrawal
