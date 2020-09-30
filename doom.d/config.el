@@ -258,7 +258,13 @@
   ;;       `("o" "Ketan's Emacs tinkering Agenda"
   ;;         ,(append (mapcar 'ketan0/create-gtd-project-block '("kg" "emacs" "shortcuts")) nil)))
 
-  ;; Create an agenda view for the PARA "area" represented by the given tag
+  (setq org-agenda-custom-commands (list ketan0/main-agenda))
+  ;;TODO: why isn't this going into evil mode
+  ;;thanks jethro
+  (defun ketan0/switch-to-main-agenda ()
+    (interactive)
+    (org-agenda nil " "))
+  ;; Create an agenda view for each PARA "area"
   (defun ketan0/area-agenda (area-tag)
     (org-ql-search
       org-agenda-files
@@ -268,16 +274,6 @@
       :super-groups (list '(:auto-outline-path))
       :sort 'priority
       :title (format "%s agenda" area-tag)))
-
-  (setq org-agenda-custom-commands (list ketan0/main-agenda))
-  ;;TODO: why isn't this going into evil mode
-  ;;thanks jethro
-  (defun ketan0/switch-to-main-agenda ()
-    (interactive)
-    (org-agenda nil " "))
-  ;; (defun ketan0/switch-to-tinkering-agenda ()
-  ;;   (interactive)
-  ;;   (org-agenda nil "o"))
 
   (map! "<f4>" #'ketan0/switch-to-main-agenda)
   (map! "<f5> p" (lambda () (interactive) (ketan0/area-agenda "projects")))
@@ -374,6 +370,10 @@
           ("c" "coronavirus" entry (file+datetree
                                     ,(concat org-directory "20200314210447_coronavirus.org"))
            "* %^{Heading}")
+          ("P" "PAC lab notebook" entry
+           (file+olp+datetree
+            ,(concat org-directory "20200313153429_pac.org") "Lab Notebook")
+           "* %?" :tree-type week :unnarrowed t)
           ("w" "Review: Weekly Review" entry (file+datetree ,(concat org-directory "reviews.org"))
            (file ,(concat org-directory "20200816223343-weekly_review.org")))
           ("p" "Protocol" entry (file ,org-default-notes-file)
