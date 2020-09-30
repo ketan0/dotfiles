@@ -14,12 +14,12 @@ inspiration taken from:
 
 * TODO Fix the bug where chrome always opens a new window
 * Guide
-  Guide lifted from [[https://gist.github.com/kaushikgopal/ff7a92bbc887e59699c804b59074a126][kaushikgopal]] 
+Guide lifted from [[https://gist.github.com/kaushikgopal/ff7a92bbc887e59699c804b59074a126][kaushikgopal]]
 
-  to understand better how modifiers work in karabiner
-  karabiner definition of mandatory and optional
-  [[https://karabiner-elements.pqrs.org/docs/json/complex-modifications-manipulator-definition/from/modifiers/#frommodifiersoptional   ][karabiner modifiers documentation]]
-  need to prefix C T O S F with ! or #
+to understand better how modifiers work in karabiner
+karabiner definition of mandatory and optional
+[[https://karabiner-elements.pqrs.org/docs/json/complex-modifications-manipulator-definition/from/modifiers/#frommodifiersoptional   ][karabiner modifiers documentation]]
+need to prefix C T O S F with ! or #
 ** !  | means mandatory
 ** #  | means optional
 ** !! | mandatory command + control + optional + shift (hyper)
@@ -34,7 +34,7 @@ inspiration taken from:
 ** E  | right_option
 ** R  | right_shift
 * Profiles
-  #+begin_src clojure
+#+begin_src clojure
 {;;beginning bracket for whole data structure!
 
  :profiles {
@@ -50,141 +50,140 @@ inspiration taken from:
                     ;; key is fired twice when 500 ms is elapsed (otherwise seen as a hold command)
                     }
             } ;; profiles
-  #+end_src
+#+end_src
  
 * Templates
-  #+begin_src clojure
-    :templates {
-                :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\"'"
-                :open "open \"%s\""
-                } ;; templates
+#+begin_src clojure
+:templates {
+            :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\"'"
+            :open "open \"%s\""
+            } ;; templates
 
-  #+end_src
+#+end_src
  
 * Layers & Simlayers
-  #+begin_src clojure
-    :layers {
+#+begin_src clojure
+:layers {
 
-    :tab-mode {:key :tab
-               :afterup [{:set ["yabai-move-mode" 0]}
-                         {:set ["yabai-focus-mode" 0]}
-                         {:set ["yabai-display-mode" 0]}
-                         {:set ["chrome-movement-mode" 0]}
-                         {:set ["chrome-rearrange-tab-mode" 0]}]}
+         :tab-mode {:key :tab
+                    :afterup [{:set ["yabai-move-mode" 0]}
+                              {:set ["yabai-focus-mode" 0]}
+                              {:set ["yabai-display-mode" 0]}
+                              {:set ["chrome-movement-mode" 0]}
+                              {:set ["chrome-rearrange-tab-mode" 0]}]}
 
-    :yabai-move-mode {:key :w :condi :tab-mode}
-    :yabai-focus-mode {:key :f :condi :tab-mode}
-    :yabai-display-mode {:key :d :condi :tab-mode}
-    :chrome-movement-mode {:key :t :condi :tab-mode} ;;TODO make this work
-    :chrome-history-mode {:key :g :condi :tab-mode} ;;TODO make this work
-    :chrome-rearrange-tab-mode {:key :r :condi :tab-mode}
-    :vim-mode {:key :z}
-    }
+         :yabai-move-mode {:key :w :condi :tab-mode}
+         :yabai-focus-mode {:key :f :condi :tab-mode}
+         :yabai-display-mode {:key :d :condi :tab-mode}
+         :chrome-movement-mode {:key :t :condi :tab-mode} ;;TODO make this work
+         :chrome-history-mode {:key :g :condi :tab-mode} ;;TODO make this work
+         :chrome-rearrange-tab-mode {:key :r :condi :tab-mode}
+         :vim-mode {:key :z}
+         }
 
-    :simlayers {
-    :slash-mode {:key :slash}
-    :jupyter-mode {:key :j}
-    }
+:simlayers {
+            :slash-mode {:key :slash}
+            :jupyter-mode {:key :j}
+            }
 
-  #+end_src
+#+end_src
  
 * Main
 ** begin main
-   #+begin_src clojure
-   :main [{
-   :des "see karabiner.org for documentation.",
-   :rules [
-   #+end_src
+#+begin_src clojure
+:main [{
+        :des "see karabiner.org for documentation.",
+        :rules [
+#+end_src
 ** right cmd => cmd+tab
-   press left command alone to switch to the previous app.
-   #+begin_src clojure
-   [:##right_command :right_command nil {:alone :!Ctab}]
-   #+end_src
+press left command alone to switch to the previous app.
+#+begin_src clojure
+[:##right_command :right_command nil {:alone :!Ctab}]
+#+end_src
 ** caps lock alone = escape, with other keys = ctrl
-    #+begin_src clojure
-    [:##caps_lock :left_control nil {:alone :escape}]
-    #+end_src
+#+begin_src clojure
+[:##caps_lock :left_control nil {:alone :escape}]
+#+end_src
 ** yabai-mode(tab+{wsf}+{hjkl})
-   #+begin_src clojure
-   ;; :yabai-insert-mode
-   ;; [:h "/usr/local/bin/yabai -m window --insert west"]
-   ;; [:j "/usr/local/bin/yabai -m window --insert south"]
-   ;; [:k "/usr/local/bin/yabai -m window --insert north"]
-   ;; [:l "/usr/local/bin/yabai -m window --insert east"]
+#+begin_src clojure
+;; :yabai-insert-mode
+;; [:h "/usr/local/bin/yabai -m window --insert west"]
+;; [:j "/usr/local/bin/yabai -m window --insert south"]
+;; [:k "/usr/local/bin/yabai -m window --insert north"]
+;; [:l "/usr/local/bin/yabai -m window --insert east"]
 
-   ;; move windows
-   :yabai-move-mode
-   [:h "/usr/local/bin/yabai -m window --warp west"]
-   [:j "/usr/local/bin/yabai -m window --warp south"]
-   [:k "/usr/local/bin/yabai -m window --warp north"]
-   [:l "/usr/local/bin/yabai -m window --warp east"]
-   [:b "/usr/local/bin/yabai -m space --balance"]
-   [:a "/usr/local/bin/yabai -m window --toggle float"]
-   [:s "/usr/local/bin/yabai -m window --toggle split"]
-
-   #+end_src
+;; move windows
+:yabai-move-mode
+[:h "/usr/local/bin/yabai -m window --warp west"]
+[:j "/usr/local/bin/yabai -m window --warp south"]
+[:k "/usr/local/bin/yabai -m window --warp north"]
+[:l "/usr/local/bin/yabai -m window --warp east"]
+[:b "/usr/local/bin/yabai -m space --balance"]
+[:s "/usr/local/bin/yabai -m window --toggle split"]
+#+end_src
    
 ** yabai-focus-mode
-   #+begin_src clojure
-   ;; ;; ;; scale windows
-   ;; :yabai-scale-mode
-   ;; [:h "/usr/local/bin/yabai -m window --resize left"]
-   ;; [:j "/usr/local/bin/yabai -m window --resize down"]
-   ;; [:k "/usr/local/bin/yabai -m window --resize up"]
-   ;; [:l "/usr/local/bin/yabai -m window --resize right"]
+#+begin_src clojure
+;; ;; ;; scale windows
+;; :yabai-scale-mode
+;; [:h "/usr/local/bin/yabai -m window --resize left"]
+;; [:j "/usr/local/bin/yabai -m window --resize down"]
+;; [:k "/usr/local/bin/yabai -m window --resize up"]
+;; [:l "/usr/local/bin/yabai -m window --resize right"]
 
-   ;; directionally navigate windows/spaces
-   ;; space<=="g", {"h" "j" "k" "l"}, ";"==>space
-   :yabai-focus-mode
-   [:g "/usr/local/bin/yabai -m space --focus prev"]
-   [:h "/usr/local/bin/yabai -m window --focus west"]
-   [:j "/usr/local/bin/yabai -m window --focus south"]
-   [:k "/usr/local/bin/yabai -m window --focus north"]
-   [:l "/usr/local/bin/yabai -m window --focus east"]
-   [:semicolon "/usr/local/bin/yabai -m space --focus next"]
-   #+end_src
+;; directionally navigate windows/spaces
+;; space<=="g", {"h" "j" "k" "l"}, ";"==>space
+:yabai-focus-mode
+[:g "/usr/local/bin/yabai -m space --focus prev"]
+[:h "/usr/local/bin/yabai -m window --focus west"]
+[:j "/usr/local/bin/yabai -m window --focus south"]
+[:k "/usr/local/bin/yabai -m window --focus north"]
+[:l "/usr/local/bin/yabai -m window --focus east"]
+[:semicolon "/usr/local/bin/yabai -m space --focus next"]
+#+end_src
 
 ** yabai-display-mode
-   #+begin_src clojure
-   :yabai-display-mode
-   [:h "/usr/local/bin/yabai -m display --focus prev"]
-   [:j "/usr/local/bin/yabai -m window --display prev && /usr/local/bin/yabai -m display --focus prev"]
-   [:k "/usr/local/bin/yabai -m window --display next && /usr/local/bin/yabai -m display --focus next"]
-   [:l "/usr/local/bin/yabai -m display --focus next"]
-   #+end_src
+#+begin_src clojure
+:yabai-display-mode
+[:h "/usr/local/bin/yabai -m display --focus prev"]
+[:j "/usr/local/bin/yabai -m window --display prev && /usr/local/bin/yabai -m display --focus prev"]
+[:k "/usr/local/bin/yabai -m window --display next && /usr/local/bin/yabai -m display --focus next"]
+[:l "/usr/local/bin/yabai -m display --focus next"]
+#+end_src
 
 ** chrome-history-mode (tab+{g}+{hjkl})
-   #+begin_src clojure
-   :chrome-history-mode
-   [:h :!Copen_bracket]
-   [:l :!Cclose_bracket]
-   #+end_src
+#+begin_src clojure
+:chrome-history-mode
+[:h :!Copen_bracket]
+[:l :!Cclose_bracket]
+#+end_src
 ** chrome-movement-mode (tab+{t}+{hjkl})
-   #+begin_src clojure
-   :chrome-movement-mode
-   [:h :!TStab]
-   [:l :!Ttab]
-     #+end_src
+#+begin_src clojure
+:chrome-movement-mode
+[:h :!TStab]
+[:l :!Ttab]
+#+end_src
 ** chrome-rearrange-tab-mode (tab+{r}+{hjkl})
-   #+begin_src clojure
-   ;;NOTE: need the Chrome extension for this to work
-   :chrome-rearrange-tab-mode
-   ;; [:h :!COdown_arrow]
+#+begin_src clojure
+;;NOTE: need the Chrome extension for this to work
+:chrome-rearrange-tab-mode
+;; [:h :!COdown_arrow]
 
-   [:h :!TSleft_arrow]
-   [:l :!TSright_arrow]
-   ;; [:l :!COup_arrow]
-   #+end_src
+[:h :!TSleft_arrow]
+[:l :!TSright_arrow]
+;; [:l :!COup_arrow]
+#+end_src
 ** tab-mode (tab)
-   #+begin_src clojure
-   :tab-mode
-   [:spacebar :!CTspacebar]
-   ;; [:q [:km "Open Qutebrowser"]]
-   ;; [:x [:km "Open Xcode"]]
-   ;; [:w [:km "Open Word"]]
-   ;; [:y [:km "Open Keyboard Maestro"]]
+#+begin_src clojure
+:tab-mode
+[:spacebar :!CTspacebar]
+[:return_or_enter  "/usr/local/bin/yabai -m window --toggle float"]
+;; [:q [:km "Open Qutebrowser"]]
+;; [:x [:km "Open Xcode"]]
+;; [:w [:km "Open Word"]]
+;; [:y [:km "Open Keyboard Maestro"]]
 
-   #+end_src
+#+end_src
 ** slash-mode (forward slash)
 #+begin_src clojure
 :slash-mode
@@ -211,24 +210,24 @@ inspiration taken from:
 #+end_src
 
 ** jupyter mode (j)
-   #+begin_src clojure
-     :jupyter-mode
-     [:l [:km "Start or Go to Existing Jupyter Lab Server"]]
+#+begin_src clojure
+:jupyter-mode
+[:l [:km "Start or Go to Existing Jupyter Lab Server"]]
 
-   #+end_src
+#+end_src
 ** end main 
-   #+begin_src clojure
-    ]}] ;;end main
-   #+end_src
+#+begin_src clojure
+]}] ;;end main
+#+end_src
    
 * Applications
-  #+begin_src clojure
-    :applications [
+#+begin_src clojure
+:applications [
 
-    :Emacs ["^org\\.gnu\\.Emacs$"]
-    :Chrome ["^com\\.google\\.Chrome$", "^org\\.chromium\\.Chromium$", "^com\\.google\\.Chrome\\.canary$"]
+               :Emacs ["^org\\.gnu\\.Emacs$"]
+               :Chrome ["^com\\.google\\.Chrome$", "^org\\.chromium\\.Chromium$", "^com\\.google\\.Chrome\\.canary$"]
 
-    ]
+               ]
 
-    };;ending bracket for whole data structure!
-  #+end_src
+};;ending bracket for whole data structure!
+#+end_src

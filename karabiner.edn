@@ -14,103 +14,103 @@
                     }
             } ;; profiles
 
-    :templates {
-                :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\"'"
-                :open "open \"%s\""
-                } ;; templates
+:templates {
+            :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\"'"
+            :open "open \"%s\""
+            } ;; templates
 
-    :layers {
+:layers {
 
-    :tab-mode {:key :tab
-               :afterup [{:set ["yabai-move-mode" 0]}
-                         {:set ["yabai-focus-mode" 0]}
-                         {:set ["yabai-display-mode" 0]}
-                         {:set ["chrome-movement-mode" 0]}
-                         {:set ["chrome-rearrange-tab-mode" 0]}]}
+         :tab-mode {:key :tab
+                    :afterup [{:set ["yabai-move-mode" 0]}
+                              {:set ["yabai-focus-mode" 0]}
+                              {:set ["yabai-display-mode" 0]}
+                              {:set ["chrome-movement-mode" 0]}
+                              {:set ["chrome-rearrange-tab-mode" 0]}]}
 
-    :yabai-move-mode {:key :w :condi :tab-mode}
-    :yabai-focus-mode {:key :f :condi :tab-mode}
-    :yabai-display-mode {:key :d :condi :tab-mode}
-    :chrome-movement-mode {:key :t :condi :tab-mode} ;;TODO make this work
-    :chrome-history-mode {:key :g :condi :tab-mode} ;;TODO make this work
-    :chrome-rearrange-tab-mode {:key :r :condi :tab-mode}
-    :vim-mode {:key :z}
-    }
+         :yabai-move-mode {:key :w :condi :tab-mode}
+         :yabai-focus-mode {:key :f :condi :tab-mode}
+         :yabai-display-mode {:key :d :condi :tab-mode}
+         :chrome-movement-mode {:key :t :condi :tab-mode} ;;TODO make this work
+         :chrome-history-mode {:key :g :condi :tab-mode} ;;TODO make this work
+         :chrome-rearrange-tab-mode {:key :r :condi :tab-mode}
+         :vim-mode {:key :z}
+         }
 
-    :simlayers {
-    :slash-mode {:key :slash}
-    :jupyter-mode {:key :j}
-    }
+:simlayers {
+            :slash-mode {:key :slash}
+            :jupyter-mode {:key :j}
+            }
 
-   :main [{
-   :des "see karabiner.org for documentation.",
-   :rules [
+:main [{
+        :des "see karabiner.org for documentation.",
+        :rules [
 
-   [:##right_command :right_command nil {:alone :!Ctab}]
+[:##right_command :right_command nil {:alone :!Ctab}]
 
-    [:##caps_lock :left_control nil {:alone :escape}]
+[:##caps_lock :left_control nil {:alone :escape}]
 
-   ;; :yabai-insert-mode
-   ;; [:h "/usr/local/bin/yabai -m window --insert west"]
-   ;; [:j "/usr/local/bin/yabai -m window --insert south"]
-   ;; [:k "/usr/local/bin/yabai -m window --insert north"]
-   ;; [:l "/usr/local/bin/yabai -m window --insert east"]
+;; :yabai-insert-mode
+;; [:h "/usr/local/bin/yabai -m window --insert west"]
+;; [:j "/usr/local/bin/yabai -m window --insert south"]
+;; [:k "/usr/local/bin/yabai -m window --insert north"]
+;; [:l "/usr/local/bin/yabai -m window --insert east"]
 
-   ;; move windows
-   :yabai-move-mode
-   [:h "/usr/local/bin/yabai -m window --warp west"]
-   [:j "/usr/local/bin/yabai -m window --warp south"]
-   [:k "/usr/local/bin/yabai -m window --warp north"]
-   [:l "/usr/local/bin/yabai -m window --warp east"]
-   [:b "/usr/local/bin/yabai -m space --balance"]
-   [:a "/usr/local/bin/yabai -m window --toggle float"]
-   [:s "/usr/local/bin/yabai -m window --toggle split"]
+;; move windows
+:yabai-move-mode
+[:h "/usr/local/bin/yabai -m window --warp west"]
+[:j "/usr/local/bin/yabai -m window --warp south"]
+[:k "/usr/local/bin/yabai -m window --warp north"]
+[:l "/usr/local/bin/yabai -m window --warp east"]
+[:b "/usr/local/bin/yabai -m space --balance"]
+[:s "/usr/local/bin/yabai -m window --toggle split"]
 
-   ;; ;; ;; scale windows
-   ;; :yabai-scale-mode
-   ;; [:h "/usr/local/bin/yabai -m window --resize left"]
-   ;; [:j "/usr/local/bin/yabai -m window --resize down"]
-   ;; [:k "/usr/local/bin/yabai -m window --resize up"]
-   ;; [:l "/usr/local/bin/yabai -m window --resize right"]
+;; ;; ;; scale windows
+;; :yabai-scale-mode
+;; [:h "/usr/local/bin/yabai -m window --resize left"]
+;; [:j "/usr/local/bin/yabai -m window --resize down"]
+;; [:k "/usr/local/bin/yabai -m window --resize up"]
+;; [:l "/usr/local/bin/yabai -m window --resize right"]
 
-   ;; directionally navigate windows/spaces
-   ;; space<=="g", {"h" "j" "k" "l"}, ";"==>space
-   :yabai-focus-mode
-   [:g "/usr/local/bin/yabai -m space --focus prev"]
-   [:h "/usr/local/bin/yabai -m window --focus west"]
-   [:j "/usr/local/bin/yabai -m window --focus south"]
-   [:k "/usr/local/bin/yabai -m window --focus north"]
-   [:l "/usr/local/bin/yabai -m window --focus east"]
-   [:semicolon "/usr/local/bin/yabai -m space --focus next"]
+;; directionally navigate windows/spaces
+;; space<=="g", {"h" "j" "k" "l"}, ";"==>space
+:yabai-focus-mode
+[:g "/usr/local/bin/yabai -m space --focus prev"]
+[:h "/usr/local/bin/yabai -m window --focus west"]
+[:j "/usr/local/bin/yabai -m window --focus south"]
+[:k "/usr/local/bin/yabai -m window --focus north"]
+[:l "/usr/local/bin/yabai -m window --focus east"]
+[:semicolon "/usr/local/bin/yabai -m space --focus next"]
 
-   :yabai-display-mode
-   [:h "/usr/local/bin/yabai -m display --focus prev"]
-   [:j "/usr/local/bin/yabai -m window --display prev && /usr/local/bin/yabai -m display --focus prev"]
-   [:k "/usr/local/bin/yabai -m window --display next && /usr/local/bin/yabai -m display --focus next"]
-   [:l "/usr/local/bin/yabai -m display --focus next"]
+:yabai-display-mode
+[:h "/usr/local/bin/yabai -m display --focus prev"]
+[:j "/usr/local/bin/yabai -m window --display prev && /usr/local/bin/yabai -m display --focus prev"]
+[:k "/usr/local/bin/yabai -m window --display next && /usr/local/bin/yabai -m display --focus next"]
+[:l "/usr/local/bin/yabai -m display --focus next"]
 
-   :chrome-history-mode
-   [:h :!Copen_bracket]
-   [:l :!Cclose_bracket]
+:chrome-history-mode
+[:h :!Copen_bracket]
+[:l :!Cclose_bracket]
 
-   :chrome-movement-mode
-   [:h :!TStab]
-   [:l :!Ttab]
+:chrome-movement-mode
+[:h :!TStab]
+[:l :!Ttab]
 
-   ;;NOTE: need the Chrome extension for this to work
-   :chrome-rearrange-tab-mode
-   ;; [:h :!COdown_arrow]
+;;NOTE: need the Chrome extension for this to work
+:chrome-rearrange-tab-mode
+;; [:h :!COdown_arrow]
 
-   [:h :!TSleft_arrow]
-   [:l :!TSright_arrow]
-   ;; [:l :!COup_arrow]
+[:h :!TSleft_arrow]
+[:l :!TSright_arrow]
+;; [:l :!COup_arrow]
 
-   :tab-mode
-   [:spacebar :!CTspacebar]
-   ;; [:q [:km "Open Qutebrowser"]]
-   ;; [:x [:km "Open Xcode"]]
-   ;; [:w [:km "Open Word"]]
-   ;; [:y [:km "Open Keyboard Maestro"]]
+:tab-mode
+[:spacebar :!CTspacebar]
+[:return_or_enter  "/usr/local/bin/yabai -m window --toggle float"]
+;; [:q [:km "Open Qutebrowser"]]
+;; [:x [:km "Open Xcode"]]
+;; [:w [:km "Open Word"]]
+;; [:y [:km "Open Keyboard Maestro"]]
 
 :slash-mode
 [:s [:km "Open Spotify"]]
@@ -131,16 +131,16 @@
 [:#Sw :!Oright_arrow]
 [:delete_or_backspace :!Odelete_or_backspace]
 
-     :jupyter-mode
-     [:l [:km "Start or Go to Existing Jupyter Lab Server"]]
+:jupyter-mode
+[:l [:km "Start or Go to Existing Jupyter Lab Server"]]
 
-    ]}] ;;end main
+]}] ;;end main
 
-    :applications [
+:applications [
 
-    :Emacs ["^org\\.gnu\\.Emacs$"]
-    :Chrome ["^com\\.google\\.Chrome$", "^org\\.chromium\\.Chromium$", "^com\\.google\\.Chrome\\.canary$"]
+               :Emacs ["^org\\.gnu\\.Emacs$"]
+               :Chrome ["^com\\.google\\.Chrome$", "^org\\.chromium\\.Chromium$", "^com\\.google\\.Chrome\\.canary$"]
 
-    ]
+               ]
 
-    };;ending bracket for whole data structure!
+};;ending bracket for whole data structure!
