@@ -8,7 +8,93 @@
 ;; clients, file templates and snippets.
 (setq user-full-name "Ketan Agrawal"
       user-mail-address "agrawalk@stanford.edu")
+(add-hook 'eww-mode-hook 'visual-line-mode)
+(require 'mailcap)
+(add-to-list 'mailcap-user-mime-data
+               '((type . "application/pdf")
+                 (viewer . pdf-view-mode)))
+(add-to-list 'mailcap-user-mime-data
+               '((type . "application/markdown")
+                 (viewer . markdown-mode)))
 (setq browse-url-browser-function 'eww-browse-url)
+
+;; BEGIN eww syntax highlighting
+(require 'cl-lib)
+(defun eww-tag-pre (dom)
+  (let ((shr-folding-mode 'none)
+        (shr-current-font 'default))
+    (shr-ensure-newline)
+    (insert (eww-fontify-pre dom))
+    (shr-ensure-newline)))
+
+(defun eww-fontify-pre (dom)
+  (with-temp-buffer
+    (shr-generic dom)
+    (let ((mode (eww-buffer-auto-detect-mode)))
+      (when mode
+        (eww-fontify-buffer mode)))
+    (buffer-string)))
+
+(defun eww-fontify-buffer (mode)
+  (delay-mode-hooks (funcall mode))
+  (font-lock-default-function mode)
+  (font-lock-default-fontify-region (point-min)
+                                    (point-max)
+                                    nil))
+
+(defun eww-buffer-auto-detect-mode ()
+  (let* ((map '((ada ada-mode)
+                (awk awk-mode)
+                (c c-mode)
+                (cpp c++-mode)
+                (clojure clojure-mode lisp-mode)
+                (csharp csharp-mode java-mode)
+                (css css-mode)
+                (dart dart-mode)
+                (delphi delphi-mode)
+                (emacslisp emacs-lisp-mode)
+                (erlang erlang-mode)
+                (fortran fortran-mode)
+                (fsharp fsharp-mode)
+                (go go-mode)
+                (groovy groovy-mode)
+                (haskell haskell-mode)
+                (html html-mode)
+                (java java-mode)
+                (javascript javascript-mode)
+                (json json-mode javascript-mode)
+                (latex latex-mode)
+                (lisp lisp-mode)
+                (lua lua-mode)
+                (matlab matlab-mode octave-mode)
+                (objc objc-mode c-mode)
+                (perl perl-mode)
+                (php php-mode)
+                (prolog prolog-mode)
+                (python python-mode)
+                (r r-mode)
+                (ruby ruby-mode)
+                (rust rust-mode)
+                (scala scala-mode)
+                (shell shell-script-mode)
+                (smalltalk smalltalk-mode)
+                (sql sql-mode)
+                (swift swift-mode)
+                (visualbasic visual-basic-mode)
+                (xml sgml-mode)))
+         (language (language-detection-string
+                    (buffer-substring-no-properties (point-min) (point-max))))
+         (modes (cdr (assoc language map)))
+         (mode (cl-loop for mode in modes
+                        when (fboundp mode)
+                        return mode)))
+    (message (format "%s" language))
+    (when (fboundp mode)
+      mode)))
+
+(setq shr-external-rendering-functions
+      '((pre . eww-tag-pre)))
+;; END eww syntax highlighting
 
 (defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
   "Personal dotfiles directory.")
@@ -94,8 +180,6 @@
 (map! :map evil-motion-state-map "gj" 'evil-next-line)
 (map! :map evil-motion-state-map "gk" 'evil-previous-line)
 
-(map! :map evil-motion-state-map "k" 'evil-previous-visual-line)
-
 (map! :map evil-motion-state-map "j" 'evil-next-visual-line)
 (map! :map evil-motion-state-map "k" 'evil-previous-visual-line)
 (map! :map evil-visual-state-map "j" 'evil-next-visual-line)
@@ -148,8 +232,9 @@
                          (tags ,tag-name))
                    ((org-ql-block-header ,tag-name))))
   ;; initial inspiration for custom agenda https://github.com/jethrokuan/.emacs.d/blob/master/init.el
-  (setq ketan0/org-agenda-todo-view
-        `(" " "Ketan's Custom Agenda"
+  ;; main projects + stuff scheduled for today + stuff I finished
+  (setq ketan0/main-agenda
+        `(" " "Ketan's Focused Agenda"
           ,(append '((agenda ""
                              ((org-agenda-span 'day)
                               (org-deadline-warning-days 10)))
@@ -167,16 +252,54 @@
                                    ((org-ql-block-header "Stuck Projects")))
                      (org-ql-block '(path "capture.org")
                                    ((org-ql-block-header "To Refile"))))
-                   (mapcar 'ketan0/create-gtd-project-block '("academic_zettel" "pac" "100_blocks")) nil)))
-  (setq org-agenda-custom-commands (list ketan0/org-agenda-todo-view))
+                   (mapcar 'ketan0/create-gtd-project-block
+                           '("academic_zettel" "pac" "100_blocks" "org_spotify")) nil)))
+  ;; (setq ketan0/tinkering-agenda
+  ;;       `("o" "Ketan's Emacs tinkering Agenda"
+  ;;         ,(append (mapcar 'ketan0/create-gtd-project-block '("kg" "emacs" "shortcuts")) nil)))
+
+  ;; Create an agenda view for the PARA "area" represented by the given tag
+  (defun ketan0/area-agenda (area-tag)
+    (org-ql-search
+      org-agenda-files
+      `(and (tags ,area-tag)
+            (ancestors (todo "PROJ"))
+            (todo "STRT"))
+      :super-groups (list '(:auto-outline-path))
+      :sort 'priority
+      :title (format "%s agenda" area-tag)))
+
+  (setq org-agenda-custom-commands (list ketan0/main-agenda))
   ;;TODO: why isn't this going into evil mode
   ;;thanks jethro
-  (defun ketan0/switch-to-agenda ()
+  (defun ketan0/switch-to-main-agenda ()
     (interactive)
     (org-agenda nil " "))
-  (defun ketan0/switch-to-amazon-na ()
+  ;; (defun ketan0/switch-to-tinkering-agenda ()
+  ;;   (interactive)
+  ;;   (org-agenda nil "o"))
+
+  (map! "<f4>" #'ketan0/switch-to-main-agenda)
+  (map! "<f5> p" (lambda () (interactive) (ketan0/area-agenda "projects")))
+  (map! "<f5> a" (lambda () (interactive) (ketan0/area-agenda "academic")))
+  (map! "<f5> k" (lambda () (interactive) (ketan0/area-agenda "knowledge")))
+  (map! "<f5> t" (lambda () (interactive) (ketan0/area-agenda "tinker")))
+  (map! "<f5> r" (lambda () (interactive) (ketan0/area-agenda "research")))
+  (map! "<f5> b" (lambda () (interactive) (ketan0/area-agenda "body")))
+  (map! "<f5> g" (lambda () (interactive) (ketan0/area-agenda "process")))
+  (map! "<f5> u" (lambda () (interactive) (ketan0/area-agenda "utility")))
+  (map! "<f5> w" (lambda () (interactive) (ketan0/area-agenda "writing")))
+  (map! "<f5> s" (lambda () (interactive) (ketan0/area-agenda "social")))
+
+  (defun ketan0/gtd-daily-review ()
     (interactive)
-    (org-agenda nil "z"))
+    (org-ql-search (cons (concat org-directory "archive.org") (org-agenda-files))
+      '(and (ts :from -1 :to today) (done))
+      :title "Recent Items"
+      :sort '(date priority todo)
+      :super-groups '((:auto-ts t)))
+    (goto-char (point-max)))
+  (map! "<f6>" #'ketan0/gtd-daily-review)
 
   (map! :map doom-leader-map "a" 'counsel-org-goto-all)
 
@@ -196,8 +319,8 @@
   ;;refile headlines to any other agenda files
   (setq org-refile-use-cache t) ;;speeds up loading refile targets
   (setq ketan0/org-files (file-expand-wildcards (concat org-directory "*org")))
-  (setq org-refile-targets '((ketan0/org-files :maxlevel . 3)))
-  (setq org-refile-allow-creating-parent-nodes 'confirm)
+  (setq org-refile-targets '((nil :maxlevel . 9)
+                             (org-agenda-files :maxlevel . 9)))
   (setq org-refile-use-outline-path 'file) ;;see whole path (not just headline)
   (setq org-outline-path-complete-in-steps nil) ;;easy to complete in one go w/ helm
   (setq org-archive-location (concat org-directory "archive.org::datetree/")) ;;archive done tasks to datetree in archive.org
@@ -320,21 +443,10 @@ See `org-capture-templates' for more information."
       :sort 'priority
       :title "Next Actions"))
   ;; (map! "<f4>" #'ketan0/next-actions)
-  (map! "<f4>" #'ketan0/switch-to-agenda)
 
   ;;display org-ql-search/view in the same window
-  (setq org-ql-view-display-buffer-action (cons #'display-buffer-same-window nil))
-  ;;the headers in org-ql views should inherit evil-org-agenda keybinds, not standard org-agenda keybinds.
-
-  (defun ketan0/gtd-daily-review ()
-    (interactive)
-    (org-ql-search (cons (concat org-directory "archive.org") (org-agenda-files))
-      '(and (ts :from -14 :to today) (done))
-      :title "Recent Items"
-      :sort '(date priority todo)
-      :super-groups '((:auto-ts t)))
-    (end-of-buffer))
-  (map! "<f5>" #'ketan0/gtd-daily-review))
+  (setq org-ql-view-display-buffer-action (cons #'display-buffer-same-window nil)))
+  ;;the headers in org-ql views should inherit evil-org-agenda keybinds, not standard org-agenda keybinds.)
 
 (use-package! org-super-agenda
   :config
@@ -353,7 +465,9 @@ See `org-capture-templates' for more information."
         "r r" #'org-roam-find-file
         "r i" #'org-roam-insert-immediate
         "r l" #'org-roam-insert
-        "r b" #'org-roam-buffer-activate)
+        "r u" #'org-roam-unlinked-references
+        "r b" #'org-roam-buffer-activate
+        "r d" #'org-roam-buffer-deactivate)
   (setq org-roam-graphviz-executable "/usr/local/bin/dot")
   (setq org-roam-graph-viewer nil)
   (setq org-roam-directory org-directory))
@@ -568,3 +682,6 @@ Modified version of `org-file-complete-link'."
   (setq evil-snipe-repeat-keys nil)
   ;; search the whole buffer, not just the line
   (setq evil-snipe-scope 'buffer))
+
+;; see Mathjax fragments in eww
+(use-package! texfrag)
