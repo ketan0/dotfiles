@@ -1,12 +1,4 @@
 # -*- mode: ssh-config -*-
-Host *
-    ServerAliveInterval 60
-    ControlMaster auto
-    ControlPersist yes
-    ControlPath ~/.ssh/%l%r@%h:%p
-    GSSAPIDelegateCredentials yes
-    GSSAPIAuthentication yes
-
 Host myth
     User agrawalk
     Hostname myth.stanford.edu
@@ -64,3 +56,11 @@ Host nero
 Host ketanmba
     User ketanagrawal
     HostName 10.0.1.6
+
+Host *
+    ServerAliveInterval 60
+    ControlMaster auto
+    ControlPersist yes
+    ControlPath ~/.ssh/%l%r@%h:%p
+    GSSAPIDelegateCredentials yes
+    GSSAPIAuthentication yes
