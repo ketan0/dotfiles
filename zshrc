@@ -3,7 +3,7 @@
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 export PATH=$HOME/.emacs.d/bin:$PATH
-if [ "$HOST" = ketanmba.local ]; then
+if [ "$HOST" = ketanmba.lan ]; then
 __conda_setup="$('/Users/ketanagrawal/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
