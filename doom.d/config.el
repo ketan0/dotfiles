@@ -16,7 +16,7 @@
 (add-to-list 'mailcap-user-mime-data
                '((type . "application/markdown")
                  (viewer . markdown-mode)))
-(setq browse-url-browser-function 'eww-browse-url)
+(setq browse-url-browser-function 'browse-url-default-browser)
 
 ;; BEGIN eww syntax highlighting
 (require 'cl-lib)
@@ -253,7 +253,7 @@
                      (org-ql-block '(path "capture.org")
                                    ((org-ql-block-header "To Refile"))))
                    (mapcar 'ketan0/create-gtd-project-block
-                           '("academic_zettel" "pac" "100_blocks" "org_spotify")) nil)))
+                           '("projects" "academic" "knowledge" "research")) nil)))
   ;; (setq ketan0/tinkering-agenda
   ;;       `("o" "Ketan's Emacs tinkering Agenda"
   ;;         ,(append (mapcar 'ketan0/create-gtd-project-block '("kg" "emacs" "shortcuts")) nil)))
@@ -473,13 +473,17 @@ See `org-capture-templates' for more information."
   (setq org-roam-directory org-directory))
 
 (setq ketan0/org-thoughtset-package-path "/Users/ketanagrawal/emacs-packages/org-thoughtset")
-
 (use-package! org-thoughtset
   :load-path ketan0/org-thoughtset-package-path
   :config
-  (add-hook 'org-cycle-hook 'org-thoughtset-grab-headline-children)
+  ;; TODO: make org-thoughtset-mode and move this stuff there
+  ;; (add-hook 'org-cycle-hook 'org-thoughtset-grab-headline-children)
   ;; (remove-hook 'org-cycle-hook 'org-thoughtset-grab-headline-children)
   )
+
+(setq ketan0/org-spotify-package-path "/Users/ketanagrawal/emacs-packages/org-spotify")
+(use-package! org-spotify
+  :load-path ketan0/org-spotify-package-path)
 
 
 (defun ketan0/latex-mode-setup ()
@@ -685,3 +689,14 @@ Modified version of `org-file-complete-link'."
 
 ;; see Mathjax fragments in eww
 (use-package! texfrag)
+
+(use-package! counsel-spotify
+  :config
+  (setq counsel-spotify-client-id "9457d698e8934df4a3455b67048436de")
+  (setq counsel-spotify-client-secret "3069cdd50bec4d38ae6392dda1e4450c"))
+
+(require 'oauth2)
+(use-package! spotify
+  :config
+  (setq spotify-oauth2-client-secret "3069cdd50bec4d38ae6392dda1e4450c")
+  (setq spotify-oauth2-client-id "9457d698e8934df4a3455b67048436de"))

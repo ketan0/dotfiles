@@ -28,6 +28,9 @@
 (package! poet :recipe (:host github :repo "kunalb/poet"))
 (package! texfrag :recipe (:host github :repo "TobiasZawada/texfrag"))
 (package! language-detection)
+(package! counsel-spotify :recipe (:host github :repo "Lautaro-Garcia/counsel-spotify"))
+(package! spotify :recipe (:host github :repo "danielfm/spotify.el"))
+(package! oauth2)
 ;; (package! lsp-mode :recipe (:host github :repo "emacs-lsp/lsp-mode"))
 ;; Doom's packages are pinned to a specific commit and updated from release to
 ;; release. The `unpin!' macro allows you to unpin single packages...
