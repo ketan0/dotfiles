@@ -193,6 +193,7 @@ press left command alone to switch to the previous app.
 [:e [:km "Open Emacs"]]
 [:i [:km "Open iTerm"]]
 [:m [:km "Open Messages"]]
+[:comma [:km "Open Messenger"]]
 [:n [:km "Open Notes"]]
 [:v [:km "Open Zoom"]]
 #+end_src
