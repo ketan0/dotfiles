@@ -256,12 +256,14 @@
                                          (not (descendants (scheduled))))
                                    ((org-ql-block-header "Stuck Projects")))
                      (org-ql-block '(path "capture.org")
-                                   ((org-ql-block-header "To Refile"))))
+                                   ((org-ql-block-header "To Refile")))
+
+                     (org-ql-block '(and (not (done)) (priority "A"))
+                                   ((org-ql-block-header "Top Priority")))
+                     )
                    ;; (mapcar 'ketan0/create-gtd-project-block
                    ;;         '("projects" "academic" "knowledge" "research"))
                    ;;
-                     (org-ql-block '(priority "A")
-                                   ((org-ql-block-header "Top Priority"))))
                    nil)))
   ;; (setq ketan0/tinkering-agenda
   ;;       `("o" "Ketan's Emacs tinkering Agenda"
