@@ -7,7 +7,7 @@
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets.
 (setq user-full-name "Ketan Agrawal"
-      user-mail-address "agrawalk@stanford.edu")
+      user-mail-address "ketanjayagrawal@gmail.com")
 (add-hook 'eww-mode-hook 'visual-line-mode)
 (require 'mailcap)
 (add-to-list 'mailcap-user-mime-data
@@ -16,6 +16,7 @@
 (add-to-list 'mailcap-user-mime-data
                '((type . "application/markdown")
                  (viewer . markdown-mode)))
+(setq browse-url-browser-function 'browse-url-default-browser)
 (setq browse-url-browser-function 'eww-browse-url)
 
 ;; BEGIN eww syntax highlighting
@@ -98,6 +99,8 @@
 
 (defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
   "Personal dotfiles directory.")
+(defvar ketan0/goodnotes-dir (file-name-as-directory "~/Dropbox/Apps/GoodNotes 5/GoodNotes")
+  "Dropbox-synced iPad notes from Goodnotes")
 (defvar ketan0/fold-state nil
   "HACK: keep track of whether everything in the buffer is folded")
 (defun ketan0/fold-toggle-all ()
@@ -124,7 +127,7 @@
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-nord-light)
+(setq doom-theme 'doom-Iosvkem)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -166,6 +169,7 @@
       (when (and (buffer-file-name) (file-exists-p (buffer-file-name)) (not (buffer-modified-p)))
         (revert-buffer t t t) )))
   (message "Refreshed open files.") )
+(setq evil-ex-substitute-global t)
 (map! :map evil-motion-state-map "gb" 'revert-all-buffers)
 
 (setq display-line-numbers-type t)
@@ -225,6 +229,7 @@
   (setq org-agenda-span 'day)
   (setq org-agenda-start-day "+0d")
   (add-hook 'org-agenda-mode-hook #'doom-mark-buffer-as-real-h)
+  (add-hook 'org-mode-hook #'org-fragtog-mode)
 
   (defun ketan0/create-gtd-project-block (tag-name)
     `(org-ql-block '(and (todo "STRT")
@@ -252,8 +257,12 @@
                                    ((org-ql-block-header "Stuck Projects")))
                      (org-ql-block '(path "capture.org")
                                    ((org-ql-block-header "To Refile"))))
-                   (mapcar 'ketan0/create-gtd-project-block
-                           '("academic_zettel" "pac" "100_blocks" "org_spotify")) nil)))
+                   ;; (mapcar 'ketan0/create-gtd-project-block
+                   ;;         '("projects" "academic" "knowledge" "research"))
+                   ;;
+                     (org-ql-block '(priority "A")
+                                   ((org-ql-block-header "Top Priority"))))
+                   nil)))
   ;; (setq ketan0/tinkering-agenda
   ;;       `("o" "Ketan's Emacs tinkering Agenda"
   ;;         ,(append (mapcar 'ketan0/create-gtd-project-block '("kg" "emacs" "shortcuts")) nil)))
@@ -276,6 +285,7 @@
       :title (format "%s agenda" area-tag)))
 
   (map! "<f4>" #'ketan0/switch-to-main-agenda)
+  (map! "<f5> j" (lambda () (interactive) (ketan0/area-agenda "job_hunt")))
   (map! "<f5> p" (lambda () (interactive) (ketan0/area-agenda "projects")))
   (map! "<f5> a" (lambda () (interactive) (ketan0/area-agenda "academic")))
   (map! "<f5> k" (lambda () (interactive) (ketan0/area-agenda "knowledge")))
@@ -353,6 +363,10 @@
     "Transforms [ into ( and ] into ), other chars left unchanged."
     (concat
      (mapcar #'(lambda (c) (if (equal c ?\[) ?\( (if (equal c ?\]) ?\) c))) string-to-transform)))
+  (defun ketan0/capture-new-file (filename path)
+      (expand-file-name (format "%s-%s.txt"
+                                (format-time-string "%Y-%m-%d")
+                                name) path))
   (setq org-capture-templates
         `(;; other entries
           ("t" "todo" entry
@@ -373,14 +387,18 @@
           ("P" "PAC lab notebook" entry
            (file+olp+datetree
             ,(concat org-directory "20200313153429_pac.org") "Lab Notebook")
+           "* %?" :tree-type week :unnarrowed t :jump-to-captured t)
+          ("o" "Org-spotify lab notebook" entry
+           (file+olp+datetree
+            ,(concat org-directory "20201006205609-org_spotify.org") "Lab Notebook")
            "* %?" :tree-type week :unnarrowed t)
           ("w" "Review: Weekly Review" entry (file+datetree ,(concat org-directory "reviews.org"))
            (file ,(concat org-directory "20200816223343-weekly_review.org")))
-          ("p" "Protocol" entry (file ,org-default-notes-file)
-           "* TODO [[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n"
+          ("p" "Protocol" entry (file (concat org-directory "%:description.org"))
+           "* STRT [[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n"
            :immediate-finish t)
           ("L" "Protocol Link" entry (file ,org-default-notes-file)
-           "* TODO [[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]] \n\n"
+           "* STRT [[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]] \n\n"
            :immediate-finish t)))
 
   (add-hook 'after-save-hook 'org-save-all-org-buffers))
@@ -461,10 +479,13 @@ See `org-capture-templates' for more information."
   :hook
   (after-init . org-roam-mode)
   :config
+  (require 'org-roam-protocol)
   (map! :leader :nm
         "r r" #'org-roam-find-file
         "r i" #'org-roam-insert-immediate
         "r l" #'org-roam-insert
+        "r t" '(lambda () (interactive) (find-file (concat org-directory "todos.org")))
+        "r v" '(lambda () (interactive) (find-file (concat ketan0/goodnotes-dir "vision.pdf")))
         "r u" #'org-roam-unlinked-references
         "r b" #'org-roam-buffer-activate
         "r d" #'org-roam-buffer-deactivate)
@@ -473,14 +494,13 @@ See `org-capture-templates' for more information."
   (setq org-roam-directory org-directory))
 
 (setq ketan0/org-thoughtset-package-path "/Users/ketanagrawal/emacs-packages/org-thoughtset")
-
 (use-package! org-thoughtset
   :load-path ketan0/org-thoughtset-package-path
   :config
-  (add-hook 'org-cycle-hook 'org-thoughtset-grab-headline-children)
+  ;; TODO: make org-thoughtset-mode and move this stuff there
+  ;; (add-hook 'org-cycle-hook 'org-thoughtset-grab-headline-children)
   ;; (remove-hook 'org-cycle-hook 'org-thoughtset-grab-headline-children)
   )
-
 
 (defun ketan0/latex-mode-setup ()
   (setq-local company-backends
@@ -685,3 +705,49 @@ Modified version of `org-file-complete-link'."
 
 ;; see Mathjax fragments in eww
 (use-package! texfrag)
+
+(load-file "~/.doom.d/ketan0-secrets.el")
+
+(use-package! counsel-spotify
+  :config
+  (setq counsel-spotify-client-id ketan0-secrets/spotify-client-id)
+  (setq counsel-spotify-client-secret ketan0-secrets/spotify-client-secret))
+
+;; (use-package! spotify
+;;   :config
+;;   (setq spotify-oauth2-client-id ketan0-secrets/spotify-client-id)
+;;   (setq spotify-oauth2-client-secret ketan0-secrets/spotify-client-secret))
+
+(use-package! elfeed
+  :config
+  (setq-default elfeed-search-filter "@emacs")
+  (map! :leader :nm
+        "o e" #'elfeed))
+
+(use-package! elfeed-org
+  :config
+  (elfeed-org)
+  (setq rmh-elfeed-org-files (list (concat org-directory "elfeed.org"))))
+
+(setq ketan0/org-twitter-package-path "/Users/ketanagrawal/emacs-packages/org-twitter")
+(use-package! org-twitter
+  :load-path ketan0/org-twitter-package-path)
+
+(setq ketan0/org-spotify-package-path "/Users/ketanagrawal/emacs-packages/org-spotify")
+(use-package! org-spotify
+  :load-path ketan0/org-spotify-package-path
+  :config
+  (setq org-spotify-oauth2-client-id ketan0-secrets/spotify-client-id)
+  (setq org-spotify-oauth2-client-secret ketan0-secrets/spotify-client-secret))
+
+(use-package! gif-screencast
+  :config
+  (map! "<f3>" 'gif-screencast-start-or-stop)
+  (setq gif-screencast-args '("-v" "-x"))
+  (setq gif-screencast-cropping-program "mogrify")
+  (setq gif-screencast-capture-format "ppm"))
+
+(use-package! conda
+  :config
+  (setq conda-anaconda-home "/Users/ketanagrawal/miniconda3")
+  (setq conda-env-home-directory "/Users/ketanagrawal/miniconda3/"))
