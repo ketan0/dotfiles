@@ -12,41 +12,39 @@ inspiration taken from:
 - [[https://github.com/nikitavoloboev/dotfiles/blob/master/karabiner/karabiner.edn][nikitavoloboev]]
 - [[https://gist.github.com/kaushikgopal/ff7a92bbc887e59699c804b59074a126][kaushikgopal]]
 
-* TODO Fix the bug where chrome always opens a new window
 * Guide
-Guide lifted from [[https://gist.github.com/kaushikgopal/ff7a92bbc887e59699c804b59074a126][kaushikgopal]]
-
-to understand better how modifiers work in karabiner
-karabiner definition of mandatory and optional
-[[https://karabiner-elements.pqrs.org/docs/json/complex-modifications-manipulator-definition/from/modifiers/#frommodifiersoptional   ][karabiner modifiers documentation]]
+For more info on configuring Goku, see the [[https://github.com/yqrashawn/GokuRakuJoudo/blob/master/tutorial.md][tutorial]].
+Guide lifted from [[https://gist.github.com/kaushikgopal/ff7a92bbc887e59699c804b59074a126][kaushikgopal]]. To understand better how modifiers work in karabiner, see the karabiner definition of mandatory and optional: [[https://karabiner-elements.pqrs.org/docs/json/complex-modifications-manipulator-definition/from/modifiers/#frommodifiersoptional   ][karabiner modifiers documentation]]
 need to prefix C T O S F with ! or #
-** !  | means mandatory
-** #  | means optional
-** !! | mandatory command + control + optional + shift (hyper)
-** ## | optional any
-** C  | left_command
-** T  | left_control
-** O  | left_option
-** S  | left_shift
-** F  | fn
-** Q  | right_command
-** W  | right_control
-** E  | right_option
-** R  | right_shift
+| Modifier | Meaning                                      |
+|----------+----------------------------------------------|
+| !        | mandatory (w/o modifier changes behavior)    |
+| #        | optional (but at least one necessary)        |
+| C        | left_command                                 |
+| T        | left_control                                 |
+| O        | left_option                                  |
+| S        | left_shift                                   |
+| F        | fn                                           |
+| Q        | right_command                                |
+| W        | right_control                                |
+| E        | right_option                                 |
+| R        | right_shift                                  |
+| ##       | optional any                                 |
+| !!       | command + control + optional + shift (hyper) |
 * Profiles
 #+begin_src clojure
-{;;beginning bracket for whole data structure!
+{;;beginning bracket for whole data structure -- don't delete!
 
  :profiles {
             :Ketan {
                     :default true
-                    :sim     60    ;; simultaneous_threshold_milliseconds (def: 50)
+                    :sim     500    ;; simultaneous_threshold_milliseconds (def: 50)
                     ;; keys need to be pressed within this threshold to be considered simultaneous
                     :delay   80    ;; to_delayed_action_delay_milliseconds (def: 500)
                     ;; basically it means time after which the key press is count delayed
-                    :alone   400      ;; to_if_alone_timeout_milliseconds (def: 1000)
+                    :alone   500      ;; to_if_alone_timeout_milliseconds (def: 1000)
                     ;; hold for 995s and single tap registered; hold for 1005s and seen as modifier
-                    :held    50   ;; to_if_held_down_threshold_milliseconds (def: 500)
+                    :held    1000   ;; to_if_held_down_threshold_milliseconds (def: 500)
                     ;; key is fired twice when 500 ms is elapsed (otherwise seen as a hold command)
                     }
             } ;; profiles
@@ -57,6 +55,7 @@ need to prefix C T O S F with ! or #
 :templates {
             :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\"'"
             :open "open \"%s\""
+            :alfred "osascript -e 'tell application \"Alfred 4\" to run trigger \"%s\" in workflow \"%s\" with argument \"%s\"'"
             } ;; templates
 
 #+end_src
@@ -79,12 +78,14 @@ need to prefix C T O S F with ! or #
          :chrome-history-mode {:key :g :condi :tab-mode} ;;TODO make this work
          :chrome-rearrange-tab-mode {:key :r :condi :tab-mode}
          :vim-mode {:key :z}
-         }
+         :tilde-mode {:key :grave_accent_and_tilde}
+}
 
 :simlayers {
             :slash-mode {:key :slash}
             :jupyter-mode {:key :j}
-            }
+            :o-key-mode {:key :o}
+}
 
 #+end_src
  
@@ -96,23 +97,17 @@ need to prefix C T O S F with ! or #
         :rules [
 #+end_src
 ** right cmd => cmd+tab
-press left command alone to switch to the previous app.
+press right command alone to switch to the previous app.
 #+begin_src clojure
-[:##right_command :right_command nil {:alone :!Ctab}]
+[:right_command :right_command nil {:alone :!Ctab}]
 #+end_src
 ** caps lock alone = escape, with other keys = ctrl
 #+begin_src clojure
 [:##caps_lock :left_control nil {:alone :escape}]
 #+end_src
-** yabai-mode(tab+{wsf}+{hjkl})
+** yabai-move-mode (tab + w + {hjkl})
+Move the current window directionally in the yabai tiling setup.
 #+begin_src clojure
-;; :yabai-insert-mode
-;; [:h "/usr/local/bin/yabai -m window --insert west"]
-;; [:j "/usr/local/bin/yabai -m window --insert south"]
-;; [:k "/usr/local/bin/yabai -m window --insert north"]
-;; [:l "/usr/local/bin/yabai -m window --insert east"]
-
-;; move windows
 :yabai-move-mode
 [:h "/usr/local/bin/yabai -m window --warp west"]
 [:j "/usr/local/bin/yabai -m window --warp south"]
@@ -122,17 +117,9 @@ press left command alone to switch to the previous app.
 [:s "/usr/local/bin/yabai -m window --toggle split"]
 #+end_src
    
-** yabai-focus-mode
+** yabai-focus-mode (tab + f + {hjkl})
+Move focus to the left/top/bottom/right of the current window.
 #+begin_src clojure
-;; ;; ;; scale windows
-;; :yabai-scale-mode
-;; [:h "/usr/local/bin/yabai -m window --resize left"]
-;; [:j "/usr/local/bin/yabai -m window --resize down"]
-;; [:k "/usr/local/bin/yabai -m window --resize up"]
-;; [:l "/usr/local/bin/yabai -m window --resize right"]
-
-;; directionally navigate windows/spaces
-;; space<=="g", {"h" "j" "k" "l"}, ";"==>space
 :yabai-focus-mode
 [:g "/usr/local/bin/yabai -m space --focus prev"]
 [:h "/usr/local/bin/yabai -m window --focus west"]
@@ -142,7 +129,7 @@ press left command alone to switch to the previous app.
 [:semicolon "/usr/local/bin/yabai -m space --focus next"]
 #+end_src
 
-** yabai-display-mode
+** yabai-display-mode (tab + d + {hjkl})
 #+begin_src clojure
 :yabai-display-mode
 [:h "/usr/local/bin/yabai -m display --focus prev"]
@@ -151,42 +138,34 @@ press left command alone to switch to the previous app.
 [:l "/usr/local/bin/yabai -m display --focus next"]
 #+end_src
 
-** chrome-history-mode (tab+{g}+{hjkl})
+** chrome-history-mode (tab + g + {hl})
+Move backward/forward in Chrome history.
 #+begin_src clojure
 :chrome-history-mode
 [:h :!Copen_bracket]
 [:l :!Cclose_bracket]
 #+end_src
-** chrome-movement-mode (tab+{t}+{hjkl})
+** chrome-movement-mode (tab + t + {hl})
+Move to the tab left/right of the current tab.
 #+begin_src clojure
 :chrome-movement-mode
 [:h :!TStab]
 [:l :!Ttab]
 #+end_src
-** chrome-rearrange-tab-mode (tab+{r}+{hjkl})
+** chrome-rearrange-tab-mode (tab + r + {hl})
+Move current tab left/right. Need [[https://chrome.google.com/webstore/detail/rearrange-tabs/ccnnhhnmpoffieppjjkhdakcoejcpbga][this Chrome extension]] for this to work.
 #+begin_src clojure
-;;NOTE: need the Chrome extension for this to work
 :chrome-rearrange-tab-mode
-;; [:h :!COdown_arrow]
-
 [:h :!TSleft_arrow]
 [:l :!TSright_arrow]
-;; [:l :!COup_arrow]
 #+end_src
 ** tab-mode (tab)
+Mostly for opening apps, and some other convenient shortcuts like toggling dark mode and emojis.
 #+begin_src clojure
 :tab-mode
-[:spacebar :!CTspacebar]
+[:spacebar :!CTspacebar] ;; open emoji picker
 [:return_or_enter  "/usr/local/bin/yabai -m window --toggle float"]
-;; [:q [:km "Open Qutebrowser"]]
-;; [:x [:km "Open Xcode"]]
-;; [:w [:km "Open Word"]]
-;; [:y [:km "Open Keyboard Maestro"]]
-
-#+end_src
-** slash-mode (forward slash)
-#+begin_src clojure
-:slash-mode
+[:3 [:km "Toggle Dark Mode"]]
 [:s [:km "Open Spotify"]]
 [:c [:km "Open Chrome"]]
 [:k [:km "Open Keyboard Maestro"]]
@@ -196,6 +175,25 @@ press left command alone to switch to the previous app.
 [:comma [:km "Open Messenger"]]
 [:n [:km "Open Notes"]]
 [:v [:km "Open Zoom"]]
+;; [:q [:km "Open Qutebrowser"]]
+;; [:x [:km "Open Xcode"]]
+;; [:w [:km "Open Word"]]
+
+#+end_src
+** tilde-mode
+Using this mode to "focus" / "unfocus" with the [[https://heyfocus.com/][Focus]] app for MacOS.
+#+begin_src clojure
+:tilde-mode
+[:f [:open "focus://focus?minutes=30"]]
+[:t [:open "focus://toggle"]]
+[:u [:open "focus://unfocus"]]
+[:comma [:open "focus://preferences"]]
+#+end_src
+
+** o-key-mode
+#+begin_src clojure
+:o-key-mode
+[:r [:km "org-roam capture"]]
 #+end_src
 
 ** vim-mode (z)
@@ -214,8 +212,9 @@ press left command alone to switch to the previous app.
 #+begin_src clojure
 :jupyter-mode
 [:l [:km "Start or Go to Existing Jupyter Lab Server"]]
-
+[:t [:km "org-roam capture"]]
 #+end_src
+
 ** end main 
 #+begin_src clojure
 ]}] ;;end main
@@ -230,5 +229,5 @@ press left command alone to switch to the previous app.
 
                ]
 
-};;ending bracket for whole data structure!
+} ;;ending bracket for whole data structure -- don't delete!
 #+end_src
