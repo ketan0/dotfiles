@@ -17,7 +17,7 @@
                '((type . "application/markdown")
                  (viewer . markdown-mode)))
 (setq browse-url-browser-function 'browse-url-default-browser)
-(setq browse-url-browser-function 'eww-browse-url)
+;; (setq browse-url-browser-function 'eww-browse-url)
 
 ;; BEGIN eww syntax highlighting
 (require 'cl-lib)
@@ -361,17 +361,27 @@
 
   (org-set-modules 'org-modules '(ol-bibtex org-habit))
 
+  (setq org-structure-template-alist
+        '(("p" . "src python :results output\n")
+          ("b" . "src bash\n")
+          ("a" . "export ascii\n")
+          ("c" . "center\n")
+          ("C" . "comment\n")
+          ("e" . "example\n")
+          ("E" . "export\n")
+          ("h" . "export html\n")
+          ("l" . "export latex\n")
+          ("q" . "quote\n")
+          ("s" . "src") ;; no newline so we can enter the programming language
+          ("v" . "verse\n")))
+
   (defun transform-square-brackets-to-round-ones(string-to-transform)
     "Transforms [ into ( and ] into ), other chars left unchanged."
     (concat
      (mapcar #'(lambda (c) (if (equal c ?\[) ?\( (if (equal c ?\]) ?\) c))) string-to-transform)))
-  (defun ketan0/capture-new-file (filename path)
-      (expand-file-name (format "%s-%s.txt"
-                                (format-time-string "%Y-%m-%d")
-                                name) path))
+
   (setq org-capture-templates
-        `(;; other entries
-          ("t" "todo" entry
+        `(("t" "todo" entry
            (file org-default-notes-file)
            "* TODO %?")
           ("s" "strt" entry
@@ -383,8 +393,8 @@
           ("i" "idea" entry
            (file ,(concat org-directory "ideas.org"))
            "* %?") ;;TODO: put CLOSED + timestamp
-          ("c" "coronavirus" entry (file+datetree
-                                    ,(concat org-directory "20200314210447_coronavirus.org"))
+          ("c" "coronavirus" entry
+           (file+datetree ,(concat org-directory "20200314210447_coronavirus.org"))
            "* %^{Heading}")
           ("P" "PAC lab notebook" entry
            (file+olp+datetree
@@ -394,12 +404,15 @@
            (file+olp+datetree
             ,(concat org-directory "20201006205609-org_spotify.org") "Lab Notebook")
            "* %?" :tree-type week :unnarrowed t)
-          ("w" "Review: Weekly Review" entry (file+datetree ,(concat org-directory "reviews.org"))
+          ("w" "Review: Weekly Review" entry
+           (file+datetree ,(concat org-directory "reviews.org"))
            (file ,(concat org-directory "20200816223343-weekly_review.org")))
-          ("p" "Protocol" entry (file (concat org-directory "%:description.org"))
+          ("p" "Protocol" entry
+           (file ,org-default-notes-file)
            "* STRT [[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n"
            :immediate-finish t)
-          ("L" "Protocol Link" entry (file ,org-default-notes-file)
+          ("L" "Protocol Link" entry
+           (file ,org-default-notes-file)
            "* STRT [[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]] \n\n"
            :immediate-finish t)))
 
@@ -753,3 +766,39 @@ Modified version of `org-file-complete-link'."
   :config
   (setq conda-anaconda-home "/Users/ketanagrawal/miniconda3")
   (setq conda-env-home-directory "/Users/ketanagrawal/miniconda3/"))
+
+(defun ketan0/parse-csv-file (file sep)
+  "parse FILE representing a CSV table into a list of lists."
+  (interactive
+   (list (read-file-name "CSV file: ")))
+  (let ((buf (find-file-noselect file))
+        (result nil))
+    (with-current-buffer buf
+      (goto-char (point-min))
+      (while (not (eobp))
+        (let ((line (buffer-substring-no-properties
+                     (line-beginning-position) (line-end-position))))
+          (push (split-string line sep) result))
+        (forward-line 1)))
+    (reverse result)))
+
+(defvar ketan0/chrome-history-tsv-file "~/Downloads/history_autobackup_20201108_full.tsv"
+"Location of the TSV exported by History Trends Unlimited Chrome extension"
+)
+
+(defun ketan0/insert-chrome-history-org-link ()
+  (interactive)
+  ;; TODO: caching
+  (-let ((history-items (->> (-slice (parse-csv-file ketan0/chrome-history-tsv-file "\t") 1)
+                            (seq-sort-by #'(lambda (x) (string-to-number (substring (nth 1 x) 1))) #'>)
+                            (-select-columns '(3 0))
+                            )))
+    (ivy-read "Chrome History: " history-items
+              :action (lambda (x) (interactive) (insert (format "[[%s][%s]]" (cadr x) (car x))))
+              :re-builder '+ivy-prescient-non-fuzzy
+              :sort nil)))
+
+(defadvice! open-org-capture-in-current-window (oldfun &rest args)
+  :around #'org-protocol-capture
+  (let (display-buffer-alist)
+    (apply oldfun args)))
