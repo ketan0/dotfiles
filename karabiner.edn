@@ -15,8 +15,9 @@
             } ;; profiles
 
 :templates {
-            :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\"'"
+            :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\" with parameter \"%s\"'"
             :open "open \"%s\""
+            :openhide "open \"%s\" -gj"
             :alfred "osascript -e 'tell application \"Alfred 4\" to run trigger \"%s\" in workflow \"%s\" with argument \"%s\"'"
             } ;; templates
 
@@ -29,6 +30,7 @@
                               {:set ["chrome-movement-mode" 0]}
                               {:set ["chrome-rearrange-tab-mode" 0]}]}
 
+         :q-key-mode {:key :q}
          :yabai-move-mode {:key :w :condi :tab-mode}
          :yabai-focus-mode {:key :f :condi :tab-mode}
          :yabai-display-mode {:key :d :condi :tab-mode}
@@ -40,16 +42,18 @@
 }
 
 :simlayers {
-            :slash-mode {:key :slash}
-            :jupyter-mode {:key :j}
-            :o-key-mode {:key :o}
+        :slash-mode {:key :slash}
+        :jupyter-mode {:key :j}
+        :o-key-mode {:key :o}
+        :comma-mode {:key :comma}
 }
 
 :main [{
         :des "see karabiner.org for documentation.",
         :rules [
 
-[:right_command :right_command nil {:alone :!Ctab}]
+[:right_command :right_command nil {:alone [:km "Previous Application" "hide"]}]
+[:right_option :right_option nil {:alone [:km "Previous Application"]}]
 
 [:##caps_lock :left_control nil {:alone :escape}]
 
@@ -91,6 +95,20 @@
 [:spacebar :!CTspacebar] ;; open emoji picker
 [:return_or_enter  "/usr/local/bin/yabai -m window --toggle float"]
 [:3 [:km "Toggle Dark Mode"]]
+[:s [:km "Open Spotify" "hide"]]
+[:c [:km "Open Chrome" "hide"]]
+[:k [:km "Open Keyboard Maestro" "hide"]]
+[:e [:km "Open Emacs" "hide"]]
+[:i [:km "Open iTerm" "hide"]]
+[:m [:km "Open Messages" "hide"]]
+[:comma [:km "Open Messenger" "hide"]]
+[:n [:km "Open Notes" "hide"]]
+[:v [:km "Open Zoom" "hide"]]
+;; [:q [:km "Open Qutebrowser"]]
+;; [:x [:km "Open Xcode"]]
+;; [:w [:km "Open Word"]]
+
+:q-key-mode
 [:s [:km "Open Spotify"]]
 [:c [:km "Open Chrome"]]
 [:k [:km "Open Keyboard Maestro"]]
@@ -100,15 +118,16 @@
 [:comma [:km "Open Messenger"]]
 [:n [:km "Open Notes"]]
 [:v [:km "Open Zoom"]]
-;; [:q [:km "Open Qutebrowser"]]
-;; [:x [:km "Open Xcode"]]
-;; [:w [:km "Open Word"]]
 
 :tilde-mode
-[:f [:open "focus://focus?minutes=30"]]
-[:t [:open "focus://toggle"]]
-[:u [:open "focus://unfocus"]]
+[:f [:openhide "focus://focus?minutes=30"]]
+[:t [:openhide "focus://toggle"]]
+[:u [:openhide "focus://unfocus"]]
 [:comma [:open "focus://preferences"]]
+
+:comma-mode
+[:i [:open "https://www.keyhero.com/typing-instant-death/"]]
+[:t [:open "https://www.keyhero.com/free-typing-test/"]]
 
 :o-key-mode
 [:r [:km "org-roam capture"]]
