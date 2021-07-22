@@ -8,94 +8,6 @@
 ;; clients, file templates and snippets.
 (setq user-full-name "Ketan Agrawal"
       user-mail-address "ketanjayagrawal@gmail.com")
-(add-hook 'eww-mode-hook 'visual-line-mode)
-(require 'mailcap)
-(add-to-list 'mailcap-user-mime-data
-               '((type . "application/pdf")
-                 (viewer . pdf-view-mode)))
-(add-to-list 'mailcap-user-mime-data
-               '((type . "application/markdown")
-                 (viewer . markdown-mode)))
-(setq browse-url-browser-function 'browse-url-default-browser)
-;; (setq browse-url-browser-function 'eww-browse-url)
-
-;; BEGIN eww syntax highlighting
-(require 'cl-lib)
-(defun eww-tag-pre (dom)
-  (let ((shr-folding-mode 'none)
-        (shr-current-font 'default))
-    (shr-ensure-newline)
-    (insert (eww-fontify-pre dom))
-    (shr-ensure-newline)))
-
-(defun eww-fontify-pre (dom)
-  (with-temp-buffer
-    (shr-generic dom)
-    (let ((mode (eww-buffer-auto-detect-mode)))
-      (when mode
-        (eww-fontify-buffer mode)))
-    (buffer-string)))
-
-(defun eww-fontify-buffer (mode)
-  (delay-mode-hooks (funcall mode))
-  (font-lock-default-function mode)
-  (font-lock-default-fontify-region (point-min)
-                                    (point-max)
-                                    nil))
-
-(defun eww-buffer-auto-detect-mode ()
-  (let* ((map '((ada ada-mode)
-                (awk awk-mode)
-                (c c-mode)
-                (cpp c++-mode)
-                (clojure clojure-mode lisp-mode)
-                (csharp csharp-mode java-mode)
-                (css css-mode)
-                (dart dart-mode)
-                (delphi delphi-mode)
-                (emacslisp emacs-lisp-mode)
-                (erlang erlang-mode)
-                (fortran fortran-mode)
-                (fsharp fsharp-mode)
-                (go go-mode)
-                (groovy groovy-mode)
-                (haskell haskell-mode)
-                (html html-mode)
-                (java java-mode)
-                (javascript javascript-mode)
-                (json json-mode javascript-mode)
-                (latex latex-mode)
-                (lisp lisp-mode)
-                (lua lua-mode)
-                (matlab matlab-mode octave-mode)
-                (objc objc-mode c-mode)
-                (perl perl-mode)
-                (php php-mode)
-                (prolog prolog-mode)
-                (python python-mode)
-                (r r-mode)
-                (ruby ruby-mode)
-                (rust rust-mode)
-                (scala scala-mode)
-                (shell shell-script-mode)
-                (smalltalk smalltalk-mode)
-                (sql sql-mode)
-                (swift swift-mode)
-                (visualbasic visual-basic-mode)
-                (xml sgml-mode)))
-         (language (language-detection-string
-                    (buffer-substring-no-properties (point-min) (point-max))))
-         (modes (cdr (assoc language map)))
-         (mode (cl-loop for mode in modes
-                        when (fboundp mode)
-                        return mode)))
-    (message (format "%s" language))
-    (when (fboundp mode)
-      mode)))
-
-(setq shr-external-rendering-functions
-      '((pre . eww-tag-pre)))
-;; END eww syntax highlighting
 
 (defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
   "Personal dotfiles directory.")
@@ -121,13 +33,15 @@
 ;;
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
+
 (setq doom-font (font-spec :family "Fira Code" :size 12))
-(mac-auto-operator-composition-mode)
+(when (boundp 'mac-auto-operator-composition-mode)
+  (mac-auto-operator-composition-mode))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-Iosvkem)
+(setq doom-theme 'doom-dracula)
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -169,17 +83,17 @@
       (when (and (buffer-file-name) (file-exists-p (buffer-file-name)) (not (buffer-modified-p)))
         (revert-buffer t t t) )))
   (message "Refreshed open files.") )
+
+;; don't need the /g on the end of :s/old/new
 (setq evil-ex-substitute-global t)
+
 (map! :map evil-motion-state-map "gb" 'revert-all-buffers)
-
-(setq display-line-numbers-type t)
-
-(setq max-specpdl-size (* 30 1600))
-(setq max-lisp-eval-depth (* 60 800))
 
 (map! :map prog-mode-map :nm "<tab>" '+fold/toggle)
 
 (map! :map prog-mode-map :nm "<S-tab>" 'ketan0/fold-toggle-all)
+
+(map! :map emacs-lisp-mode-map :nm "<return>" 'helpful-at-point)
 
 (map! :map evil-motion-state-map "gj" 'evil-next-line)
 (map! :map evil-motion-state-map "gk" 'evil-previous-line)
@@ -191,21 +105,86 @@
 
 (map! :map evil-normal-state-map "Q" (kbd "@q"))
 
-(use-package! company-math)
-
-
-;; (defun ketan0/org-mode-setup ()
-;;   ;; (message "Running org-mode hook!")
-;;   (setq-local company-backends
-;;               (push '(company-math-symbols-unicode company-org-roam)
-;;                     company-backends)))
+(define-key evil-visual-state-map "." 'evil-a-paren)
 
 (use-package! org
   :mode ("\\.org\\'" . org-mode)
   :init
-  (setq org-directory  "~/Sync/org/")
+  (setq org-directory  "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org/")
   :config
+  (setq org-babel-default-header-args
+        (cons '(:exports . "both") ;; export code and results by default
+        (cons '(:eval . "no-export") ;; don't evaluate src blocks when exporting
+              (assq-delete-all :exports
+              (assq-delete-all :eval org-babel-default-header-args)))))
   (setq org-ellipsis "…")
+  (setq org-hide-emphasis-markers t)
+
+  ;; org HTML export settings
+  (setq org-html-htmlize-output-type 'css)
+  ;; taken from https://gitlab.com/ngm/commonplace/-/blob/master/publish.el
+  (defun ketan0/org-roam--backlinks-list (file)
+    (message "Processing file: %s" file)
+    ;; (message "(org-roam--org-roam-file-p %s): %s" file (org-roam--org-roam-file-p file))
+    ;; (message "(org-roam--org-roam-file-p):" (org-roam--org-roam-file-p))
+    (if (org-roam--org-roam-file-p file)
+        ;; (org-roam-buffer--insert-backlinks)
+        (--reduce-from
+         (let ((note-title (org-roam-db--get-title (car it))))
+           (concat acc (if (or (string= note-title "sitemap") ;; exclude from backlinks
+                               (string= note-title "Hello"))
+                           ""
+                         (format "- [[file:%s][%s]]\n"
+                                 (file-relative-name (car it) org-roam-directory)
+                                 note-title))))
+         "" (org-roam-db-query [:select [source] :from links :where (= dest $s1)] file))
+      (progn (message "it's not a file!") "")))
+
+  (defun ketan0/org-export-preprocessor (backend)
+    ;; (message "buffer-file-name is \"%s\"" buffer-file-name)
+    (let ((links (ketan0/org-roam--backlinks-list (buffer-file-name))))
+      (message "links is \"%s\"" links)
+      (unless (string= links "")
+        (save-excursion
+          (goto-char (point-max))
+          (insert (concat "
+* Links to this note
+:PROPERTIES:
+:CUSTOM_ID: backlinks
+:END:
+") links)))))
+
+  (add-hook 'org-export-before-processing-hook 'ketan0/org-export-preprocessor)
+
+  (setq org-publish-project-alist
+        '(("digital laboratory"
+           :base-directory "~/garden-simple/org"
+           :publishing-function org-html-publish-to-html
+           :publishing-directory "~/garden-simple/html"
+           :auto-sitemap t
+           :sitemap-title "sitemap"
+           ;; :html-head-include-default-style nil
+           :section-numbers nil
+           :with-toc nil
+           :preserve-breaks t
+           :html-preamble t
+           :html-preamble-format (("en" "<a style=\"color: inherit; text-decoration: none\" href=\"/\"><h2>Ketan's Digital Laboratory &#129514;</h2></a>"))
+           :html-postamble t
+
+           :html-postamble-format (("en" "<p>Made with <span class=\"heart\">♥</span> using <a href=\"https://orgmode.org/\">org-mode</a>. Source code is available <a href=\"https://github.com/ketan0/digital-laboratory\">here</a>.</p>
+<script src=\"https://unpkg.com/axios/dist/axios.min.js\"></script>
+<script src=\"https://unpkg.com/@popperjs/core@2\"></script>
+<script src=\"https://unpkg.com/tippy.js@6\"></script>
+<script src=\"tooltips.js\"></script>"))
+           :html-link-home ""
+           :html-link-up ""
+           :html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"syntax.css\" />
+<link rel=\"stylesheet\" type=\"text/css\" href=\"styles.css\" />"
+           :html-head-extra "<link rel=\"apple-touch-icon\" sizes=\"180x180\" href=\"/apple-touch-icon.png\" />
+<link rel=\"icon\" type=\"image/png\" sizes=\"32x32\" href=\"/favicon-32x32.png\" />
+<link rel=\"icon\" type=\"image/png\" sizes=\"16x16\" href=\"/favicon-16x16.png\" />
+<link rel=\"manifest\" href=\"/site.webmanifest\" />")))
+
   (setq org-return-follows-link t)
   ;; (setq org-emphasis-alist ;;different ways to emphasize text
   ;;       '(("!"  (:foreground "red") )
@@ -217,19 +196,34 @@
   ;;         ("=" org-verbatim "<code>" "</code>" verbatim)
   ;;         ("+" (:strike-through t) "<del>" "</del>")))
   (setq org-mobile-inbox-for-pull (concat org-directory "flagged.org"))
-  (setq org-mobile-directory "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/")
-  (setq org-mobile-checksum-files "~/Library/Mobile Documents/iCloud\~com\~appsonthemove\~beorg/Documents/org/checksums.dat")
+  (setq org-mobile-directory org-directory)
+  (setq org-mobile-checksum-files (concat org-directory "checksums.dat"))
   (setq org-log-done 'time) ;;record time a task is done
   (setq org-log-into-drawer t)
   (setq org-treat-insert-todo-heading-as-state-change t)
   (setq org-habit-show-all-today t)
   (setq org-default-notes-file (concat org-directory "capture.org"))
   (setq ketan0/org-todos-file (concat org-directory "todos.org"))
-  (setq org-agenda-files `(,org-default-notes-file ,ketan0/org-todos-file))
+  (setq org-agenda-files (list org-default-notes-file ketan0/org-todos-file))
   (setq org-agenda-span 'day)
   (setq org-agenda-start-day "+0d")
-  (add-hook 'org-agenda-mode-hook #'doom-mark-buffer-as-real-h)
   (add-hook 'org-mode-hook #'org-fragtog-mode)
+
+  (defvar org-created-property-name "CREATED"
+    "The name of the org-mode property that stores the creation date of the entry")
+  (defun org-set-created-property (&optional active NAME)
+    "Set a property on the entry giving the creation time.
+By default the property is called CREATED. If given the `NAME'
+argument will be used instead. If the property already exists, it
+will not be modified."
+    (interactive)
+    (let* ((created (or NAME org-created-property-name))
+           (fmt (if active "<%s>" "[%s]"))
+           (now  (format fmt (format-time-string "%Y-%m-%d %a %H:%M"))))
+      (unless (org-entry-get (point) created nil)
+        (org-set-property created now)
+        )))
+  (add-hook 'org-journal-after-entry-create-hook #'org-set-created-property)
 
   (defun ketan0/create-gtd-project-block (tag-name)
     `(org-ql-block '(and (todo "STRT")
@@ -242,7 +236,10 @@
         `(" " "Ketan's Focused Agenda"
           ,(append '((agenda ""
                              ((org-agenda-span 'day)
-                              (org-deadline-warning-days 10)))
+                              (org-deadline-warning-days 2)
+                              (org-agenda-skip-function '(org-agenda-skip-entry-if
+                                                          'nottodo '("TODO")))
+                             ))
                      (org-ql-block '(and (todo "DONE")
                                          (path "todos.org")
                                          (closed :on today))
@@ -257,21 +254,15 @@
                                    ((org-ql-block-header "Stuck Projects")))
                      (org-ql-block '(path "capture.org")
                                    ((org-ql-block-header "To Refile")))
-
-                     (org-ql-block '(and (not (done)) (priority "A"))
+                     (org-ql-block '(and (ts :to 0) (todo "STRT"))
                                    ((org-ql-block-header "Top Priority")))
                      )
                    ;; (mapcar 'ketan0/create-gtd-project-block
                    ;;         '("projects" "academic" "knowledge" "research"))
                    ;;
                    nil)))
-  ;; (setq ketan0/tinkering-agenda
-  ;;       `("o" "Ketan's Emacs tinkering Agenda"
-  ;;         ,(append (mapcar 'ketan0/create-gtd-project-block '("kg" "emacs" "shortcuts")) nil)))
-
   (setq org-agenda-custom-commands (list ketan0/main-agenda))
-  ;;TODO: why isn't this going into evil mode
-  ;;thanks jethro
+
   (defun ketan0/switch-to-main-agenda ()
     (interactive)
     (org-agenda nil " "))
@@ -286,39 +277,43 @@
       :sort 'priority
       :title (format "%s agenda" area-tag)))
 
-  (map! "<f4>" #'ketan0/switch-to-main-agenda)
-  (map! "<f5> j" (lambda () (interactive) (ketan0/area-agenda "job_hunt")))
-  (map! "<f5> p" (lambda () (interactive) (ketan0/area-agenda "projects")))
-  (map! "<f5> a" (lambda () (interactive) (ketan0/area-agenda "academic")))
-  (map! "<f5> k" (lambda () (interactive) (ketan0/area-agenda "knowledge")))
-  (map! "<f5> t" (lambda () (interactive) (ketan0/area-agenda "tinker")))
-  (map! "<f5> r" (lambda () (interactive) (ketan0/area-agenda "research")))
-  (map! "<f5> b" (lambda () (interactive) (ketan0/area-agenda "body")))
-  (map! "<f5> g" (lambda () (interactive) (ketan0/area-agenda "process")))
-  (map! "<f5> u" (lambda () (interactive) (ketan0/area-agenda "utility")))
-  (map! "<f5> w" (lambda () (interactive) (ketan0/area-agenda "writing")))
-  (map! "<f5> s" (lambda () (interactive) (ketan0/area-agenda "social")))
+  (map! "<f4>" #'ketan0/switch-to-main-agenda
+        "<f5> p" (lambda () (interactive) (ketan0/area-agenda "projects"))
+        "<f5> a" (lambda () (interactive) (ketan0/area-agenda "academic"))
+        "<f5> k" (lambda () (interactive) (ketan0/area-agenda "knowledge"))
+        "<f5> t" (lambda () (interactive) (ketan0/area-agenda "tinker"))
+        "<f5> r" (lambda () (interactive) (ketan0/area-agenda "research"))
+        "<f5> b" (lambda () (interactive) (ketan0/area-agenda "body"))
+        "<f5> g" (lambda () (interactive) (ketan0/area-agenda "process"))
+        "<f5> u" (lambda () (interactive) (ketan0/area-agenda "utility"))
+        "<f5> w" (lambda () (interactive) (ketan0/area-agenda "writing"))
+        "<f5> s" (lambda () (interactive) (ketan0/area-agenda "social")))
 
-  (defun ketan0/gtd-daily-review ()
+  ;; review completed tasks in the last week
+  (defun ketan0/weekly-review ()
     (interactive)
     (org-ql-search (cons (concat org-directory "archive.org") (org-agenda-files))
-      '(and (ts :from -1 :to today) (done))
+      '(and (ts :from -7 :to today) (done))
       :title "Recent Items"
       :sort '(date priority todo)
       :super-groups '((:auto-ts t)))
     (goto-char (point-max)))
-  (map! "<f6>" #'ketan0/gtd-daily-review)
+  (map! "<f6>" #'ketan0/weekly-review)
+
+  (defun ketan0/look-ahead ()
+    (interactive)
+    (let ((days-ahead (read-number "How many days to look ahead: " 7)))
+      (org-ql-search (cons (concat org-directory "archive.org") (org-agenda-files))
+        `(and (ts :from today :to ,days-ahead) (not (todo "DONE")))
+        :title "Week Ahead"
+        :sort '(date priority todo)
+        :super-groups '((:auto-ts t)))))
+  (map! "<f3>" #'ketan0/look-ahead)
 
   (map! :map doom-leader-map "a" 'counsel-org-goto-all)
 
   (setq org-agenda-block-separator nil)
   (setq org-agenda-log-mode-items '(closed clock state))
-  (setq org-agenda-format-date
-        (lambda (date)
-          (concat "\n"
-                  (make-string (/ (window-width) 2) 9472)
-                  "\n"
-                  (org-agenda-format-date-aligned date))))
   (setq org-agenda-window-setup 'current-window) ;;agenda take up whole frame
   ;;don't show warnings for deadlines
   (setq org-deadline-warning-days 0) ;;don't show upcoming tasks in today view
@@ -326,7 +321,7 @@
 
   ;;refile headlines to any other agenda files
   (setq org-refile-use-cache t) ;;speeds up loading refile targets
-  (setq ketan0/org-files (file-expand-wildcards (concat org-directory "*org")))
+  (setq ketan0/org-files (file-expand-wildcards (concat org-directory "*.org")))
   (setq org-refile-targets '((nil :maxlevel . 9)
                              (org-agenda-files :maxlevel . 9)))
   (setq org-refile-use-outline-path 'file) ;;see whole path (not just headline)
@@ -361,6 +356,8 @@
 
   (org-set-modules 'org-modules '(ol-bibtex org-habit))
 
+  (plist-put org-format-latex-options :scale 1.0) ;; scale for inline latex fragments
+
   (setq org-structure-template-alist
         '(("p" . "src python :results output\n")
           ("b" . "src bash\n")
@@ -372,13 +369,24 @@
           ("h" . "export html\n")
           ("l" . "export latex\n")
           ("q" . "quote\n")
-          ("s" . "src") ;; no newline so we can enter the programming language
+          ("s" . "src ") ;; no newline so we can enter the programming language
           ("v" . "verse\n")))
 
   (defun transform-square-brackets-to-round-ones(string-to-transform)
     "Transforms [ into ( and ] into ), other chars left unchanged."
     (concat
      (mapcar #'(lambda (c) (if (equal c ?\[) ?\( (if (equal c ?\]) ?\) c))) string-to-transform)))
+
+  (setq +org-capture-frame-parameters
+    `((name . "doom-capture")
+      (width . (text-pixels . 720))
+      (height . (text-pixels . 180))
+      (left . 360)
+      (top . 360)
+      (transient . t)
+      ,(when (and IS-LINUX (not (getenv "DISPLAY")))
+         `(display . ":0"))
+      ,(if IS-MAC '(menu-bar-lines . 1))))
 
   (setq org-capture-templates
         `(("t" "todo" entry
@@ -387,6 +395,7 @@
           ("s" "strt" entry
            (file org-default-notes-file)
            "* STRT %?")
+
           ("d" "done" entry
            (file org-default-notes-file)
            "* DONE %?\nCLOSED: %U") ;;TODO: put CLOSED + timestamp
@@ -394,8 +403,29 @@
            (file ,(concat org-directory "ideas.org"))
            "* %?") ;;TODO: put CLOSED + timestamp
           ("c" "coronavirus" entry
-           (file+datetree ,(concat org-directory "20200314210447_coronavirus.org"))
+           (file+olpdatetree
+            ,(concat org-directory "20200314210447_coronavirus.org"))
            "* %^{Heading}")
+          ("H" "HCI lab notebook" entry
+           (file+olp+datetree
+            ,(concat org-directory "20210401093501-hci_counterfactual_reasoning.org") "Lab Notebook")
+           "* %?" :tree-type week :unnarrowed t :jump-to-captured t)
+          ("E" "EConsults lab notebook" entry
+           (file+olp+datetree
+            ,(concat org-directory "20210714164344-econsults_prediction.org") "Lab Notebook")
+           "* %?" :tree-type week :unnarrowed t :jump-to-captured t)
+          ("T" "org-twitter" entry
+           (file+olp+datetree
+            ,(concat org-directory "20201013012647-org_twitter.org") "Lab Notebook")
+           "* %?" :tree-type week :unnarrowed t :jump-to-captured t)
+          ("G" "raspi-glove" entry
+           (file+olp+datetree
+            ,(concat org-directory "20201113182201-raspberry_pi_glove.org") "Lab Notebook")
+           "* %?" :tree-type week :unnarrowed t :jump-to-captured t)
+          ("D" "Digital Garden" entry
+           (file+olp+datetree
+            ,(concat org-directory "20201111010429-digital_laboratory.org") "Lab Notebook")
+           "* %?" :tree-type week :unnarrowed t :jump-to-captured t)
           ("P" "PAC lab notebook" entry
            (file+olp+datetree
             ,(concat org-directory "20200313153429_pac.org") "Lab Notebook")
@@ -405,8 +435,10 @@
             ,(concat org-directory "20201006205609-org_spotify.org") "Lab Notebook")
            "* %?" :tree-type week :unnarrowed t)
           ("w" "Review: Weekly Review" entry
-           (file+datetree ,(concat org-directory "reviews.org"))
-           (file ,(concat org-directory "20200816223343-weekly_review.org")))
+           (file+olp+datetree
+            ,(concat org-directory "reviews.org"))
+           (file ,(concat org-directory "20200816223343-weekly_review.org"))
+           :jump-to-captured t)
           ("p" "Protocol" entry
            (file ,org-default-notes-file)
            "* STRT [[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]]\n#+BEGIN_QUOTE\n%i\n#+END_QUOTE\n\n\n"
@@ -415,36 +447,36 @@
            (file ,org-default-notes-file)
            "* STRT [[%:link][%(transform-square-brackets-to-round-ones \"%:description\")]] \n\n"
            :immediate-finish t)))
+  (defadvice! open-org-capture-in-current-window (oldfun &rest args)
+    :around #'org-protocol-capture
+    (let (display-buffer-alist)
+      (apply oldfun args))))
 
-  (add-hook 'after-save-hook 'org-save-all-org-buffers))
 
-(use-package! ox-hugo
-  :config
-  ;; Populates only the EXPORT_FILE_NAME property in the inserted headline.
-  (with-eval-after-load 'org-capture
-    (defun org-hugo-new-subtree-post-capture-template ()
-      "Returns `org-capture' template string for new Hugo post.
-See `org-capture-templates' for more information."
-      (let* ((title (read-from-minibuffer "Post Title: ")) ;Prompt to enter the post title
-             (fname (org-hugo-slug title)))
-        (mapconcat #'identity
-                   `(
-                     ,(concat "* TODO " title)
-                     ":PROPERTIES:"
-                     ,(concat ":EXPORT_FILE_NAME: " fname)
-                     ":END:"
-                     "%?\n")          ;Place the cursor here finally
-                   "\n")))
 
-    (add-to-list 'org-capture-templates
-                 '("h"                ;`org-capture' binding + h
-                   "Hugo post"
-                   entry
-                   ;; It is assumed that below file is present in `org-directory'
-                   ;; and that it has a "Blog Ideas" heading. It can even be a
-                   ;; symlink pointing to the actual location of all-posts.org!
-                   (file+olp "~/blog/content-org/blog.org" "Blog Posts")
-                   (function org-hugo-new-subtree-post-capture-template)))))
+
+;; drag-n-drop images
+(after! org-download
+  (setq org-download-method 'attach)
+  (setq org-download-backend "curl \"%s\" -o \"%s\""))
+
+;; automatically publish org file upon save
+(defun ketan0/org-html-export-after-save ()
+  "Function for `after-save-hook' to run `org-hugo-export-wim-to-md'.
+The exporting happens only when Org Capture is not in progress."
+  (save-excursion (org-publish-current-file)))
+
+(define-minor-mode ketan0/org-html-auto-export-mode
+  "Toggle auto exporting the Org file using `ox-html'."
+  :global nil
+  :lighter ""
+  (if ketan0/org-html-auto-export-mode
+      ;; When the mode is enabled
+      (progn
+        (add-hook 'after-save-hook #'ketan0/org-html-export-after-save :append :local))
+    ;; When the mode is disabled
+    (remove-hook 'after-save-hook #'ketan0/org-html-export-after-save :local)))
+(provide 'ketan0/org-html-auto-export-mode)
 
 (use-package! org-journal
   :after org
@@ -457,44 +489,38 @@ See `org-capture-templates' for more information."
         org-journal-file-format "%Y%m%d.org"
         org-journal-date-format "%A, %d %B %Y"))
 
-(use-package org-ql
+(use-package! org-ql
+  :after org
   :config
-  (defun ketan0/next-actions ()
-    (interactive)
-    (org-ql-search
-      org-agenda-files
-      '(or (and (path "capture.org") (parent))
-           (and (todo "STRT")
-                (path "todos.org")
-                (ancestors (todo "PROJ"))))
-      :super-groups (list
-                     '(:auto-outline-path)
-                     '(:name "Today"  ; Optionally specify section name
-                      :time-grid t
-                      )  ; Items that have this TODO keyword
-                     )
-      :sort 'priority
-      :title "Next Actions"))
+  ;; (defun ketan0/next-actions ()
+  ;;   (interactive)
+  ;;   (org-ql-search
+  ;;     org-agenda-files
+  ;;     '(or (and (path "capture.org") (parent))
+  ;;          (and (todo "STRT")
+  ;;               (path "todos.org")
+  ;;               (ancestors (todo "PROJ"))))
+  ;;     :super-groups (list
+  ;;                    '(:auto-outline-path)
+  ;;                    '(:name "Today"  ; Optionally specify section name
+  ;;                      :time-grid t
+  ;;                      )  ; Items that have this TODO keyword
+  ;;                    )
+  ;;     :sort 'priority
+  ;;     :title "Next Actions"))
   ;; (map! "<f4>" #'ketan0/next-actions)
-
-  ;;display org-ql-search/view in the same window
+  ;; display org-ql-search/view in the same window
   (setq org-ql-view-display-buffer-action (cons #'display-buffer-same-window nil)))
-  ;;the headers in org-ql views should inherit evil-org-agenda keybinds, not standard org-agenda keybinds.)
 
 (use-package! org-super-agenda
+  :after org
   :config
   (require 'evil-org-agenda)
+  ;; the headers in org-super-agenda  should inherit evil-org-agenda keybinds, not standard org-agenda keybinds.
   (setq org-super-agenda-header-map (copy-keymap evil-org-agenda-mode-map)))
-
-(use-package! org-ml)
-(use-package! json-pointer)
 
 (use-package! org-roam
   :init
-  :hook
-  (after-init . org-roam-mode)
-  :config
-  (require 'org-roam-protocol)
   (map! :leader :nm
         "r r" #'org-roam-find-file
         "r i" #'org-roam-insert-immediate
@@ -504,41 +530,24 @@ See `org-capture-templates' for more information."
         "r u" #'org-roam-unlinked-references
         "r b" #'org-roam-buffer-activate
         "r d" #'org-roam-buffer-deactivate)
+  :after org
+  ;; :init
+  ;; :hook
+  ;; (after-init . org-roam-mode)
+  :config
+  (require 'org-roam-protocol)
+
   (setq org-roam-graphviz-executable "/usr/local/bin/dot")
   (setq org-roam-graph-viewer nil)
   (setq org-roam-directory org-directory))
 
-(setq ketan0/org-thoughtset-package-path "/Users/ketanagrawal/emacs-packages/org-thoughtset")
-(use-package! org-thoughtset
-  :load-path ketan0/org-thoughtset-package-path
-  :config
-  ;; TODO: make org-thoughtset-mode and move this stuff there
-  ;; (add-hook 'org-cycle-hook 'org-thoughtset-grab-headline-children)
-  ;; (remove-hook 'org-cycle-hook 'org-thoughtset-grab-headline-children)
-  )
+(use-package! apples-mode
+  :init (add-to-list 'auto-mode-alist '("\\.\\(applescri\\|sc\\)pt\\'" . apples-mode)))
+(use-package! ob-applescript)
 
-(defun ketan0/latex-mode-setup ()
-  (setq-local company-backends
-              (push '(company-math-symbols-latex company-latex-commands)
-                    company-backends))
-  (push '(?$ . ("$ " . " $")) evil-surround-pairs-alist))
-
-;; (use-package! tex
-;;   :config
-;;   (setq-default TeX-master nil)
-;;   ;; Use pdf-tools to open PDF files
-;;   (setq latex-run-command "pdflatex")
-;;   (setq TeX-save-query nil)
-;;   (setq TeX-auto-save t)
-;;   (setq TeX-view-program-selection '((output-pdf "PDF Tools"))
-;;         TeX-source-correlate-start-server t)
-;;   ;; Update PDF buffers after successful LaTeX runs
-;;   (add-hook 'TeX-after-compilation-finished-functions
-;;             #'TeX-revert-document-buffer))
-
-(defun tangle-karabiner ()
+(defun ketan0/tangle-karabiner ()
   "If the current buffer is 'karabiner.org' the code-blocks are
-   tangled, and the tangled file is compiled."
+   tangled, and the tangled file karabiner.edn is compiled with Goku."
   (when (equal (buffer-file-name)
                (expand-file-name (concat ketan0/dotfiles-dir "karabiner.org")))
     ;; Avoid running hooks when tangling.
@@ -547,56 +556,17 @@ See `org-capture-templates' for more information."
        (expand-file-name (concat ketan0/dotfiles-dir "karabiner.org"))
        (expand-file-name (concat ketan0/dotfiles-dir "karabiner.edn"))))
     (message (concat "Goku output: " (shell-command-to-string "goku")))))
+(add-hook 'after-save-hook 'ketan0/tangle-karabiner)
 
-(defun source-yabairc ()
-  "If the current buffer is 'karabiner.org' the code-blocks are
-   tangled, and the tangled file is compiled."
+(defun ketan0/source-yabairc ()
+  "If the current buffer is 'yabairc' then yabai is relaunched."
   (when (equal (buffer-file-name)
                (expand-file-name (concat ketan0/dotfiles-dir "yabairc")))
     ;; Avoid running hooks when tangling.
     (message (concat "Sourcing yabairc..."
                      (shell-command-to-string
                       "launchctl kickstart -k \"gui/${UID}/homebrew.mxcl.yabai\"")))))
-
-(add-hook 'after-save-hook 'tangle-karabiner)
-(add-hook 'after-save-hook 'source-yabairc)
-
-;; (use-package! lsp-mode
-;;   :init
-;;   (setq lsp-keymap-prefix "s-l")
-;;   :config
-;;   (setq lsp-auto-require-clients t)
-;;   (setq lsp-auto-configure t)
-;;   (setq lsp-ui-doc-enable nil)
-;;   (setq lsp-eldoc-hook nil)
-;;   (lsp-register-client
-;;    (make-lsp-client :new-connection (lsp-tramp-connection "clangd-10")
-;;                     :major-modes '(c-mode c++-mode)
-;;                     :remote? t
-;;                     :server-id 'clangd-remote))
-;;   :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-;;          ;; (c++-mode . lsp)
-;;          ;; (c-mode . lsp)
-;;          (python-mode . lsp)
-;;          (tex-mode . lsp)
-;;          (latex-mode . lsp)
-;;          )
-;;   :commands lsp)
-
-;; optionally
-;; (use-package! lsp-ui
-;;   :config
-;;   (setq lsp-ui-sideline-ignore-duplicate t)
-;;   (add-hook 'lsp-mode-hook 'lsp-ui-mode))
-
-;; (use-package! ein
-;;   :config
-;;   (map! :map ein:notebook-mode-map "<S-return>" 'ein:worksheet-execute-cell-and-goto-next-km)
-;;   ;;TODO make below thing work
-;;   (map! :map ein:notebook-mode-map "<C-return>" 'ein:worksheet-execute-cell-km)
-;;   (map! :map ein:notebook-mode-map :nm "<down>" 'ein:worksheet-goto-next-input-km)
-;;   (map! :map ein:notebook-mode-map :nm "<down>" 'ein:worksheet-goto-next-input-km)
-;;   (map! :map ein:notebook-mode-map :nm "<up>" 'ein:worksheet-goto-prev-input-km))
+(add-hook 'after-save-hook 'ketan0/source-yabairc)
 
 (use-package! evil-extra-operator
   :init
@@ -629,16 +599,28 @@ See `org-capture-templates' for more information."
           (if this-win-2nd (other-window 1))))))
 (map! :map evil-window-map "f" 'toggle-window-split)
 
-(use-package! multifiles
-  :init
-  (map! :map doom-leader-map "e" 'mf/mirror-region-in-multifile))
-
 (use-package! evil-matchit
   :config
   (global-evil-matchit-mode 1))
 
 ;; (use-package! tide
+;;   :after (typescript-mode company flycheck)
+;;   :hook ((typescript-mode . tide-hl-identifier-mode)
+;;          (before-save . tide-format-before-save))
 ;;   :config
+;;   (map! :localleader
+;;         :map tide-mode-map
+;;         "k" #'flycheck-previous-error
+;;         "j" #'flycheck-next-error
+;;         "x" #'tide-fix)
+
+;;   (setq tide-format-options
+;;         '(:indentSize 2
+;;           :tabSize 2
+;;           :insertSpaceAfterOpeningAndBeforeClosingTemplateStringBraces nil
+;;           :placeOpenBraceOnNewLineForFunctions nil
+;;           :placeOpenBraceOnNewLineForControlBlocks nil))
+
 ;;   (defun setup-tide-mode ()
 ;;     (interactive)
 ;;     (tide-setup)
@@ -653,63 +635,32 @@ See `org-capture-templates' for more information."
 
 ;;   ;; aligns annotation to the right hand side
 ;;   (setq company-tooltip-align-annotations t)
+;;   (add-hook 'typescript-mode-hook #'setup-tide-mode)
 
-;;   ;; formats the buffer before saving
-;;   (add-hook 'before-save-hook 'tide-format-before-save)
-;;   ;; (remove-hook 'before-save-hook 'tide-format-before-save)
+;;   (with-eval-after-load 'web-mode
+;;     (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
+;;     (add-hook 'web-mode-hook
+;;               (lambda ()
+;;                 (when (string-equal "tsx" (file-name-extension buffer-file-name))
+;;                   (setup-tide-mode)))))
+;;   ;; enable typescript-tslint checker
+;;   (with-eval-after-load 'flycheck
+;;     (flycheck-add-mode 'typescript-tslint 'web-mode)))
 
-;;   (add-hook 'typescript-mode-hook #'setup-tide-mode))
 
+;; ;; (require 'web-mode)
+;; ;; (defun my-web-mode-hook ()
+;; ;;   "Hooks for Web mode."
+;; ;;   (setq web-mode-markup-indent-offset 2))
+;; ;; (add-hook 'web-mode-hook  'my-web-mode-hook)
+;; ;; (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
+;; ;; (add-hook 'web-mode-hook
+;; ;;           (lambda ()
+;; ;;             (when (string-equal "tsx" (file-name-extension buffer-file-name))
+;; ;;               (setup-tide-mode))))
 
-;; (require 'web-mode)
-;; (defun my-web-mode-hook ()
-;;   "Hooks for Web mode."
-;;   (setq web-mode-markup-indent-offset 2))
-;; (add-hook 'web-mode-hook  'my-web-mode-hook)
-;; (add-to-list 'auto-mode-alist '("\\.tsx\\'" . web-mode))
-;; (add-hook 'web-mode-hook
-;;           (lambda ()
-;;             (when (string-equal "tsx" (file-name-extension buffer-file-name))
-;;               (setup-tide-mode))))
-
-;; enable typescript-tslint checker
-;; (flycheck-add-mode 'typescript-tslint 'web-mode)
-
-(defun org-peek-link-activate-func (start end path bracketp)
-  (remove-overlays start end)
-  (when (file-exists-p path)
-    (let ((overlay (make-overlay start end nil t)))
-      (overlay-put overlay 'display
-                   (with-temp-buffer
-                     (insert-file-contents path)
-                     (buffer-string)))
-      (overlay-put overlay 'before-string (concat "PEEK: " path "\n"))
-      (overlay-put overlay 'face 'org-quote)
-      (overlay-put overlay 'evaporate t))))
-
-(defun org-peek-link-complete (&optional arg)
-  "Create a peek link using completion.
-Modified version of `org-file-complete-link'."
-  (let ((file (read-file-name "File: "))
-        (pwd (file-name-as-directory (expand-file-name ".")))
-        (pwd1 (file-name-as-directory (abbreviate-file-name
-                                       (expand-file-name ".")))))
-    (cond ((equal arg '(16))
-           (concat "peek:"
-                   (abbreviate-file-name (expand-file-name file))))
-          ((string-match
-            (concat "^" (regexp-quote pwd1) "\\(.+\\)") file)
-           (concat "peek:" (match-string 1 file)))
-          ((string-match
-            (concat "^" (regexp-quote pwd) "\\(.+\\)")
-            (expand-file-name file))
-           (concat "peek:"
-                   (match-string 1 (expand-file-name file))))
-          (t (concat "peek:" file)))))
-
-(org-link-set-parameters "peek"
-                         :activate-func 'org-peek-link-activate-func
-                         :complete 'org-peek-link-complete)
+;; ;; enable typescript-tslint checker
+;; ;; (flycheck-add-mode 'typescript-tslint 'web-mode)
 
 (use-package! evil-snipe
   :config
@@ -718,87 +669,97 @@ Modified version of `org-file-complete-link'."
   ;; search the whole buffer, not just the line
   (setq evil-snipe-scope 'buffer))
 
-;; see Mathjax fragments in eww
-(use-package! texfrag)
+;; ;; secret stuff that I'm not publishing on github
+;; (load-file "~/.doom.d/ketan0-secrets.el")
 
-(load-file "~/.doom.d/ketan0-secrets.el")
+;; ;; (use-package! counsel-spotify
+;; ;;   :config
+;; ;;   (setq counsel-spotify-client-id ketan0-secrets/spotify-client-id)
+;; ;;   (setq counsel-spotify-client-secret ketan0-secrets/spotify-client-secret))
 
-(use-package! counsel-spotify
-  :config
-  (setq counsel-spotify-client-id ketan0-secrets/spotify-client-id)
-  (setq counsel-spotify-client-secret ketan0-secrets/spotify-client-secret))
+;; ;; (use-package! spotify
+;; ;;   :config
+;; ;;   (setq spotify-oauth2-client-id ketan0-secrets/spotify-client-id)
+;; ;;   (setq spotify-oauth2-client-secret ketan0-secrets/spotify-client-secret))
 
-;; (use-package! spotify
+;; ;; (use-package! elfeed
+;; ;;   :config
+;; ;;   (setq-default elfeed-search-filter "@emacs")
+;; ;;   (map! :leader :nm
+;; ;;         "o e" #'elfeed))
+
+;; ;; (use-package! elfeed-org
+;; ;;   :config
+;; ;;   (elfeed-org)
+;; ;;   (setq rmh-elfeed-org-files (list (concat org-directory "elfeed.org"))))
+
+;; ;; (setq ketan0/org-twitter-package-path "/Users/ketanagrawal/emacs-packages/org-twitter")
+;; ;; (use-package! org-twitter
+;; ;;   :load-path ketan0/org-twitter-package-path
+;; ;;   :config
+;; ;;   ;; TODO: is this right?? idk if this is right
+;; ;;   (map! :map org-mode-map
+;; ;;         :leader
+;; ;;         :desc "tweet headline" "t h" #'org-twitter-tweet-this-headline
+;; ;;         :desc "tweet selection" "t v" #'org-twitter-tweet-selection
+;; ;;         :desc "tweet subheadlines" "t t" #'org-twitter-tweet-subheadlines-as-thread)
+;; ;;   (with-eval-after-load 'org-capture
+;; ;;     (add-to-list 'org-capture-templates
+;; ;;                  `("S" "tweet" entry ;; for use with org-twitter
+;; ;;                    (file ,(concat org-directory "20200406054034-twitter.org"))
+;; ;;                    "* %?"))
+;; ;;     (defun ketan0/org-twitter-finalize ()
+;; ;;       (let ((key  (plist-get org-capture-plist :key)))
+;; ;;         (when (and (string= key "S") (not org-note-abort))
+;; ;;           (aio-wait-for (call-interactively 'org-twitter-tweet-this-headline)))))
+;; ;;     (add-hook 'org-capture-prepare-finalize-hook 'ketan0/org-twitter-finalize)))
+
+;; ;; (setq ketan0/org-spotify-package-path "/Users/ketanagrawal/emacs-packages/org-spotify")
+;; ;; (use-package! org-spotify
+;; ;;   :load-path ketan0/org-spotify-package-path
+;; ;;   :config
+;; ;;   (setq org-spotify-oauth2-client-id ketan0-secrets/spotify-client-id)
+;; ;;   (setq org-spotify-oauth2-client-secret ketan0-secrets/spotify-client-secret))
+
+;; ;; (use-package! gif-screencast
+;; ;;   :config
+;; ;;   ;; (map! "<f3>" 'gif-screencast-start-or-stop)
+;; ;;   (setq gif-screencast-args '("-v" "-x"))
+;; ;;   (setq gif-screencast-cropping-program "mogrify")
+;; ;;   (setq gif-screencast-capture-format "ppm"))
+
+;; (use-package! conda
 ;;   :config
-;;   (setq spotify-oauth2-client-id ketan0-secrets/spotify-client-id)
-;;   (setq spotify-oauth2-client-secret ketan0-secrets/spotify-client-secret))
+;;   (setq conda-anaconda-home "/Users/ketanagrawal/miniconda3")
+;;   (setq conda-env-home-directory "/Users/ketanagrawal/miniconda3/"))
 
-(use-package! elfeed
-  :config
-  (setq-default elfeed-search-filter "@emacs")
-  (map! :leader :nm
-        "o e" #'elfeed))
+;; (defun ketan0/parse-csv-file (file sep)
+;;   "parse FILE representing a CSV table into a list of lists."
+;;   (interactive
+;;    (list (read-file-name "CSV file: ")))
+;;   (let ((buf (find-file-noselect file))
+;;         (result nil))
+;;     (with-current-buffer buf
+;;       (goto-char (point-min))
+;;       (while (not (eobp))
+;;         (let ((line (buffer-substring-no-properties
+;;                      (line-beginning-position) (line-end-position))))
+;;           (push (split-string line sep) result))
+;;         (forward-line 1)))
+;;     (reverse result)))
 
-(use-package! elfeed-org
-  :config
-  (elfeed-org)
-  (setq rmh-elfeed-org-files (list (concat org-directory "elfeed.org"))))
+;; (defvar ketan0/chrome-history-tsv-file "~/Downloads/history_autobackup_20201108_full.tsv"
+;;   "Location of the TSV exported by History Trends Unlimited Chrome extension"
+;;   )
 
-(setq ketan0/org-twitter-package-path "/Users/ketanagrawal/emacs-packages/org-twitter")
-(use-package! org-twitter
-  :load-path ketan0/org-twitter-package-path)
-
-(setq ketan0/org-spotify-package-path "/Users/ketanagrawal/emacs-packages/org-spotify")
-(use-package! org-spotify
-  :load-path ketan0/org-spotify-package-path
-  :config
-  (setq org-spotify-oauth2-client-id ketan0-secrets/spotify-client-id)
-  (setq org-spotify-oauth2-client-secret ketan0-secrets/spotify-client-secret))
-
-(use-package! gif-screencast
-  :config
-  (map! "<f3>" 'gif-screencast-start-or-stop)
-  (setq gif-screencast-args '("-v" "-x"))
-  (setq gif-screencast-cropping-program "mogrify")
-  (setq gif-screencast-capture-format "ppm"))
-
-(use-package! conda
-  :config
-  (setq conda-anaconda-home "/Users/ketanagrawal/miniconda3")
-  (setq conda-env-home-directory "/Users/ketanagrawal/miniconda3/"))
-
-(defun ketan0/parse-csv-file (file sep)
-  "parse FILE representing a CSV table into a list of lists."
-  (interactive
-   (list (read-file-name "CSV file: ")))
-  (let ((buf (find-file-noselect file))
-        (result nil))
-    (with-current-buffer buf
-      (goto-char (point-min))
-      (while (not (eobp))
-        (let ((line (buffer-substring-no-properties
-                     (line-beginning-position) (line-end-position))))
-          (push (split-string line sep) result))
-        (forward-line 1)))
-    (reverse result)))
-
-(defvar ketan0/chrome-history-tsv-file "~/Downloads/history_autobackup_20201108_full.tsv"
-"Location of the TSV exported by History Trends Unlimited Chrome extension"
-)
-
-(defun ketan0/insert-chrome-history-org-link ()
-  (interactive)
-  ;; TODO: caching
-  (-let ((history-items (->> (-slice (parse-csv-file ketan0/chrome-history-tsv-file "\t") 1)
-                            (seq-sort-by #'(lambda (x) (string-to-number (substring (nth 1 x) 1))) #'>)
-                            (-select-columns '(3 0))
-                            )))
-    (ivy-read "Chrome History: " history-items
-              :action (lambda (x) (interactive) (insert (format "[[%s][%s]]" (cadr x) (car x))))
-              :re-builder '+ivy-prescient-non-fuzzy
-              :sort nil)))
-
-(defadvice! open-org-capture-in-current-window (oldfun &rest args)
-  :around #'org-protocol-capture
-  (let (display-buffer-alist)
-    (apply oldfun args)))
+;; (defun ketan0/insert-chrome-history-org-link ()
+;;   (interactive)
+;;   ;; TODO: caching
+;;   (-let ((history-items
+;;           (->> (-slice (ketan0/parse-csv-file ketan0/chrome-history-tsv-file "\t") 1)
+;;                (seq-sort-by #'(lambda (x) (string-to-number (substring (nth 1 x) 1))) #'>)
+;;                (-select-columns '(3 0)))))
+;;     (ivy-read "Chrome History: " history-items
+;;               :action (lambda (x) (interactive) (insert (format "[[%s][%s]]" (cadr x) (car x))))
+;;               :re-builder '+ivy-prescient-non-fuzzy
+;;               :sort nil)))
