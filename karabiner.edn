@@ -4,21 +4,26 @@
             :Ketan {
                     :default true
                     :sim     500    ;; simultaneous_threshold_milliseconds (def: 50)
-                    ;; keys need to be pressed within this threshold to be considered simultaneous
+
                     :delay   80    ;; to_delayed_action_delay_milliseconds (def: 500)
-                    ;; basically it means time after which the key press is count delayed
+
                     :alone   500      ;; to_if_alone_timeout_milliseconds (def: 1000)
-                    ;; hold for 995s and single tap registered; hold for 1005s and seen as modifier
+
                     :held    1000   ;; to_if_held_down_threshold_milliseconds (def: 500)
-                    ;; key is fired twice when 500 ms is elapsed (otherwise seen as a hold command)
+
                     }
             } ;; profiles
 
 :templates {
             :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\" with parameter \"%s\"'"
-            :open "open \"%s\""
-            :openhide "open \"%s\" -gj"
+
+            :open "open %s"
+            :openwith "open -a \"%s\" %s"
+            :openhide "open %s -gj"
+            :withsecret "source ~/.dotfiles/.secrets && %s"
             :alfred "osascript -e 'tell application \"Alfred 4\" to run trigger \"%s\" in workflow \"%s\" with argument \"%s\"'"
+            :wallpaper "osascript -e 'tell application \"Finder\" to set desktop picture to POSIX file \"%s\"'"
+            :elisp "/usr/local/bin/emacsclient --eval '%s'"
             } ;; templates
 
 :layers {
@@ -30,7 +35,6 @@
                               {:set ["chrome-movement-mode" 0]}
                               {:set ["chrome-rearrange-tab-mode" 0]}]}
 
-         :q-key-mode {:key :q}
          :yabai-move-mode {:key :w :condi :tab-mode}
          :yabai-focus-mode {:key :f :condi :tab-mode}
          :yabai-display-mode {:key :d :condi :tab-mode}
@@ -43,9 +47,12 @@
 
 :simlayers {
         :slash-mode {:key :slash}
+        :q-key-mode {:key :q}
+        :x-key-mode {:key :x}
         :jupyter-mode {:key :j}
         :o-key-mode {:key :o}
         :comma-mode {:key :comma}
+        :wallpaper-mode {:key :w}
 }
 
 :main [{
@@ -63,6 +70,17 @@
 [:k "/usr/local/bin/yabai -m window --warp north"]
 [:l "/usr/local/bin/yabai -m window --warp east"]
 [:b "/usr/local/bin/yabai -m space --balance"]
+[:0 "/usr/local/bin/yabai -m window --opacity 0.0"]
+[:1 "/usr/local/bin/yabai -m window --opacity 0.1"]
+[:2 "/usr/local/bin/yabai -m window --opacity 0.2"]
+[:3 "/usr/local/bin/yabai -m window --opacity 0.3"]
+[:4 "/usr/local/bin/yabai -m window --opacity 0.4"]
+[:5 "/usr/local/bin/yabai -m window --opacity 0.5"]
+[:6 "/usr/local/bin/yabai -m window --opacity 0.6"]
+[:7 "/usr/local/bin/yabai -m window --opacity 0.7"]
+[:8 "/usr/local/bin/yabai -m window --opacity 0.8"]
+[:9 "/usr/local/bin/yabai -m window --opacity 0.9"]
+[:grave_accent_and_tilde "/usr/local/bin/yabai -m window --opacity 1.0"]
 [:s "/usr/local/bin/yabai -m window --toggle split"]
 
 :yabai-focus-mode
@@ -95,6 +113,7 @@
 [:spacebar :!CTspacebar] ;; open emoji picker
 [:return_or_enter  "/usr/local/bin/yabai -m window --toggle float"]
 [:3 [:km "Toggle Dark Mode"]]
+[:4 [:km "Open Finder"]]
 [:s [:km "Open Spotify" "hide"]]
 [:c [:km "Open Chrome" "hide"]]
 [:k [:km "Open Keyboard Maestro" "hide"]]
@@ -102,13 +121,11 @@
 [:i [:km "Open iTerm" "hide"]]
 [:m [:km "Open Messages" "hide"]]
 [:comma [:km "Open Messenger" "hide"]]
-[:n [:km "Open Notes" "hide"]]
+[:n [:km "Open Neo4j" "hide"]]
 [:v [:km "Open Zoom" "hide"]]
-;; [:q [:km "Open Qutebrowser"]]
-;; [:x [:km "Open Xcode"]]
-;; [:w [:km "Open Word"]]
 
 :q-key-mode
+[:grave_accent_and_tilde [:km "Open Stickies"]]
 [:s [:km "Open Spotify"]]
 [:c [:km "Open Chrome"]]
 [:k [:km "Open Keyboard Maestro"]]
@@ -116,21 +133,53 @@
 [:i [:km "Open iTerm"]]
 [:m [:km "Open Messages"]]
 [:comma [:km "Open Messenger"]]
-[:n [:km "Open Notes"]]
+[:n [:km "Open Neo4j"]]
 [:v [:km "Open Zoom"]]
 
+:x-key-mode
+[:s [:elisp "(+org-capture/open-frame nil \"s\")"]]
+[:t [:elisp "(+org-capture/open-frame nil \"t\")"]]
+[:d [:elisp "(+org-capture/open-frame nil \"d\")"]]
+[:i [:elisp "(+org-capture/open-frame nil \"i\")"]]
+[:g "osascript ~/.dotfiles/org_roam_capture.scpt"] ;; create new org-roam note
+[:spacebar [:elisp "(+org-capture/open-frame)"]]
+[:r [:elisp "(org-roam-random-note)"]]
+[:j [:elisp "(org-journal-new-entry nil)"]]
+
 :tilde-mode
-[:f [:openhide "focus://focus?minutes=30"]]
+[:f [:openhide "focus://focus?minutes=60"]]
 [:t [:openhide "focus://toggle"]]
 [:u [:openhide "focus://unfocus"]]
 [:comma [:open "focus://preferences"]]
 
 :comma-mode
-[:i [:open "https://www.keyhero.com/typing-instant-death/"]]
-[:t [:open "https://www.keyhero.com/free-typing-test/"]]
+[:1 [:withsecret "open $PSYCH_LECTURE_LINK"]]
+[:3 [:withsecret "open $PAC_PROJECT_ZOOM_LINK"]]
+[:c [:open "~/Sync/org/capture.org"]]
+[:d [:open "https://drive.google.com/drive/my-drive"]]
+[:e [:open "~/.dotfiles/doom.d/config.el"]]
+[:f [:open "https://www.keyhero.com/free-typing-test/"]]
 
-:o-key-mode
-[:r [:km "org-roam capture"]]
+
+
+[:i [:open "https://www.keyhero.com/typing-instant-death/"]]
+[:m [:open "https://outlook.office.com/mail/inbox"]]
+[:p [:withsecret "open $PAC_PROGRESS_DOC_LINK"]]
+[:t [:open "https://twitter.com/i/bookmarks"]]
+[:r [:open "~/Sync/org/todos.org"]]
+[:s [:open "~/.dotfiles/karabiner.org"]]
+
+[:v [:openwith "Emacs" "~/Dropbox/Apps/GoodNotes\\ 5/GoodNotes/vision.pdf"]]
+[:y [:openwith "Emacs" "~/.dotfiles/yabairc"]]
+[:z [:withsecret "open $MY_ZOOM_LINK"]]
+
+
+
+:wallpaper-mode
+[:g [:wallpaper "/System/Library/Desktop Pictures/Solar Gradients.heic"]]
+[:s [:wallpaper "/Users/ketanagrawal/Desktop/wallpapers/simple-subtle-abstract-dark-minimalism-4k-u9.jpg"]]
+[:x [:wallpaper "/Users/ketanagrawal/Desktop/wallpapers/paint_colorful_overlay_139992_1440x900.jpg"]]
+[:y [:wallpaper "/Users/ketanagrawal/Desktop/wallpapers/background_paint_stains_light_76087_1440x900.jpg"]]
 
 :vim-mode
 [:#Sh :left_arrow] ;; hjkl navigation everywhere + Shift
@@ -143,7 +192,6 @@
 
 :jupyter-mode
 [:l [:km "Start or Go to Existing Jupyter Lab Server"]]
-[:t [:km "org-roam capture"]]
 
 ]}] ;;end main
 
