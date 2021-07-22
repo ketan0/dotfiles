@@ -3,15 +3,15 @@
 # If you come from bash you might have to change your $PATH.
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 export PATH=$HOME/.emacs.d/bin:$PATH
-if [ "$HOST" = ketanmba.lan ]; then
+if [ "$HOST" = ketanmba.local ]; then
 __conda_setup="$('/Users/ketanagrawal/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
     eval "$__conda_setup"
 else
     if [ -f "/Users/ketanagrawal/miniconda3/etc/profile.d/conda.sh" ]; then
-        . "/Users/ketanagrawal/miniconda3/etc/profile.d/conda.sh"
+# . "/Users/ketanagrawal/miniconda3/etc/profile.d/conda.sh"  # commented out by conda initialize
     else
-        export PATH="/Users/ketanagrawal/miniconda3/bin:$PATH"
+# export PATH="/Users/ketanagrawal/miniconda3/bin:$PATH"  # commented out by conda initialize
     fi
 fi
 unset __conda_setup
@@ -112,6 +112,23 @@ source $ZSH/oh-my-zsh.sh
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+alias e=emacsclient
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
+
+# >>> conda initialize >>>
+# !! Contents within this block are managed by 'conda init' !!
+__conda_setup="$('/Users/ketanagrawal/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__conda_setup"
+else
+    if [ -f "/Users/ketanagrawal/miniconda3/etc/profile.d/conda.sh" ]; then
+        . "/Users/ketanagrawal/miniconda3/etc/profile.d/conda.sh"
+    else
+        export PATH="/Users/ketanagrawal/miniconda3/bin:$PATH"
+    fi
+fi
+unset __conda_setup
+# <<< conda initialize <<<
 
