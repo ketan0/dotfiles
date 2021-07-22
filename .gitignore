@@ -11,3 +11,5 @@ emacs.d/transient/
 /emacs.d/thumbs/
 *.elc
 /emacs.d/games/
+.secrets
+doom.d/ketan0-secrets.el
