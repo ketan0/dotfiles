@@ -9,8 +9,7 @@
 
 (package! org-super-agenda)
 (package! org-journal)
-(package! org-roam)
-(package! company-org-roam)
+(package! org-roam :recipe (:host github :repo "org-roam/org-roam"))
 (package! org-pomodoro)
 (package! ssh-config-mode)
 (package! org-ql)

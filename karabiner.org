@@ -60,13 +60,15 @@ need to prefix C T O S F with ! or #
 :templates {
             :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\" with parameter \"%s\"'"
             ;; Removed the quotes around %s because it makes it not able to open files too
-            :open "open %s"
-            :openwith "open -a \"%s\" %s"
-            :openhide "open %s -gj"
+            :open "open '%s'"
+            :smarturl "osascript ~/.dotfiles/open_url_smart.scpt '%s'"
+            :openwith "open -a '%s' '%s'"
+            :openhide "open '%s' -gj"
             :withsecret "source ~/.dotfiles/.secrets && %s"
+            :withsecretsmarturl "source ~/.dotfiles/.secrets && osascript ~/.dotfiles/open_url_smart.scpt %s"
             :alfred "osascript -e 'tell application \"Alfred 4\" to run trigger \"%s\" in workflow \"%s\" with argument \"%s\"'"
             :wallpaper "osascript -e 'tell application \"Finder\" to set desktop picture to POSIX file \"%s\"'"
-            :elisp "/usr/local/bin/emacsclient --eval '%s'"
+            :elisp "/usr/local/bin/emacsclient --eval '(progn (select-frame-set-input-focus (selected-frame))%s)'"
             } ;; templates
 
 #+end_src
@@ -188,20 +190,33 @@ Move current tab left/right. Need [[https://chrome.google.com/webstore/detail/re
 #+end_src
 ** tab-mode (tab)
 Mostly for opening apps, and some other convenient shortcuts like toggling dark mode and emojis.
+
+Toggle system dark mode, as well as the emacs theme. (See [[file:doom.d/config.el::ketan0/responsive-theme][ketan0/responsive-theme]] for details)
+#+begin_src apples :tangle ~/.dotfiles/toggle_dark_mode.scpt
+tell application "System Events"
+    tell appearance preferences
+        set dark mode to not dark mode
+        do shell script "/usr/local/bin/emacsclient --eval '(load-theme (ketan0/responsive-theme) t)'"
+    end tell
+end tell
+#+end_src
+
 #+begin_src clojure
 :tab-mode
 [:spacebar :!CTspacebar] ;; open emoji picker
 [:return_or_enter  "/usr/local/bin/yabai -m window --toggle float"]
-[:3 [:km "Toggle Dark Mode"]]
+[:comma [:km "Open Messenger" "hide"]]
+[:3 "osascript ~/.dotfiles/toggle_dark_mode.scpt"]
 [:4 [:km "Open Finder"]]
-[:s [:km "Open Spotify" "hide"]]
-[:c [:km "Open Chrome" "hide"]]
+[:a [:km "Open Safari" "hide"]]
+[:x [:km "Open Chrome" "hide"]]
+[:c [:km "Open Safari" "hide"]]
 [:k [:km "Open Keyboard Maestro" "hide"]]
 [:e [:km "Open Emacs" "hide"]]
 [:i [:km "Open iTerm" "hide"]]
 [:m [:km "Open Messages" "hide"]]
-[:comma [:km "Open Messenger" "hide"]]
-[:n [:km "Open Neo4j" "hide"]]
+[:s [:km "Open Spotify" "hide"]]
+;; [:n [:km "Open Neo4j" "hide"]]
 [:v [:km "Open Zoom" "hide"]]
 ;; [:q [:km "Open Qutebrowser"]]
 ;; [:x [:km "Open Xcode"]]
@@ -212,8 +227,10 @@ Mostly for opening apps, and some other convenient shortcuts like toggling dark 
 #+begin_src clojure
 :q-key-mode
 [:grave_accent_and_tilde [:km "Open Stickies"]]
+[:a [:km "Open Safari"]]
+[:x [:km "Open Chrome"]]
 [:s [:km "Open Spotify"]]
-[:c [:km "Open Chrome"]]
+[:c [:km "Open Safari"]]
 [:k [:km "Open Keyboard Maestro"]]
 [:e [:km "Open Emacs"]]
 [:i [:km "Open iTerm"]]
@@ -231,13 +248,14 @@ end tell
 
 #+begin_src clojure
 :x-key-mode
+[:a [:elisp "(ketan0/switch-to-main-agenda)"]]
 [:s [:elisp "(+org-capture/open-frame nil \"s\")"]]
 [:t [:elisp "(+org-capture/open-frame nil \"t\")"]]
 [:d [:elisp "(+org-capture/open-frame nil \"d\")"]]
 [:i [:elisp "(+org-capture/open-frame nil \"i\")"]]
 [:g "osascript ~/.dotfiles/org_roam_capture.scpt"] ;; create new org-roam note
 [:spacebar [:elisp "(+org-capture/open-frame)"]]
-[:r [:elisp "(org-roam-random-note)"]]
+[:r [:elisp "(org-roam-node-random)"]]
 [:j [:elisp "(org-journal-new-entry nil)"]]
 #+end_src
 ** tilde-mode
@@ -251,32 +269,134 @@ Using this mode to "focus" / "unfocus" with the [[https://heyfocus.com/][Focus]]
 #+end_src
 ** comma-mode
 Just some like random stuff. Open notes, zoom links, twitter, typing tests.
+
+Open [[https://chrome.google.com/webstore/detail/history-trends-unlimited/pnmchffiealhkdloeffcdnbgdnedheme?hl=en][History Trends Unlimited]] chrome extension
 #+begin_src apples :tangle ~/.dotfiles/open_chrome_history.scpt
 tell application "Google Chrome" to open location "chrome-extension://pnmchffiealhkdloeffcdnbgdnedheme/search.html"
 #+end_src
 
+Open a URL, but only if it's not already a tab. If it's a tab, then go to that tab.
+#+begin_src apples :tangle ~/.dotfiles/open_url_smart.scpt
+on run (clp)
+    tell application "Safari"
+        repeat with w in windows
+            set i to 1
+            repeat with t in tabs of w
+                if URL of t starts with clp's item 1 then
+                    set current tab of w to t
+                    -- set active tab index of w to i
+                    tell w
+                        set index to 1
+                    end tell
+                    -- delay 0.05
+                    -- do shell script "open -a Safari"
+                    tell application "System Events"
+                        perform action "AXRaise" of front window of application process "Safari"
+                    end tell
+                    activate
+                    return
+                end if
+                set i to i + 1
+            end repeat
+        end repeat
+        open location clp's item 1
+        activate
+    end tell
+end run
+#+end_src
+
+Check my calendar; if there's an event with a zoom link, open the zoom link.
+#+begin_src apples :tangle ~/.dotfiles/open_current_zoom_link.scpt
+use script "CalendarLib EC" version "1.1.5"
+use scripting additions
+use framework "Foundation"
+
+property NSRegularExpressionCaseInsensitive : a reference to 1
+property NSRegularExpression : a reference to current application's NSRegularExpression
+
+-- fetch properties of events for next week
+set now to current date
+set theStore to fetch store
+set theCal to fetch calendar "Calendar" cal type cal exchange event store theStore -- change to suit
+set theEvents to fetch events starting date now ending date now searching cals {theCal} event store theStore -- get events that are occurring currently
+if length of theEvents is 0
+    display notification "No events currently!"
+    return
+end if
+set theEvent to (item 1 of theEvents)
+set theEventRecord to event info for event theEvent
+set theEventNotes to (get event_description of theEventRecord)
+if theEventNotes is missing value
+    display notification "Couldn't find the zoom link. Opening calendar..."
+    tell application "Calendar" to activate
+    return
+end if
+set theNSStringSample to current application's NSString's stringWithString:theEventNotes
+set passcodePattern to "Password:(?:\\s|\\n)+(\\d{6})"
+set thePasscodeRegEx to NSRegularExpression's regularExpressionWithPattern:passcodePattern options:NSRegularExpressionCaseInsensitive |error|:(missing value)
+set aMatch to thePasscodeRegEx's firstMatchInString:theNSStringSample options:0 range:[0, theNSStringSample's |length|]
+if aMatch is not missing value then
+    set partRange to (aMatch's rangeAtIndex:1) as record
+    set passcode to (theNSStringSample's substringWithRange:partRange) as text
+    set the clipboard to passcode -- copy the passcode in case zoom prompts for it
+else
+    display notification "Couldn't find the passcode."
+end if
+
+set zoomLinkPattern to "https:\\/\\/(?:.+\\.)?zoom\\.us\\/j\\/(\\d+)\\?pwd=([a-zA-Z0-9]+)"
+set theZoomLinkRegEx to NSRegularExpression's regularExpressionWithPattern:zoomLinkPattern options:NSRegularExpressionCaseInsensitive |error|:(missing value)
+set aMatch to theZoomLinkRegEx's firstMatchInString:theNSStringSample options:0 range:[0, theNSStringSample's |length|]
+if aMatch is not missing value then
+    set partRange to (aMatch's rangeAtIndex:1) as record
+    set zoomConfNo to (theNSStringSample's substringWithRange:partRange) as text
+    set partRange to (aMatch's rangeAtIndex:2) as record
+    set zoomPwd to (theNSStringSample's substringWithRange:partRange) as text
+    display notification "Starting zoom..."
+    open location "zoommtg://zoom.us/join?confno=" & zoomConfno & "&pwd=" & zoomPwd
+else
+    display notification "Couldn't find the zoom link. Opening calendar..."
+    tell application "Calendar" to activate
+end if
+#+end_src
+
 #+RESULTS:
+
+I really like Safari, but sometimes need to use Chrome for various extensions etc. Solution: have Safari => Chrome shortcut.
+#+begin_src apples :tangle ~/.dotfiles/open_in_chrome.scpt
+tell application "Safari"
+    set theURL to URL of current tab of window 1
+    tell application "Google Chrome" to open location theURL
+end tell
+#+end_src
+
 
 #+begin_src clojure
 :comma-mode
-[:1 [:withsecret "open $PSYCH_LECTURE_LINK"]]
+[:1 [:withsecretsmarturl "$PSYCH_LECTURE_LINK"]]
 [:3 [:withsecret "open $PAC_PROJECT_ZOOM_LINK"]]
-[:c [:open "~/Sync/org/capture.org"]]
+;; add title bar to frame
+[:a [:elisp "(setq mac-use-title-bar t)(setq ketan0/old-frame (selected-frame)) (make-frame)(delete-frame ketan0/old-frame)"]]
+[:b "osascript ~/.dotfiles/open_in_chrome.scpt"]
+[:c [:open "/Users/ketanagrawal/org_private/capture.org"]]
 [:d [:open "https://drive.google.com/drive/my-drive"]]
-[:e [:open "~/.dotfiles/doom.d/config.el"]]
-[:f [:open "https://www.keyhero.com/free-typing-test/"]]
+[:o [:open "http://doc.new"]] ;; new google doc
+[:e [:open "/Users/ketanagrawal/.dotfiles/doom.d/config.el"]]
+[:f [:smarturl "https://www.keyhero.com/free-typing-test/"]]
 ;; [:h [:km "Github => Emacs"]]
-;; [:h "osascript ~/.dotfiles/open_chrome_history.scpt"]
+;; [:h "osascript /Users/ketanagrawal/.dotfiles/open_chrome_history.scpt"]
 
-[:i [:open "https://www.keyhero.com/typing-instant-death/"]]
-[:m [:open "https://outlook.office.com/mail/inbox"]]
-[:p [:withsecret "open $PAC_PROGRESS_DOC_LINK"]]
-[:t [:open "https://twitter.com/i/bookmarks"]]
-[:r [:open "~/Sync/org/todos.org"]]
-[:s [:open "~/.dotfiles/karabiner.org"]]
+[:i [:smarturl "https://www.keyhero.com/typing-instant-death/"]]
+[:j [:smarturl "http://localhost:8888"]]
+[:l "osascript /Users/ketanagrawal/.dotfiles/open_current_zoom_link.scpt"]
+[:m [:smarturl "https://outlook.office.com/"]]
+[:n [:openwith "Google Chrome" "https://www.netflix.com/title/80199128"]]
+[:p [:withsecretsmarturl "$PAC_PROGRESS_DOC_LINK"]]
+[:t [:smarturl "https://twitter.com/i/bookmarks"]]
+[:r [:open "/Users/ketanagrawal/org_private/todos.org"]]
+[:s [:open "/Users/ketanagrawal/.dotfiles/karabiner.org"]]
 ;; [:v [:open "https://healthy.verily.com/"]] ;; covid testing
-[:v [:openwith "Emacs" "~/Dropbox/Apps/GoodNotes\\ 5/GoodNotes/vision.pdf"]]
-[:y [:openwith "Emacs" "~/.dotfiles/yabairc"]]
+[:v [:openwith "Emacs" "/Users/ketanagrawal/Dropbox/Apps/GoodNotes 5/GoodNotes/vision.pdf"]]
+[:y [:openwith "Emacs" "/Users/ketanagrawal/.dotfiles/yabairc"]]
 [:z [:withsecret "open $MY_ZOOM_LINK"]]
 #+end_src
 ** o-key-mode

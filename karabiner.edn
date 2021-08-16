@@ -17,13 +17,15 @@
 :templates {
             :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\" with parameter \"%s\"'"
 
-            :open "open %s"
-            :openwith "open -a \"%s\" %s"
-            :openhide "open %s -gj"
+            :open "open '%s'"
+            :smarturl "osascript ~/.dotfiles/open_url_smart.scpt '%s'"
+            :openwith "open -a '%s' '%s'"
+            :openhide "open '%s' -gj"
             :withsecret "source ~/.dotfiles/.secrets && %s"
+            :withsecretsmarturl "source ~/.dotfiles/.secrets && osascript ~/.dotfiles/open_url_smart.scpt %s"
             :alfred "osascript -e 'tell application \"Alfred 4\" to run trigger \"%s\" in workflow \"%s\" with argument \"%s\"'"
             :wallpaper "osascript -e 'tell application \"Finder\" to set desktop picture to POSIX file \"%s\"'"
-            :elisp "/usr/local/bin/emacsclient --eval '%s'"
+            :elisp "/usr/local/bin/emacsclient --eval '(progn (select-frame-set-input-focus (selected-frame))%s)'"
             } ;; templates
 
 :layers {
@@ -112,22 +114,26 @@
 :tab-mode
 [:spacebar :!CTspacebar] ;; open emoji picker
 [:return_or_enter  "/usr/local/bin/yabai -m window --toggle float"]
-[:3 [:km "Toggle Dark Mode"]]
+[:comma [:km "Open Messenger" "hide"]]
+[:3 "osascript ~/.dotfiles/toggle_dark_mode.scpt"]
 [:4 [:km "Open Finder"]]
-[:s [:km "Open Spotify" "hide"]]
-[:c [:km "Open Chrome" "hide"]]
+[:a [:km "Open Safari" "hide"]]
+[:x [:km "Open Chrome" "hide"]]
+[:c [:km "Open Safari" "hide"]]
 [:k [:km "Open Keyboard Maestro" "hide"]]
 [:e [:km "Open Emacs" "hide"]]
 [:i [:km "Open iTerm" "hide"]]
 [:m [:km "Open Messages" "hide"]]
-[:comma [:km "Open Messenger" "hide"]]
-[:n [:km "Open Neo4j" "hide"]]
+[:s [:km "Open Spotify" "hide"]]
+
 [:v [:km "Open Zoom" "hide"]]
 
 :q-key-mode
 [:grave_accent_and_tilde [:km "Open Stickies"]]
+[:a [:km "Open Safari"]]
+[:x [:km "Open Chrome"]]
 [:s [:km "Open Spotify"]]
-[:c [:km "Open Chrome"]]
+[:c [:km "Open Safari"]]
 [:k [:km "Open Keyboard Maestro"]]
 [:e [:km "Open Emacs"]]
 [:i [:km "Open iTerm"]]
@@ -137,13 +143,14 @@
 [:v [:km "Open Zoom"]]
 
 :x-key-mode
+[:a [:elisp "(ketan0/switch-to-main-agenda)"]]
 [:s [:elisp "(+org-capture/open-frame nil \"s\")"]]
 [:t [:elisp "(+org-capture/open-frame nil \"t\")"]]
 [:d [:elisp "(+org-capture/open-frame nil \"d\")"]]
 [:i [:elisp "(+org-capture/open-frame nil \"i\")"]]
 [:g "osascript ~/.dotfiles/org_roam_capture.scpt"] ;; create new org-roam note
 [:spacebar [:elisp "(+org-capture/open-frame)"]]
-[:r [:elisp "(org-roam-random-note)"]]
+[:r [:elisp "(org-roam-node-random)"]]
 [:j [:elisp "(org-journal-new-entry nil)"]]
 
 :tilde-mode
@@ -153,24 +160,31 @@
 [:comma [:open "focus://preferences"]]
 
 :comma-mode
-[:1 [:withsecret "open $PSYCH_LECTURE_LINK"]]
+[:1 [:withsecretsmarturl "$PSYCH_LECTURE_LINK"]]
 [:3 [:withsecret "open $PAC_PROJECT_ZOOM_LINK"]]
-[:c [:open "~/Sync/org/capture.org"]]
+
+[:a [:elisp "(setq mac-use-title-bar t)(setq ketan0/old-frame (selected-frame)) (make-frame)(delete-frame ketan0/old-frame)"]]
+[:b "osascript ~/.dotfiles/open_in_chrome.scpt"]
+[:c [:open "/Users/ketanagrawal/org_private/capture.org"]]
 [:d [:open "https://drive.google.com/drive/my-drive"]]
-[:e [:open "~/.dotfiles/doom.d/config.el"]]
-[:f [:open "https://www.keyhero.com/free-typing-test/"]]
+[:o [:open "http://doc.new"]] ;; new google doc
+[:e [:open "/Users/ketanagrawal/.dotfiles/doom.d/config.el"]]
+[:f [:smarturl "https://www.keyhero.com/free-typing-test/"]]
 
 
 
-[:i [:open "https://www.keyhero.com/typing-instant-death/"]]
-[:m [:open "https://outlook.office.com/mail/inbox"]]
-[:p [:withsecret "open $PAC_PROGRESS_DOC_LINK"]]
-[:t [:open "https://twitter.com/i/bookmarks"]]
-[:r [:open "~/Sync/org/todos.org"]]
-[:s [:open "~/.dotfiles/karabiner.org"]]
+[:i [:smarturl "https://www.keyhero.com/typing-instant-death/"]]
+[:j [:smarturl "http://localhost:8888"]]
+[:l "osascript /Users/ketanagrawal/.dotfiles/open_current_zoom_link.scpt"]
+[:m [:smarturl "https://outlook.office.com/"]]
+[:n [:openwith "Google Chrome" "https://www.netflix.com/title/80199128"]]
+[:p [:withsecretsmarturl "$PAC_PROGRESS_DOC_LINK"]]
+[:t [:smarturl "https://twitter.com/i/bookmarks"]]
+[:r [:open "/Users/ketanagrawal/org_private/todos.org"]]
+[:s [:open "/Users/ketanagrawal/.dotfiles/karabiner.org"]]
 
-[:v [:openwith "Emacs" "~/Dropbox/Apps/GoodNotes\\ 5/GoodNotes/vision.pdf"]]
-[:y [:openwith "Emacs" "~/.dotfiles/yabairc"]]
+[:v [:openwith "Emacs" "/Users/ketanagrawal/Dropbox/Apps/GoodNotes 5/GoodNotes/vision.pdf"]]
+[:y [:openwith "Emacs" "/Users/ketanagrawal/.dotfiles/yabairc"]]
 [:z [:withsecret "open $MY_ZOOM_LINK"]]
 
 

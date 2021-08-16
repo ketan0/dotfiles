@@ -34,14 +34,25 @@
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
 
-(setq doom-font (font-spec :family "Fira Code" :size 12))
+(setq doom-font (font-spec :family "Fira Code" :size 14))
 (when (boundp 'mac-auto-operator-composition-mode)
   (mac-auto-operator-composition-mode))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-dracula)
+
+(defun ketan0/dark-mode-active ()
+  (string=
+   (shell-command-to-string
+    "printf %s \"$( osascript -e \'tell application \"System Events\"
+tell appearance preferences to return dark mode
+end tell\')\"")
+   "true"))
+(defun ketan0/responsive-theme ()
+  (if (ketan0/dark-mode-active) 'doom-dracula 'doom-opera-light))
+(setq doom-theme (ketan0/responsive-theme))
+;; responsive theme
 
 ;; If you use `org' and don't want your org files in the default location below,
 ;; change `org-directory'. It must be set before org loads!
@@ -73,6 +84,8 @@
 
 (setq auto-revert-remote-files t)
 (setq global-auto-revert-mode t)
+
+(setq enable-local-variables t)
 
 ;; from https://www.emacswiki.org/emacs/RevertBuffer
 (defun revert-all-buffers ()
@@ -110,8 +123,21 @@
 (use-package! org
   :mode ("\\.org\\'" . org-mode)
   :init
-  (setq org-directory  "~/Library/Mobile Documents/iCloud~com~appsonthemove~beorg/Documents/org/")
+  (setq org-directory  "~/org_private/")
   :config
+  ;; hides property drawers
+  ;; https://commonplace.doubleloop.net/preparing-for-org-roam-v2
+  (defun ketan0/org-hide-properties ()
+    "Hide org headline's properties using overlay."
+    (save-excursion
+      (goto-char (point-min))
+      (while (re-search-forward
+              "^ *:PROPERTIES:\n\\( *:.+?:.*\n\\)+ *:END:\n" nil t)
+        (overlay-put (make-overlay
+                      (match-beginning 0) (match-end 0))
+                     'display ""))))
+
+  (add-hook 'org-mode-hook #'ketan0/org-hide-properties)
   (setq org-babel-default-header-args
         (cons '(:exports . "both") ;; export code and results by default
         (cons '(:eval . "no-export") ;; don't evaluate src blocks when exporting
@@ -121,41 +147,118 @@
   (setq org-hide-emphasis-markers t)
 
   ;; org HTML export settings
+  ;; patch from https://gist.github.com/jethrokuan/d6f80caaec7f49dedffac7c4fe41d132
+  ;; makes links to headlines work properly
+  (defun org-html--reference (datum info &optional named-only)
+    "Return an appropriate reference for DATUM.
+DATUM is an element or a `target' type object.  INFO is the
+current export state, as a plist.
+When NAMED-ONLY is non-nil and DATUM has no NAME keyword, return
+nil.  This doesn't apply to headlines, inline tasks, radio
+targets and targets."
+    (let* ((type (org-element-type datum))
+           (user-label
+            (org-element-property
+             (pcase type
+               ((or `headline `inlinetask) :CUSTOM_ID)
+               ((or `radio-target `target) :value)
+               (_ :name))
+             datum))
+           (user-label (or user-label
+                           (when-let ((path (org-element-property :ID datum)))
+                             (concat "ID-" path)))))
+      (cond
+       ((and user-label
+             (or (plist-get info :html-prefer-user-labels)
+                 ;; Used CUSTOM_ID property unconditionally.
+                 (memq type '(headline inlinetask))))
+        user-label)
+       ((and named-only
+             (not (memq type '(headline inlinetask radio-target target)))
+             (not user-label))
+        nil)
+       (t
+        (org-export-get-reference datum info)))))
   (setq org-html-htmlize-output-type 'css)
-  ;; taken from https://gitlab.com/ngm/commonplace/-/blob/master/publish.el
-  (defun ketan0/org-roam--backlinks-list (file)
-    (message "Processing file: %s" file)
-    ;; (message "(org-roam--org-roam-file-p %s): %s" file (org-roam--org-roam-file-p file))
-    ;; (message "(org-roam--org-roam-file-p):" (org-roam--org-roam-file-p))
-    (if (org-roam--org-roam-file-p file)
-        ;; (org-roam-buffer--insert-backlinks)
-        (--reduce-from
-         (let ((note-title (org-roam-db--get-title (car it))))
-           (concat acc (if (or (string= note-title "sitemap") ;; exclude from backlinks
-                               (string= note-title "Hello"))
-                           ""
-                         (format "- [[file:%s][%s]]\n"
-                                 (file-relative-name (car it) org-roam-directory)
-                                 note-title))))
-         "" (org-roam-db-query [:select [source] :from links :where (= dest $s1)] file))
-      (progn (message "it's not a file!") "")))
 
-  (defun ketan0/org-export-preprocessor (backend)
-    ;; (message "buffer-file-name is \"%s\"" buffer-file-name)
-    (let ((links (ketan0/org-roam--backlinks-list (buffer-file-name))))
-      (message "links is \"%s\"" links)
-      (unless (string= links "")
-        (save-excursion
-          (goto-char (point-max))
-          (insert (concat "
-* Links to this note
-:PROPERTIES:
-:CUSTOM_ID: backlinks
-:END:
-") links)))))
+  ;; https://org-roam.discourse.group/t/export-backlinks-on-org-export/1756
+  (defun collect-backlinks-string (backend)
+    (when (org-roam-node-at-point)
+      (let* ((source-node (org-roam-node-at-point))
+             (source-file (org-roam-node-file source-node))
+             ;; Sort the nodes by the point to avoid errors when inserting the
+             ;; references
+             (nodes-in-file (--sort (< (org-roam-node-point it)
+                                       (org-roam-node-point other))
+                                    (-filter (lambda (node)
+                                               (s-equals?
+                                                (org-roam-node-file node)
+                                                source-file))
+                                             (org-roam-node-list))))
+             ;; Nodes don't store the last position so, get the next node position
+             ;; and subtract one character
+             (nodes-start-position (-map (lambda (node) (org-roam-node-point node))
+                                         nodes-in-file))
+             (nodes-end-position (-concat (-map (lambda (next-node-position)
+                                                  (- next-node-position 1))
+                                                (-drop 1 nodes-start-position))
+                                          (list (point-max))))
+             ;; Keep track of the current-node index
+             (current-node 0)
+             ;; Keep track of the amount of text added
+             (character-count 0))
+        (dolist (node nodes-in-file)
+          (when (org-roam-backlinks-get node)
+            ;; Go to the end of the node and don't forget about previously inserted
+            ;; text
+            (goto-char (+ (nth current-node nodes-end-position) character-count))
+            ;; Add the references as a subtree of the node
+            (setq heading (format "\n\n%s References\n"
+                                  (s-repeat (+ (org-roam-node-level node) 1) "*")))
+            ;; Count the characters and count the new lines (4)
+            (setq character-count (+ 3 character-count (string-width heading)))
+            (insert heading)
+            ;; Insert properties drawer
+            (setq properties-drawer ":PROPERTIES:\n:HTML_CONTAINER_CLASS: references\n:END:\n")
+            ;; Count the characters and count the new lines (3)
+            (setq character-count (+ 3 character-count (string-width properties-drawer)))
+            (insert properties-drawer)
+            (dolist (backlink (org-roam-backlinks-get node))
+              (let* ((source-node (org-roam-backlink-source-node backlink))
+                     (point (org-roam-backlink-point backlink))
+                     (text (s-replace "\n" " " (org-roam-preview-get-contents
+                                                (org-roam-node-file source-node)
+                                                point)))
+                     (references (format "- [[./%s][%s]]: %s\n\n"
+                                         (file-relative-name (org-roam-node-file source-node))
+                                         (org-roam-node-title source-node)
+                                         text)))
+                ;; Also count the new lines (2)
+                (setq character-count (+ 2 character-count (string-width references)))
+                (insert references))))
+          (setq current-node (+ current-node 1))))))
+  (add-hook 'org-export-before-processing-hook 'collect-backlinks-string)
 
-  (add-hook 'org-export-before-processing-hook 'ketan0/org-export-preprocessor)
+  (defvar yt-iframe-format
+    ;; You may want to change your width and height.
+    (concat "<iframe width=\"440\""
+            " height=\"335\""
+            " src=\"https://www.youtube.com/embed/%s\""
+            " frameborder=\"0\""
+            " allowfullscreen>%s</iframe>"))
 
+  (org-add-link-type
+   "yt"
+   (lambda (handle)
+     (browse-url
+      (concat "https://www.youtube.com/embed/"
+              handle)))
+   (lambda (path desc backend)
+     (cl-case backend
+       (html (format yt-iframe-format
+                     path (or desc "")))
+       (latex (format "\href{%s}{%s}"
+                      path (or desc "video"))))))
   (setq org-publish-project-alist
         '(("digital laboratory"
            :base-directory "~/garden-simple/org"
@@ -462,7 +565,7 @@ will not be modified."
 
 ;; automatically publish org file upon save
 (defun ketan0/org-html-export-after-save ()
-  "Function for `after-save-hook' to run `org-hugo-export-wim-to-md'.
+  "Function for `after-save-hook' to run `org-publish-current-file'.
 The exporting happens only when Org Capture is not in progress."
   (save-excursion (org-publish-current-file)))
 
@@ -521,25 +624,17 @@ The exporting happens only when Org Capture is not in progress."
 
 (use-package! org-roam
   :init
+  (setq org-roam-v2-ack t)
   (map! :leader :nm
-        "r r" #'org-roam-find-file
-        "r i" #'org-roam-insert-immediate
-        "r l" #'org-roam-insert
-        "r t" '(lambda () (interactive) (find-file (concat org-directory "todos.org")))
-        "r v" '(lambda () (interactive) (find-file (concat ketan0/goodnotes-dir "vision.pdf")))
-        "r u" #'org-roam-unlinked-references
-        "r b" #'org-roam-buffer-activate
-        "r d" #'org-roam-buffer-deactivate)
+        "r r" #'org-roam-node-find
+        "r i" #'org-roam-node-insert
+        "r u" #'org-roam-unlinked-references-section
+        "r b" #'org-roam-buffer-toggle)
   :after org
-  ;; :init
-  ;; :hook
-  ;; (after-init . org-roam-mode)
   :config
-  (require 'org-roam-protocol)
-
-  (setq org-roam-graphviz-executable "/usr/local/bin/dot")
-  (setq org-roam-graph-viewer nil)
-  (setq org-roam-directory org-directory))
+  (setq org-roam-directory "~/org_private")
+  (setq org-roam-db-location "~/org_private/org-roam.db")
+  (org-roam-db-autosync-mode))
 
 (use-package! apples-mode
   :init (add-to-list 'auto-mode-alist '("\\.\\(applescri\\|sc\\)pt\\'" . apples-mode)))
@@ -728,10 +823,10 @@ The exporting happens only when Org Capture is not in progress."
 ;; ;;   (setq gif-screencast-cropping-program "mogrify")
 ;; ;;   (setq gif-screencast-capture-format "ppm"))
 
-;; (use-package! conda
-;;   :config
-;;   (setq conda-anaconda-home "/Users/ketanagrawal/miniconda3")
-;;   (setq conda-env-home-directory "/Users/ketanagrawal/miniconda3/"))
+(use-package! conda
+  :config
+  (setq conda-anaconda-home "/Users/ketanagrawal/miniconda3")
+  (setq conda-env-home-directory "/Users/ketanagrawal/miniconda3"))
 
 ;; (defun ketan0/parse-csv-file (file sep)
 ;;   "parse FILE representing a CSV table into a list of lists."
@@ -763,3 +858,92 @@ The exporting happens only when Org Capture is not in progress."
 ;;               :action (lambda (x) (interactive) (insert (format "[[%s][%s]]" (cadr x) (car x))))
 ;;               :re-builder '+ivy-prescient-non-fuzzy
 ;;               :sort nil)))
+(use-package! pdf-tools
+      :config
+      (custom-set-variables
+        '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
+      (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
+
+(use-package! lsp
+  :config
+;;   (defun lsp-python-ms--get-python-ver-and-syspath (&optional workspace-root)
+;;   "Return list with pyver-string and list of python search paths.
+
+;; The WORKSPACE-ROOT will be prepended to the list of python search
+;; paths and then the entire list will be json-encoded."
+;;   (let* ((python (and t (lsp-python-ms-locate-python)))
+;;          (workspace-root (and python (or workspace-root ".")))
+;;          (default-directory (and workspace-root workspace-root))
+;;          (init (and default-directory
+;;                     "from __future__ import print_function; import sys; sys.path = list(filter(lambda p: p != '', sys.path)); import json;"))
+;;          (ver (and init "v=(\"%s.%s\" % (sys.version_info[0], sys.version_info[1]));"))
+;;          (sp (and ver (concat "sys.path.insert(0, '" workspace-root "'); p=sys.path;")))
+;;          (ex (and sp "e=sys.executable;"))
+;;          (val (and ex "print(json.dumps({\"version\":v,\"paths\":p,\"executable\":e}))")))
+;;     (when val
+;;       (with-temp-buffer
+;;         (let ((default-directory (file-name-directory python)))
+;;          (process-file (file-local-name python) nil t nil "-c"
+;;                        (concat init ver sp ex val))
+;;          )
+;;         (let* ((json-array-type 'vector)
+;;                (json-key-type 'string)
+;;                (json-object-type 'hash-table)
+;;                (json-string (buffer-string))
+;;                (json-hash (json-read-from-string json-string)))
+;;           (list
+;;            (gethash "version" json-hash)
+;;            (gethash "paths" json-hash)
+;;            (gethash "executable" json-hash)))))))
+
+;;   (lsp-register-client
+;;    (make-lsp-client
+;;     :new-connection (lsp-tramp-connection "Microsoft.Python.LanguageServer")
+;;     :major-modes (append '(python-mode) lsp-python-ms-extra-major-modes)
+;;     :remote? t
+;;     :server-id 'mspyls-remote
+;;     :priority 1
+;;     :initialization-options 'lsp-python-ms--extra-init-params
+;;     :notification-handlers (lsp-ht ("python/languageServerStarted" 'lsp-python-ms--language-server-started-callback)
+;;                                    ("telemetry/event" 'ignore)
+;;                                    ("python/reportProgress" 'lsp-python-ms--report-progress-callback)
+;;                                    ("python/beginProgress" 'lsp-python-ms--begin-progress-callback)
+;;                                    ("python/endProgress" 'lsp-python-ms--end-progress-callback))
+;;     :initialized-fn (lambda (workspace)
+;;                       (with-lsp-workspace workspace
+;;                         (lsp--set-configuration (lsp-configuration-section "python"))))
+;;     ;; :download-server-fn (lambda (client callback error-callback update?)
+;;     ;;                       (when lsp-python-ms-auto-install-server
+;;     ;;                         (lsp-python-ms--install-server client callback error-callback update?)))
+;;     ))
+  )
+
+(use-package! life
+  :config
+  (setq life-default-sleeptime 0.1)
+  (setq life-preferred-pattern '(" @@"
+                                  "@@ "
+                                  " @ "))
+  (defun life-insert-random-pattern ()
+    (insert-rectangle
+     (if (boundp 'life-preferred-pattern)
+         life-preferred-pattern
+       (elt life-patterns (random (length life-patterns)))))
+    (insert ?\n))
+  (defun life (&optional sleeptime)
+    "Run Conway's Life simulation.
+The starting pattern is randomly selected.  Prefix arg (optional first
+arg non-nil from a program) is the number of seconds to sleep between
+generations (this defaults to 1)."
+    (interactive "p")
+    ;; (message "sleeptime is %s" sleeptime)
+    ;; (or sleeptime (setq sleeptime life-default-sleeptime))
+    (life-setup)
+    (catch 'life-exit
+      (while t
+        (let ((inhibit-quit t)
+              (inhibit-read-only t))
+          (life-display-generation life-default-sleeptime)
+          (life-grim-reaper)
+          (life-expand-plane-if-needed)
+          (life-increment-generation))))))

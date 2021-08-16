@@ -10,6 +10,9 @@ yabai -m rule --add app="^Messenger$" manage=off
 yabai -m rule --add app="^Finder$" manage=off
 yabai -m rule --add app="^Spotify$" manage=off
 
+# float hotkey iTerm window
+yabai -m rule --add title="^Hotkey Window" manage=off
+# float capture windows
 yabai -m rule --add title="^doom-capture$" manage=off
 yabai -m rule --add title="^CAPTURE-.*\.org – Doom Emacs" manage=off
 
