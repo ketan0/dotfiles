@@ -1,4 +1,12 @@
 on run (clp)
+    -- given "block" argument on command line, block certain sites from 9am to 9pm
+    if clp's length is 2 and clp's item 2 = "block"
+        tell (current date) to set currentHour to (its hours)
+        if currentHour >= 9 and currentHour < 21
+            display notification "Blocked!"
+            return
+        end if
+    end if
     tell application "Safari"
         repeat with w in windows
             set i to 1

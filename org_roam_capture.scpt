@@ -1,3 +1,6 @@
-tell application "Google Chrome"
-    execute front window's active tab javascript "javascript:location.href = 'org-protocol://roam-ref?template=r&ref=' + encodeURIComponent(location.href) + '&title=' + encodeURIComponent(document.title)"
-end tell
+app = Application.currentApplication()
+app.includeStandardAdditions = true
+const currentTab = Application('Safari').windows[0].currentTab
+const url = currentTab.url()
+const name = currentTab.name()
+app.openLocation(`org-protocol://roam-ref?template=r&ref=${encodeURIComponent(url)}&title=${encodeURIComponent(name)}`)

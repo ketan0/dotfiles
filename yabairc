@@ -36,7 +36,7 @@ yabai -m config auto_balance off
 yabai -m config split_ratio 0.5
 
 # floating windows are *not* Always on top (default: off)
-yabai -m config window_topmost off
+yabai -m config window_topmost on
 
 # modify window shadows (default: on, options: on, off, float)
 # show shadows only for floating windows

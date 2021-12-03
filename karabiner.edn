@@ -4,21 +4,21 @@
             :Ketan {
                     :default true
                     :sim     500    ;; simultaneous_threshold_milliseconds (def: 50)
-
+                    ;; keys need to be pressed within this threshold to be considered simultaneous
                     :delay   80    ;; to_delayed_action_delay_milliseconds (def: 500)
-
+                    ;; basically it means time after which the key press is count delayed
                     :alone   500      ;; to_if_alone_timeout_milliseconds (def: 1000)
-
+                    ;; hold for 995s and single tap registered; hold for 1005s and seen as modifier
                     :held    1000   ;; to_if_held_down_threshold_milliseconds (def: 500)
-
+                    ;; key is fired twice when 500 ms is elapsed (otherwise seen as a hold command)
                     }
             } ;; profiles
 
 :templates {
             :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\" with parameter \"%s\"'"
-
+            ;; Removed the quotes around %s because it makes it not able to open files too
             :open "open '%s'"
-            :smarturl "osascript ~/.dotfiles/open_url_smart.scpt '%s'"
+            :smarturl "osascript ~/.dotfiles/open_url_smart.scpt '%s' %s"
             :openwith "open -a '%s' '%s'"
             :openhide "open '%s' -gj"
             :withsecret "source ~/.dotfiles/.secrets && %s"
@@ -26,6 +26,7 @@
             :alfred "osascript -e 'tell application \"Alfred 4\" to run trigger \"%s\" in workflow \"%s\" with argument \"%s\"'"
             :wallpaper "osascript -e 'tell application \"Finder\" to set desktop picture to POSIX file \"%s\"'"
             :elisp "/usr/local/bin/emacsclient --eval '(progn (select-frame-set-input-focus (selected-frame))%s)'"
+            :yabai "/usr/local/bin/yabai -m %s"
             } ;; templates
 
 :layers {
@@ -34,12 +35,14 @@
                     :afterup [{:set ["yabai-move-mode" 0]}
                               {:set ["yabai-focus-mode" 0]}
                               {:set ["yabai-display-mode" 0]}
+                              {:set ["yabai-adjust-mode" 0]}
                               {:set ["chrome-movement-mode" 0]}
                               {:set ["chrome-rearrange-tab-mode" 0]}]}
 
          :yabai-move-mode {:key :w :condi :tab-mode}
          :yabai-focus-mode {:key :f :condi :tab-mode}
-         :yabai-display-mode {:key :d :condi :tab-mode}
+         ;; :yabai-display-mode {:key :d :condi :tab-mode}
+         :yabai-adjust-mode {:key :d :condi :tab-mode}
          :chrome-movement-mode {:key :t :condi :tab-mode} ;;TODO make this work
          :chrome-history-mode {:key :g :condi :tab-mode} ;;TODO make this work
          :chrome-rearrange-tab-mode {:key :r :condi :tab-mode}
@@ -51,8 +54,6 @@
         :slash-mode {:key :slash}
         :q-key-mode {:key :q}
         :x-key-mode {:key :x}
-        :jupyter-mode {:key :j}
-        :o-key-mode {:key :o}
         :comma-mode {:key :comma}
         :wallpaper-mode {:key :w}
 }
@@ -61,43 +62,47 @@
         :des "see karabiner.org for documentation.",
         :rules [
 
-[:right_command :right_command nil {:alone [:km "Previous Application" "hide"]}]
+[:right_command :right_command nil {:alone [:elisp "(set-transient-map doom-leader-map)"]}]
 [:right_option :right_option nil {:alone [:km "Previous Application"]}]
 
 [:##caps_lock :left_control nil {:alone :escape}]
 
 :yabai-move-mode
-[:h "/usr/local/bin/yabai -m window --warp west"]
-[:j "/usr/local/bin/yabai -m window --warp south"]
-[:k "/usr/local/bin/yabai -m window --warp north"]
-[:l "/usr/local/bin/yabai -m window --warp east"]
-[:b "/usr/local/bin/yabai -m space --balance"]
-[:0 "/usr/local/bin/yabai -m window --opacity 0.0"]
-[:1 "/usr/local/bin/yabai -m window --opacity 0.1"]
-[:2 "/usr/local/bin/yabai -m window --opacity 0.2"]
-[:3 "/usr/local/bin/yabai -m window --opacity 0.3"]
-[:4 "/usr/local/bin/yabai -m window --opacity 0.4"]
-[:5 "/usr/local/bin/yabai -m window --opacity 0.5"]
-[:6 "/usr/local/bin/yabai -m window --opacity 0.6"]
-[:7 "/usr/local/bin/yabai -m window --opacity 0.7"]
-[:8 "/usr/local/bin/yabai -m window --opacity 0.8"]
-[:9 "/usr/local/bin/yabai -m window --opacity 0.9"]
-[:grave_accent_and_tilde "/usr/local/bin/yabai -m window --opacity 1.0"]
-[:s "/usr/local/bin/yabai -m window --toggle split"]
+[:h [:yabai "window --warp west"]]
+[:j [:yabai "window --warp south"]]
+[:k [:yabai "window --warp north"]]
+[:l [:yabai "window --warp east"]]
+[:b [:yabai "space --balance" ]]
+[:0 [:yabai "window --opacity 0.0"]]
+[:1 [:yabai "window --opacity 0.1"]]
+[:2 [:yabai "window --opacity 0.2"]]
+[:3 [:yabai "window --opacity 0.3"]]
+[:4 [:yabai "window --opacity 0.4"]]
+[:5 [:yabai "window --opacity 0.5"]]
+[:6 [:yabai "window --opacity 0.6"]]
+[:7 [:yabai "window --opacity 0.7"]]
+[:8 [:yabai "window --opacity 0.8"]]
+[:9 [:yabai "window --opacity 0.9"]]
+[:grave_accent_and_tilde [:yabai "window --opacity 1.0"]]
+[:s [:yabai "window --toggle split"]]
 
 :yabai-focus-mode
-[:g "/usr/local/bin/yabai -m space --focus prev"]
-[:h "/usr/local/bin/yabai -m window --focus west"]
-[:j "/usr/local/bin/yabai -m window --focus south"]
-[:k "/usr/local/bin/yabai -m window --focus north"]
-[:l "/usr/local/bin/yabai -m window --focus east"]
-[:semicolon "/usr/local/bin/yabai -m space --focus next"]
+[:g [:yabai "space --focus prev"]]
+[:h [:yabai "window --focus west"]]
+[:j [:yabai "window --focus south"]]
+[:k [:yabai "window --focus north"]]
+[:l [:yabai "window --focus east"]]
+[:semicolon [:yabai "space --focus next"]]
 
 :yabai-display-mode
-[:h "/usr/local/bin/yabai -m display --focus prev"]
-[:j "/usr/local/bin/yabai -m window --display prev && /usr/local/bin/yabai -m display --focus prev"]
-[:k "/usr/local/bin/yabai -m window --display next && /usr/local/bin/yabai -m display --focus next"]
-[:l "/usr/local/bin/yabai -m display --focus next"]
+[:h [:yabai "display --focus prev"]]
+[:l [:yabai "display --focus next"]]
+
+:yabai-adjust-mode
+[:h [:yabai "window --ratio rel:-0.05"]]
+[:j [:yabai "window --ratio rel:0.05"]]
+[:k [:yabai "window --ratio rel:-0.05"]]
+[:l [:yabai "window --ratio rel:0.05"]]
 
 :chrome-history-mode
 [:h :!Copen_bracket]
@@ -113,7 +118,7 @@
 
 :tab-mode
 [:spacebar :!CTspacebar] ;; open emoji picker
-[:return_or_enter  "/usr/local/bin/yabai -m window --toggle float"]
+[:return_or_enter [:yabai "window --toggle float"]]
 [:comma [:km "Open Messenger" "hide"]]
 [:3 "osascript ~/.dotfiles/toggle_dark_mode.scpt"]
 [:4 [:km "Open Finder"]]
@@ -125,8 +130,11 @@
 [:i [:km "Open iTerm" "hide"]]
 [:m [:km "Open Messages" "hide"]]
 [:s [:km "Open Spotify" "hide"]]
-
+;; [:n [:km "Open Neo4j" "hide"]]
 [:v [:km "Open Zoom" "hide"]]
+;; [:q [:km "Open Qutebrowser"]]
+;; [:x [:km "Open Xcode"]]
+;; [:w [:km "Open Word"]]
 
 :q-key-mode
 [:grave_accent_and_tilde [:km "Open Stickies"]]
@@ -143,17 +151,19 @@
 [:v [:km "Open Zoom"]]
 
 :x-key-mode
-[:a [:elisp "(ketan0/switch-to-main-agenda)"]]
+[:a [:elisp "(ketan0/new-agenda)"]]
+[:w [:elisp "(ketan0/look-ahead nil)"]]
 [:s [:elisp "(+org-capture/open-frame nil \"s\")"]]
 [:t [:elisp "(+org-capture/open-frame nil \"t\")"]]
 [:d [:elisp "(+org-capture/open-frame nil \"d\")"]]
 [:i [:elisp "(+org-capture/open-frame nil \"i\")"]]
-[:g "osascript ~/.dotfiles/org_roam_capture.scpt"] ;; create new org-roam note
+[:g "osascript -l JavaScript ~/.dotfiles/org_roam_capture.scpt"] ;; create new org-roam note
 [:spacebar [:elisp "(+org-capture/open-frame)"]]
 [:r [:elisp "(org-roam-node-random)"]]
 [:j [:elisp "(org-journal-new-entry nil)"]]
 
 :tilde-mode
+[:d "osascript ~/.dotfiles/toggle_dnd.scpt"]
 [:f [:openhide "focus://focus?minutes=60"]]
 [:t [:openhide "focus://toggle"]]
 [:u [:openhide "focus://unfocus"]]
@@ -162,32 +172,34 @@
 :comma-mode
 [:1 [:withsecretsmarturl "$PSYCH_LECTURE_LINK"]]
 [:3 [:withsecret "open $PAC_PROJECT_ZOOM_LINK"]]
-
+;; add title bar to frame
+;; (I use the --with-no-title-bars patch for emacs-mac, but sometimes I like the title bar)
 [:a [:elisp "(setq mac-use-title-bar t)(setq ketan0/old-frame (selected-frame)) (make-frame)(delete-frame ketan0/old-frame)"]]
 [:b "osascript ~/.dotfiles/open_in_chrome.scpt"]
-[:c [:open "/Users/ketanagrawal/org_private/capture.org"]]
+[:c [:open "/Users/ketanagrawal/garden-simple/org/private/capture.org"]]
 [:d [:open "https://drive.google.com/drive/my-drive"]]
 [:o [:open "http://doc.new"]] ;; new google doc
 [:e [:open "/Users/ketanagrawal/.dotfiles/doom.d/config.el"]]
-[:f [:smarturl "https://www.keyhero.com/free-typing-test/"]]
+[:f [:smarturl "https://www.keyhero.com/free-typing-test/" "block"]]
+;; [:h [:km "Github => Emacs"]]
+[:h "osascript /Users/ketanagrawal/.dotfiles/open_chrome_history.scpt"]
 
-
-
-[:i [:smarturl "https://www.keyhero.com/typing-instant-death/"]]
+[:i [:smarturl "https://www.keyhero.com/typing-instant-death/" "block"]]
 [:j [:smarturl "http://localhost:8888"]]
+[:k [:smarturl "https://laboratory.ketan.me"]]
 [:l "osascript /Users/ketanagrawal/.dotfiles/open_current_zoom_link.scpt"]
-[:m [:smarturl "https://outlook.office.com/"]]
+[:m [:smarturl "https://outlook.office.com/" "block"]]
 [:n [:openwith "Google Chrome" "https://www.netflix.com/title/80199128"]]
 [:p [:withsecretsmarturl "$PAC_PROGRESS_DOC_LINK"]]
-[:t [:smarturl "https://twitter.com/i/bookmarks"]]
-[:r [:open "/Users/ketanagrawal/org_private/todos.org"]]
+[:q [:withsecretsmarturl "$HCI_PROGRESS_DOC_LINK"]]
+[:t [:smarturl "https://twitter.com/i/bookmarks" "block"]]
+[:r [:open "/Users/ketanagrawal/garden-simple/org/private/todos.org"]]
 [:s [:open "/Users/ketanagrawal/.dotfiles/karabiner.org"]]
-
-[:v [:openwith "Emacs" "/Users/ketanagrawal/Dropbox/Apps/GoodNotes 5/GoodNotes/vision.pdf"]]
+;; [:v [:open "https://healthy.verily.com/"]] ;; covid testing
+[:v [:open "https://home.color.com/sign-in?next=%2Fcovid%2Factivation"]]
+;; [:v [:openwith "Emacs" "/Users/ketanagrawal/Dropbox/Apps/GoodNotes 5/GoodNotes/vision.pdf"]]
 [:y [:openwith "Emacs" "/Users/ketanagrawal/.dotfiles/yabairc"]]
 [:z [:withsecret "open $MY_ZOOM_LINK"]]
-
-
 
 :wallpaper-mode
 [:g [:wallpaper "/System/Library/Desktop Pictures/Solar Gradients.heic"]]
@@ -203,9 +215,6 @@
 [:#Sb :!Oleft_arrow]
 [:#Sw :!Oright_arrow]
 [:delete_or_backspace :!Odelete_or_backspace]
-
-:jupyter-mode
-[:l [:km "Start or Go to Existing Jupyter Lab Server"]]
 
 ]}] ;;end main
 
