@@ -25,8 +25,8 @@
             :withsecretsmarturl "source ~/.dotfiles/.secrets && osascript ~/.dotfiles/open_url_smart.scpt %s"
             :alfred "osascript -e 'tell application \"Alfred 4\" to run trigger \"%s\" in workflow \"%s\" with argument \"%s\"'"
             :wallpaper "osascript -e 'tell application \"Finder\" to set desktop picture to POSIX file \"%s\"'"
-            :elisp "/usr/local/bin/emacsclient --eval '(progn (select-frame-set-input-focus (selected-frame))%s)'"
-            :yabai "/usr/local/bin/yabai -m %s"
+            :elisp "/opt/homebrew/bin/emacsclient --eval '(progn (select-frame-set-input-focus (selected-frame))%s)'"
+            :yabai "/opt/homebrew/bin/yabai -m %s"
             } ;; templates
 
 :layers {
@@ -64,10 +64,25 @@
 
 [:right_command :right_command nil {:alone [:elisp "(set-transient-map doom-leader-map)"]}]
 [:right_option :right_option nil {:alone [:km "Previous Application"]}]
+[:!SCm [:km "unminimize"]]
 
 [:##caps_lock :left_control nil {:alone :escape}]
 
+[:f1 :display_brightness_decrement]
+[:f2 :display_brightness_increment]
+[:f3 [:elisp "(ketan0/look-ahead nil)"]]
+[:f4 [:elisp "(ketan0/new-agenda)"]]
+[:f7  "osascript -e 'tell application \"Spotify\" to previous track'"]
+[:f8  "osascript -e 'tell application \"Spotify\" to playpause'"]
+[:f9  "osascript -e 'tell application \"Spotify\" to next track'"]
+[:f10 :mute]
+[:f11 :volume_decrement]
+[:f12 :volume_increment]
+[:!Sf11  "osascript ~/.dotfiles/decrease_music_volume.scpt"]
+[:!Sf12 "osascript ~/.dotfiles/increase_music_volume.scpt"]
+
 :yabai-move-mode
+[:c [:yabai "window --grid 16:10:3:1:4:12"]]
 [:h [:yabai "window --warp west"]]
 [:j [:yabai "window --warp south"]]
 [:k [:yabai "window --warp north"]]
@@ -122,7 +137,7 @@
 [:comma [:km "Open Messenger" "hide"]]
 [:3 "osascript ~/.dotfiles/toggle_dark_mode.scpt"]
 [:4 [:km "Open Finder"]]
-[:a [:km "Open Safari" "hide"]]
+[:a [:km "Open Music" "hide"]]
 [:x [:km "Open Chrome" "hide"]]
 [:c [:km "Open Safari" "hide"]]
 [:k [:km "Open Keyboard Maestro" "hide"]]
@@ -138,7 +153,7 @@
 
 :q-key-mode
 [:grave_accent_and_tilde [:km "Open Stickies"]]
-[:a [:km "Open Safari"]]
+[:a [:km "Open Music"]]
 [:x [:km "Open Chrome"]]
 [:s [:km "Open Spotify"]]
 [:c [:km "Open Safari"]]
@@ -147,11 +162,12 @@
 [:i [:km "Open iTerm"]]
 [:m [:km "Open Messages"]]
 [:comma [:km "Open Messenger"]]
-[:n [:km "Open Neo4j"]]
+[:n [:km "Open Notes"]]
 [:v [:km "Open Zoom"]]
 
 :x-key-mode
 [:a [:elisp "(ketan0/new-agenda)"]]
+[:c "screencapture -ic"]
 [:w [:elisp "(ketan0/look-ahead nil)"]]
 [:s [:elisp "(+org-capture/open-frame nil \"s\")"]]
 [:t [:elisp "(+org-capture/open-frame nil \"t\")"]]
@@ -190,6 +206,7 @@
 [:l "osascript /Users/ketanagrawal/.dotfiles/open_current_zoom_link.scpt"]
 [:m [:smarturl "https://outlook.office.com/" "block"]]
 [:n [:openwith "Google Chrome" "https://www.netflix.com/title/80199128"]]
+[:u "osascript /Users/ketanagrawal/.dotfiles/download_video.scpt"]
 [:p [:withsecretsmarturl "$PAC_PROGRESS_DOC_LINK"]]
 [:q [:withsecretsmarturl "$HCI_PROGRESS_DOC_LINK"]]
 [:t [:smarturl "https://twitter.com/i/bookmarks" "block"]]
@@ -208,12 +225,12 @@
 [:y [:wallpaper "/Users/ketanagrawal/Desktop/wallpapers/background_paint_stains_light_76087_1440x900.jpg"]]
 
 :vim-mode
-[:#Sh :left_arrow] ;; hjkl navigation everywhere + Shift
-[:#Sj :down_arrow]
-[:#Sk :up_arrow]
-[:#Sl :right_arrow]
-[:#Sb :!Oleft_arrow]
-[:#Sw :!Oright_arrow]
+[:##h :left_arrow] ;; hjkl navigation everywhere + Shift
+[:##j :down_arrow]
+[:##k :up_arrow]
+[:##l :right_arrow]
+[:##b :!Oleft_arrow]
+[:##w :!Oright_arrow]
 [:delete_or_backspace :!Odelete_or_backspace]
 
 ]}] ;;end main
