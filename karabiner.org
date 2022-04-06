@@ -111,6 +111,7 @@ need to prefix C T O S F with ! or #
         :q-key-mode {:key :q}
         :x-key-mode {:key :x}
         :comma-mode {:key :comma}
+        :period-mode {:key :period}
         :wallpaper-mode {:key :w}
 }
 
@@ -166,11 +167,13 @@ tell application "Spotify"
 end tell
 #+end_src
 
+In Karabiner-Elements.app, I've checked the box "Use all F1, F2, etc. keys as standard function keys." This essentially allows me to mix in the "normal" features (volume up, volume down, etc.) with custom keybinds (org-agendas, Spotify volume up/down, etc.)
 #+begin_src clojure
 [:f1 :display_brightness_decrement]
 [:f2 :display_brightness_increment]
-[:f3 [:elisp "(ketan0/look-ahead nil)"]]
-[:f4 [:elisp "(ketan0/new-agenda)"]]
+[:f3 [:elisp "(ketan0/weekly-review nil)"]] ;; Past tasks
+[:f4 [:elisp "(ketan0/new-agenda)"]] ;; Present tasks
+[:f5 [:elisp "(ketan0/look-ahead nil)"]] ;; Future tasks
 [:f7  "osascript -e 'tell application \"Spotify\" to previous track'"]
 [:f8  "osascript -e 'tell application \"Spotify\" to playpause'"]
 [:f9  "osascript -e 'tell application \"Spotify\" to next track'"]
@@ -421,43 +424,6 @@ tell application "Google Chrome" to open location "chrome-extension://pnmchffiea
 #+end_src
 
 Open a URL, but only if it's not already a tab. If it's a tab, then go to that tab.
-#+begin_src apples :tangle ~/.dotfiles/open_url_smart.scpt
-on run (clp)
-    -- given "block" argument on command line, block certain sites from 9am to 9pm
-    if clp's length is 2 and clp's item 2 = "block"
-        tell (current date) to set currentHour to (its hours)
-        if currentHour >= 9 and currentHour < 21
-            display notification "Blocked!"
-            return
-        end if
-    end if
-    tell application "Safari"
-        repeat with w in windows
-            set i to 1
-            repeat with t in tabs of w
-                if URL of t starts with clp's item 1 then
-                    set current tab of w to t
-                    -- set active tab index of w to i
-                    tell w
-                        set index to 1
-                    end tell
-                    -- delay 0.05
-                    -- do shell script "open -a Safari"
-                    tell application "System Events"
-                        perform action "AXRaise" of front window of application process "Safari"
-                    end tell
-                    activate
-                    return
-                end if
-                set i to i + 1
-            end repeat
-        end repeat
-        open location clp's item 1
-        activate
-    end tell
-end run
-#+end_src
-
 Check my calendar; if there's an event with a zoom link, open the zoom link.
 #+begin_src apples :tangle ~/.dotfiles/open_current_zoom_link.scpt
 use script "CalendarLib EC" version "1.1.5"
@@ -531,6 +497,44 @@ tell application "Safari"
 end tell
 #+end_src
 
+My [[https://github.com/yqrashawn/GokuRakuJoudo/blob/master/tutorial.md#basic7][predefined template]] ~:smarturl~ uses the following Applescript to either: 1) navigate to the tab that contains the URL if it exists already 2) open the URL if not.
+#+begin_src apples :tangle ~/.dotfiles/open_url_smart.scpt
+on run (clp)
+    -- given "block" argument on command line, block certain sites from 9am to 9pm
+    if clp's length is 2 and clp's item 2 = "block"
+        tell (current date) to set currentHour to (its hours)
+        if currentHour >= 9 and currentHour < 21
+            display notification "Blocked!"
+            return
+        end if
+    end if
+    tell application "Safari"
+        repeat with w in windows
+            set i to 1
+            repeat with t in tabs of w
+                if URL of t starts with clp's item 1 then
+                    set current tab of w to t
+                    -- set active tab index of w to i
+                    tell w
+                        set index to 1
+                    end tell
+                    -- delay 0.05
+                    -- do shell script "open -a Safari"
+                    tell application "System Events"
+                        perform action "AXRaise" of front window of application process "Safari"
+                    end tell
+                    activate
+                    return
+                end if
+                set i to i + 1
+            end repeat
+        end repeat
+        open location clp's item 1
+        activate
+    end tell
+end run
+#+end_src
+
 #+begin_src clojure
 :comma-mode
 [:1 [:withsecretsmarturl "$PSYCH_LECTURE_LINK"]]
@@ -548,7 +552,7 @@ end tell
 [:h "osascript /Users/ketanagrawal/.dotfiles/open_chrome_history.scpt"]
 
 [:i [:smarturl "https://www.keyhero.com/typing-instant-death/" "block"]]
-[:j [:smarturl "http://localhost:8888"]]
+[:j [:smarturl "http://localhost:8888"]] ;; the port I usually run JupyterLab on
 [:k [:smarturl "https://laboratory.ketan.me"]]
 [:l "osascript /Users/ketanagrawal/.dotfiles/open_current_zoom_link.scpt"]
 [:m [:smarturl "https://outlook.office.com/" "block"]]
@@ -564,6 +568,16 @@ end tell
 ;; [:v [:openwith "Emacs" "/Users/ketanagrawal/Dropbox/Apps/GoodNotes 5/GoodNotes/vision.pdf"]]
 [:y [:openwith "Emacs" "/Users/ketanagrawal/.dotfiles/yabairc"]]
 [:z [:withsecret "open $MY_ZOOM_LINK"]]
+#+end_src
+** period-mode
+Access various tag-specific Org Agendas.
+#+begin_src clojure
+:period-mode
+[:t [:elisp "(ketan0/area-agenda \"tinker\")"]]
+[:a [:elisp "(ketan0/area-agenda \"academic\")"]]
+[:s [:elisp "(ketan0/area-agenda \"social\")"]]
+[:k [:elisp "(ketan0/area-agenda \"knowledge\")"]]
+[:p [:elisp "(ketan0/area-agenda \"projects\")"]]
 #+end_src
 ** wallpaper-mode
 :PROPERTIES:

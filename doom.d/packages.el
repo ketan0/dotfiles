@@ -4,10 +4,11 @@
 ;; To install a package with Doom you must declare them here, run 'doom sync' on
 ;; the command line, then restart Emacs for the changes to take effect.
 ;; Alternatively, use M-x doom/reload.
+(package! centered-window-mode)
 (package! citeproc)
 (package! benchmark-init)
 (package! evil-extra-operator)
-
+(package! leuven-theme)
 (package! org-super-agenda)
 (package! org-journal)
 (package! org-roam :recipe (:host github :repo "org-roam/org-roam"))

@@ -3,5 +3,7 @@
 	email = agrawalk@stanford.edu
 [core]
 	editor = vim
-[credential]
-	helper = osxkeychain
+[init]
+	defaultBranch = main
+[pull]
+	rebase = false

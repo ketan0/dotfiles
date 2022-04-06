@@ -9,12 +9,17 @@ yabai -m rule --add app="^Stickies$" manage=off
 yabai -m rule --add app="^Messenger$" manage=off
 yabai -m rule --add app="^Finder$" manage=off
 yabai -m rule --add app="^Spotify$" manage=off
+yabai -m rule --add app="^Music$" manage=off
+yabai -m rule --add app="^Digital Color Meter$" manage=off
+yabai -m rule --add title="^About This Mac$" manage=off
 
 # float hotkey iTerm window
 yabai -m rule --add title="^Hotkey Window" manage=off
 # float capture windows
 yabai -m rule --add title="^doom-capture$" manage=off
 yabai -m rule --add title="^CAPTURE-.*\.org – Doom Emacs" manage=off
+# float calendar popup window
+yabai -m rule --add title="^$" app="^Calendar$" manage=off
 
 # make emacs slightly translucent (cuz it looks cool)
 # yabai -m rule --add app="^Emacs$" opacity=0.8 label="translucent emacs"
@@ -23,7 +28,7 @@ yabai -m rule --add title="^CAPTURE-.*\.org – Doom Emacs" manage=off
 yabai -m config window_placement second_child
 
 # Set all padding and gaps to 20pt (default: 0)
-yabai -m config top_padding    20
+yabai -m config top_padding    0
 yabai -m config bottom_padding 20
 yabai -m config left_padding   20
 yabai -m config right_padding  20

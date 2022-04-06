@@ -55,6 +55,7 @@
         :q-key-mode {:key :q}
         :x-key-mode {:key :x}
         :comma-mode {:key :comma}
+        :period-mode {:key :period}
         :wallpaper-mode {:key :w}
 }
 
@@ -70,8 +71,9 @@
 
 [:f1 :display_brightness_decrement]
 [:f2 :display_brightness_increment]
-[:f3 [:elisp "(ketan0/look-ahead nil)"]]
-[:f4 [:elisp "(ketan0/new-agenda)"]]
+[:f3 [:elisp "(ketan0/weekly-review nil)"]] ;; Past tasks
+[:f4 [:elisp "(ketan0/new-agenda)"]] ;; Present tasks
+[:f5 [:elisp "(ketan0/look-ahead nil)"]] ;; Future tasks
 [:f7  "osascript -e 'tell application \"Spotify\" to previous track'"]
 [:f8  "osascript -e 'tell application \"Spotify\" to playpause'"]
 [:f9  "osascript -e 'tell application \"Spotify\" to next track'"]
@@ -201,7 +203,7 @@
 [:h "osascript /Users/ketanagrawal/.dotfiles/open_chrome_history.scpt"]
 
 [:i [:smarturl "https://www.keyhero.com/typing-instant-death/" "block"]]
-[:j [:smarturl "http://localhost:8888"]]
+[:j [:smarturl "http://localhost:8888"]] ;; the port I usually run JupyterLab on
 [:k [:smarturl "https://laboratory.ketan.me"]]
 [:l "osascript /Users/ketanagrawal/.dotfiles/open_current_zoom_link.scpt"]
 [:m [:smarturl "https://outlook.office.com/" "block"]]
@@ -217,6 +219,13 @@
 ;; [:v [:openwith "Emacs" "/Users/ketanagrawal/Dropbox/Apps/GoodNotes 5/GoodNotes/vision.pdf"]]
 [:y [:openwith "Emacs" "/Users/ketanagrawal/.dotfiles/yabairc"]]
 [:z [:withsecret "open $MY_ZOOM_LINK"]]
+
+:period-mode
+[:t [:elisp "(ketan0/area-agenda \"tinker\")"]]
+[:a [:elisp "(ketan0/area-agenda \"academic\")"]]
+[:s [:elisp "(ketan0/area-agenda \"social\")"]]
+[:k [:elisp "(ketan0/area-agenda \"knowledge\")"]]
+[:p [:elisp "(ketan0/area-agenda \"projects\")"]]
 
 :wallpaper-mode
 [:g [:wallpaper "/System/Library/Desktop Pictures/Solar Gradients.heic"]]

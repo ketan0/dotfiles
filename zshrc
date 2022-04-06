@@ -1,8 +1,12 @@
 [[ $TERM == "dumb" ]] && unsetopt zle && PS1='$ ' && return
 
 # If you come from bash you might have to change your $PATH.
+export PATH=/Library/TeX/texbin:$PATH
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 export PATH=$HOME/.emacs.d/bin:$PATH
+export PATH=/c/Users/19139/Documents/emacs/bin:$PATH
+export PATH="/opt/homebrew/opt/findutils/libexec/gnubin:$PATH"
+
 if [ "$HOST" = ketanmba.local ]; then
 __conda_setup="$('/Users/ketanagrawal/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
@@ -132,3 +136,13 @@ fi
 unset __conda_setup
 # <<< conda initialize <<<
 
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/ketanagrawal/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/ketanagrawal/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/ketanagrawal/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/ketanagrawal/google-cloud-sdk/completion.zsh.inc'; fi
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion

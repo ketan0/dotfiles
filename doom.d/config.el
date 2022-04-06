@@ -8,7 +8,7 @@
 ;; clients, file templates and snippets.
 (setq user-full-name "Ketan Agrawal"
       user-mail-address "ketanjayagrawal@gmail.com")
-
+;; (setq default-directory "~/")
 (defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
   "Personal dotfiles directory.")
 (defvar ketan0/goodnotes-dir (file-name-as-directory "~/Dropbox/Apps/GoodNotes 5/GoodNotes")
@@ -35,12 +35,13 @@
 ;; font string. You generally only need these two:
 
 (setq doom-font (font-spec :family "Fira Code" :size 12))
+(setq doom-variable-pitch-font (font-spec :family "SF Pro"))
+
+(setq +latex-viewers '(pdf-tools))
+
+;; needed for font ligatures to work (e.g. in Fira Code)
 (when (boundp 'mac-auto-operator-composition-mode)
   (mac-auto-operator-composition-mode))
-
-;; There are two ways to load a theme. Both assume the theme is installed and
-;; available. You can either set `doom-theme' or manually load a theme with the
-;; `load-theme' function. This is the default:
 
 (defun ketan0/dark-mode-active ()
   (string=
@@ -50,9 +51,13 @@ tell appearance preferences to return dark mode
 end tell\')\"")
    "true"))
 (defun ketan0/responsive-theme ()
-  (if (ketan0/dark-mode-active) 'doom-dracula 'leuven))
+  (if (ketan0/dark-mode-active) 'doom-one 'doom-ayu-light))
 
+;; There are two ways to load a theme. Both assume the theme is installed and
+;; available. You can either set `doom-theme' or manually load a theme with the
+;; `load-theme' function. This is the default:
 (setq doom-theme (ketan0/responsive-theme))
+
 ;; responsive theme
 
 ;; If you use `org' and don't want your org files in the default location below,
@@ -88,6 +93,14 @@ end tell\')\"")
 
 (setq enable-local-variables t)
 
+(setq org-crypt-key "ketanjayagrawal@gmail.com")
+;; GPG key to use for encryption
+;; Either the Key ID or set to nil to use symmetric encryption.
+
+(setq auto-save-default nil)
+;; Auto-saving does not cooperate with org-crypt.el: so you need to
+;; turn it off if you plan to use org-crypt.el quite often.  Otherwise,
+;; you'll get an (annoying) message each time you start Org.
 ;; from https://www.emacswiki.org/emacs/RevertBuffer
 (defun revert-all-buffers ()
   "Refreshes all open buffers from their respective files."
@@ -225,68 +238,8 @@ contextual information."
                               code)
                     (format "<pre class=\"src src-%s\" data-language=\"%s\"%s>%s</pre>"
                             lang lang label code)))))))
-  (setq org-html-htmlize-output-type 'css)
 
-  ;; https://org-roam.discourse.group/t/export-backlinks-on-org-export/1756
-  (defun collect-backlinks-string (backend)
-  (when (org-roam-node-at-point)
-    (let* ((source-node (org-roam-node-at-point))
-           (source-file (org-roam-node-file source-node))
-           (nodes-in-file (--filter (s-equals? (org-roam-node-file it) source-file)
-                                    (org-roam-node-list)))
-           (nodes-start-position (-map 'org-roam-node-point nodes-in-file))
-           ;; Nodes don't store the last position, so get the next headline position
-           ;; and subtract one character (or, if no next headline, get point-max)
-           (nodes-end-position (-map (lambda (nodes-start-position)
-                                       (goto-char nodes-start-position)
-                                       (if (org-before-first-heading-p) ;; file node
-                                           (point-max)
-                                         (call-interactively
-                                          'org-forward-heading-same-level)
-                                         (if (> (point) nodes-start-position)
-                                             (- (point) 1) ;; successfully found next
-                                           (point-max)))) ;; there was no next
-                                     nodes-start-position))
-           ;; sort in order of decreasing end position
-           (nodes-in-file-sorted (->> (-zip nodes-in-file nodes-end-position)
-                                      (--sort (> (cdr it) (cdr other))))))
-      (dolist (node-and-end nodes-in-file-sorted)
-        (-when-let* (((node . end-position) node-and-end)
-                     (backlinks (--filter (->> (org-roam-backlink-source-node it)
-                                               (org-roam-node-file)
-                                               (s-contains? "private/") (not))
-                                          (org-roam-backlinks-get node)))
-                     (heading (format "\n\n%s Links to this node\n"
-                                      (s-repeat (+ (org-roam-node-level node) 1) "*")))
-                     (properties-drawer ":PROPERTIES:\n:HTML_CONTAINER_CLASS: references\n:END:\n"))
-          (goto-char end-position)
-          (insert heading)
-          (insert properties-drawer)
-          (dolist (backlink backlinks)
-            (let* ((source-node (org-roam-backlink-source-node backlink))
-                   (source-file (org-roam-node-file source-node))
-                   (properties (org-roam-backlink-properties backlink))
-                   (outline (when-let ((outline (plist-get properties :outline)))
-                              (when (> (length outline) 1)
-                                (mapconcat #'org-link-display-format outline " > "))))
-                   (point (org-roam-backlink-point backlink))
-                   (text (s-replace "\n" " " (org-roam-preview-get-contents
-                                              source-file
-                                              point)))
-                   (reference (format "%s [[id:%s][%s]]\n%s\n%s\n\n"
-                                      (s-repeat (+ (org-roam-node-level node) 2) "*")
-                                      (org-roam-node-id source-node)
-                                      (org-roam-node-title source-node)
-                                      (if outline (format "%s (/%s/)"
-                                                          (s-repeat (+ (org-roam-node-level node) 3) "*") outline) "")
-                                      text)))
-              (insert reference))))))))
-  (add-hook 'org-export-before-processing-hook 'collect-backlinks-string)
-
-  ;; (setq org-cite-export-processors '("csl" "apa.csl"))
-  (setq org-cite-global-bibliography '("/Users/ketanagrawal/zoterocitations.bib"))
-  (setq org-cite-export-processors '((t basic)))
-
+  (load-file "~/garden-simple/publish-utils.el")
   (defvar yt-iframe-format
     ;; You may want to change your width and height.
     (concat "<iframe width=\"440\""
@@ -307,39 +260,16 @@ contextual information."
                      path (or desc "")))
        (latex (format "\href{%s}{%s}"
                       path (or desc "video"))))))
-  (setq org-html-htmlize-output-type 'css)
-  (setq org-publish-project-alist
-        '(("digital laboratory"
-           :base-directory "~/garden-simple/org"
-           :publishing-function org-html-publish-to-html
-           :publishing-directory "~/garden-simple/html"
-           :auto-sitemap t
-           :sitemap-title "sitemap"
-           ;; :html-head-include-default-style nil
-           :section-numbers nil
-           :with-toc nil
-           :preserve-breaks t
-           :html-preamble t
-           :html-preamble-format (("en" "<a style=\"color: inherit; text-decoration: none\" href=\"/\"><h2>Ketan's Digital Laboratory &#129514;</h2></a>"))
-           :html-postamble t
-
-           :html-postamble-format (("en" "<p>Made with <span class=\"heart\">♥</span> using
-<a href=\"https://orgmode.org/\">org-mode</a>.
-Source code is available
-<a href=\"https://github.com/ketan0/digital-laboratory\">here</a>.</p>
-<script src=\"popper.min.js\"></script>
-<script src=\"tippy-bundle.umd.min.js\"></script>
-<script src=\"tooltips.js\"></script>"))
-           :html-link-home ""
-           :html-link-up ""
-           :html-head-include-default-style nil
-           :html-head "<link rel=\"stylesheet\" type=\"text/css\" href=\"syntax.css\" />
-<link rel=\"stylesheet\" type=\"text/css\" href=\"styles.css\" />"
-           :html-head-extra "<link rel=\"apple-touch-icon\" sizes=\"180x180\" href=\"/apple-touch-icon.png\" />
-<link rel=\"icon\" type=\"image/png\" sizes=\"32x32\" href=\"/favicon-32x32.png\" />
-<link rel=\"icon\" type=\"image/png\" sizes=\"16x16\" href=\"/favicon-16x16.png\" />
-<link rel=\"manifest\" href=\"/site.webmanifest\" />")))
-
+  (require 'ox-html)
+  (defun ketan0/org-html-export-after-save ()
+    "Function for `after-save-hook' to run `org-publish-current-file'.
+The exporting happens only when Org Capture is not in progress."
+    (when (org-publish-get-project-from-filename (buffer-file-name (buffer-base-buffer)))
+      ;; (let ((org-id-extra-files (find-lisp-find-files org-roam-directory "\.org$")))
+      (save-excursion (org-publish-current-file))
+      ;; )
+      ))
+  (add-hook 'after-save-hook #'ketan0/org-html-export-after-save :append)
   (setq org-return-follows-link t)
   ;; (setq org-emphasis-alist ;;different ways to emphasize text
   ;;       '(("!"  (:foreground "red") )
@@ -368,6 +298,10 @@ Source code is available
   (setq org-agenda-span 'day)
   (setq org-agenda-start-day "+0d")
   (add-hook 'org-mode-hook #'org-fragtog-mode)
+  (defun turn-off-line-numbers ()
+    (display-line-numbers-mode 0))
+  (add-hook 'org-mode-hook 'turn-off-line-numbers)
+  (add-hook 'org-mode-hook 'mixed-pitch-mode)
 
   (defvar org-created-property-name "CREATED"
     "The name of the org-mode property that stores the creation date of the entry")
@@ -433,7 +367,7 @@ will not be modified."
         :title "Week Ahead"
         :sort '(date priority todo)
         :super-groups '((:auto-ts t)))))
-  (map! "<f3>" #'ketan0/look-ahead)
+  ;; (map! "<f3>" #'ketan0/look-ahead)
 
 
   (defun ketan0/repeating-task-last-24-hours (item)
@@ -453,15 +387,16 @@ will not be modified."
                       (:name "✅ Finished Today" :todo "DONE"
                        :pred ketan0/repeating-task-last-24-hours
                        :face (:foreground "#00AA00")
-                       :order 2 :forward)
+                       :order 3 :forward)
                       ;; :forward keyword passes along matches, using the patch in
                       ;; https://github.com/alphapapa/org-super-agenda/issues/153
                       ;; discard everything except today agenda
                       (:discard (:todo "DONE" :scheduled future :deadline future))
-                      (:auto-outline-path t :order 1))
+                      (:name "❗️ Important" :priority "A" :face (:foreground "#0096FF") :order 1 :forward)
+                      (:auto-outline-path t :order 2))
       :sort 'date
       :title "My Agenda for today"))
-  (map! "<f4>" #'ketan0/new-agenda)
+  ;; (map! "<f4>" #'ketan0/new-agenda)
 
   ;; (defun ketan0/ts-inactive-last-7-days (item)
   ;;   (message item)
@@ -488,7 +423,7 @@ will not be modified."
       :sort '(date priority todo)
       :super-groups '((:auto-ts-inactive t)))
     (goto-char (point-max))))
-  (map! "<f5>" #'ketan0/weekly-review)
+  ;; (map! "<f5>" #'ketan0/weekly-review)
 
   ;; Create an agenda view for each PARA "area"
   (defun ketan0/area-agenda (area-tag)
@@ -517,6 +452,7 @@ will not be modified."
   (setq org-agenda-block-separator nil)
   (setq org-agenda-log-mode-items '(closed clock state))
   (setq org-agenda-window-setup 'current-window) ;;agenda take up whole frame
+  (setq org-agenda-bulk-custom-functions '((?P (lambda nil (org-agenda-priority 'set)))))
   ;;don't show warnings for deadlines
   (setq org-deadline-warning-days 0) ;;don't show upcoming tasks in today view
 
@@ -544,7 +480,7 @@ will not be modified."
 
   ;;refile settings
   (setq org-refile-use-cache t) ;;speeds up loading refile targets
-  (setq org-refile-targets '((nil :maxlevel . 9)
+  (setq org-refile-targets '((nil :maxlevel . 9) ;; at most can refile 9 levels deep in the hierarchy
                              (org-agenda-files :maxlevel . 9)))
   (setq org-refile-allow-creating-parent-nodes 'confirm)
   (setq org-refile-use-outline-path 'file) ;;see whole path (not just headline)
@@ -554,33 +490,35 @@ will not be modified."
   (setq org-catch-invisible-edits (quote show-and-error)) ;;avoid accidental edits in folded areas, links, etc.
   (defun my/org-checkbox-todo ()
     "Switch header TODO state to DONE when all checkboxes are ticked, to TODO otherwise"
-    (let ((todo-state (org-get-todo-state)) beg end)
-      (unless (not todo-state)
-        (save-excursion
-          (org-back-to-heading t)
-          (setq beg (point))
-          (end-of-line)
-          (setq end (point))
-          (goto-char beg)
-          (if (re-search-forward "\\[\\([0-9]*%\\)\\]\\|\\[\\([0-9]*\\)/\\([0-9]*\\)\\]"
-                                 end t)
-              (if (match-end 1)
-                  (if (equal (match-string 1) "100%")
+    (unless (org-before-first-heading-p)
+      (let ((todo-state (org-get-todo-state)) beg end)
+        (unless (not todo-state)
+          (save-excursion
+            (org-back-to-heading t)
+            (setq beg (point))
+            (end-of-line)
+            (setq end (point))
+            (goto-char beg)
+            (if (re-search-forward "\\[\\([0-9]*%\\)\\]\\|\\[\\([0-9]*\\)/\\([0-9]*\\)\\]"
+                                   end t)
+                (if (match-end 1)
+                    (if (equal (match-string 1) "100%")
+                        (unless (string-equal todo-state "DONE")
+                          (org-todo 'done))
+                      (unless (string-equal todo-state "TODO")
+                        (org-todo 'todo)))
+                  (if (and (> (match-end 2) (match-beginning 2))
+                           (equal (match-string 2) (match-string 3)))
                       (unless (string-equal todo-state "DONE")
                         (org-todo 'done))
                     (unless (string-equal todo-state "TODO")
-                      (org-todo 'todo)))
-                (if (and (> (match-end 2) (match-beginning 2))
-                         (equal (match-string 2) (match-string 3)))
-                    (unless (string-equal todo-state "DONE")
-                      (org-todo 'done))
-                  (unless (string-equal todo-state "TODO")
-                    (org-todo 'todo)))))))))
+                      (org-todo 'todo))))))))))
   (add-hook 'org-checkbox-statistics-hook 'my/org-checkbox-todo)
 
   (org-set-modules 'org-modules '(ol-bibtex org-habit))
 
   (plist-put org-format-latex-options :scale 1.0) ;; scale for inline latex fragments
+  (setq org-latex-create-formula-image-program 'dvisvgm) ;; svg is crisper than png on retina
 
   (setq org-structure-template-alist
         '(("p" . "src python :results output\n")
@@ -595,7 +533,7 @@ will not be modified."
           ("h" . "export html\n")
           ("l" . "export latex\n")
           ("v" . "verse\n")
-          ("x" . "example")))
+          ("x" . "example\n")))
 
   (defun transform-square-brackets-to-round-ones(string-to-transform)
     "Transforms [ into ( and ] into ), other chars left unchanged."
@@ -606,7 +544,7 @@ will not be modified."
     `((name . "doom-capture")
       (width . (text-pixels . 720))
       (height . (text-pixels . 220))
-      (left . 360)
+      (left . 504)
       (top . 340)
       (transient . t)
       ,(when (and IS-LINUX (not (getenv "DISPLAY")))
@@ -697,37 +635,44 @@ will not be modified."
 (use-package! find-lisp)
 
 ;; automatically publish org file upon save
-(defun ketan0/org-html-export-after-save ()
-  "Function for `after-save-hook' to run `org-publish-current-file'.
-The exporting happens only when Org Capture is not in progress."
-  (when (org-publish-get-project-from-filename (buffer-file-name (buffer-base-buffer)))
-    ;; (let ((org-id-extra-files (find-lisp-find-files org-roam-directory "\.org$")))
-      (save-excursion (org-publish-current-file))
-      ;; )
-    ))
+;; (defun ketan0/org-html-export-after-save ()
+;;   "Function for `after-save-hook' to run `org-publish-current-file'.
+;; The exporting happens only when Org Capture is not in progress."
+;;   (when (org-publish-get-project-from-filename (buffer-file-name (buffer-base-buffer)))
+;;     ;; (let ((org-id-extra-files (find-lisp-find-files org-roam-directory "\.org$")))
+;;     (save-excursion (org-publish-current-file))
+;;     ;; )
+;;     ))
+;; (add-hook 'after-save-hook #'ketan0/org-html-export-after-save :append :local)
 
-(define-minor-mode ketan0/org-html-auto-export-mode
-  "Toggle auto exporting the Org file using `ox-html'."
-  :global nil
-  :lighter ""
-  (if ketan0/org-html-auto-export-mode
-      ;; When the mode is enabled
-      (add-hook 'after-save-hook #'ketan0/org-html-export-after-save :append :local)
-    ;; When the mode is disabled
-    (remove-hook 'after-save-hook #'ketan0/org-html-export-after-save :local)))
-(provide 'ketan0/org-html-auto-export-mode)
+
+;; (define-minor-mode ketan0/org-html-auto-export-mode
+;;   "Toggle auto exporting the Org file using `ox-html'."
+;;   :global nil
+;;   :lighter ""
+;;   (if ketan0/org-html-auto-export-mode
+;;       ;; When the mode is enabled
+;;       (require 'ox-html)
+;;       (add-hook 'after-save-hook #'ketan0/org-html-export-after-save :append :local)
+;;     ;; When the mode is disabled
+;;     (remove-hook 'after-save-hook #'ketan0/org-html-export-after-save :local)))
+;; (provide 'ketan0/org-html-auto-export-mode)
 
 (use-package! org-journal
   :after org
   :init
-  (map! :map doom-leader-map "j" 'org-journal-new-entry)
+  (map! :map doom-leader-map
+        "j j" 'org-journal-new-entry
+        "j d" 'org-decrypt-entry)
   (setq org-journal-find-file 'find-file
         org-journal-file-header "#+title: %Y%m%d"
         org-journal-date-prefix "* "
         org-journal-dir ketan0/org-directory-private
         org-journal-carryover-items nil
         org-journal-file-format "%Y%m%d.org"
-        org-journal-date-format "%A, %d %B %Y")
+        org-journal-date-format "%A, %d %B %Y"
+        org-journal-enable-encryption t
+        org-journal-encrypt-journal t)
 
   (defadvice! ketan0/org-journal-new-entry-append (prefix)
     :after #'org-journal-new-entry
@@ -759,7 +704,29 @@ The exporting happens only when Org Capture is not in progress."
 
 (use-package! org-super-agenda
   :after org
+  :init
+
   :config
+  (defun ketan0/inactive-sort-fn (a b)
+    (ts< (get-text-property 0 'org-super-agenda-ts a)
+         (get-text-property 0 'org-super-agenda-ts b)))
+  (org-super-agenda--def-auto-group ts-inactive
+   "the date of their latest inactive timestamp anywhere in the entry (formatted according to `org-super-agenda-date-format', which see)"
+   :keyword :auto-ts-inactive
+   :key-form
+   (org-super-agenda--when-with-marker-buffer
+    (org-super-agenda--get-marker item)
+    (let* ((limit (org-entry-end-position))
+           (latest-ts (->> (cl-loop for next-ts =
+                                    (when (re-search-forward org-ql-regexp-ts-inactive limit t)
+                                      (ts-parse-org (match-string 0)))
+                                    while next-ts
+                                    collect next-ts)
+                           (-max-by #'ts>))))
+      (when latest-ts
+        (propertize (ts-format org-super-agenda-date-format latest-ts)
+                    'org-super-agenda-ts latest-ts))))
+   :key-sort-fn ketan0/inactive-sort-fn)
   (defconst org-super-agenda-special-selectors
     '(:name :order :face :transformer :forward)
     "Special, non-grouping selectors.")
@@ -795,27 +762,20 @@ see."
   (map! :map org-super-agenda-header-map "q" #'bury-buffer)
 
   (setq org-super-agenda-date-format "%A %B %e")
-  (org-super-agenda--def-auto-group ts-inactive
-    "the date of their latest inactive timestamp anywhere in the entry (formatted according to `org-super-agenda-date-format', which see)"
-    :keyword :auto-ts-inactive
-    :key-form (org-super-agenda--when-with-marker-buffer (org-super-agenda--get-marker item)
-                (let* ((limit (org-entry-end-position))
-                       (latest-ts (->> (cl-loop for next-ts =
-                                                (when (re-search-forward org-ql-regexp-ts-inactive limit t)
-                                                  (ts-parse-org (match-string 0)))
-                                                while next-ts
-                                                collect next-ts)
-                                       (-max-by #'ts>))))
-                  (when latest-ts
-                    (propertize (ts-format org-super-agenda-date-format latest-ts)
-                                'org-super-agenda-ts latest-ts))))
-    :key-sort-fn (lambda (a b)
-                   (ts< (get-text-property 0 'org-super-agenda-ts a)
-                        (get-text-property 0 'org-super-agenda-ts b)))))
+  )
 
 (use-package! org-roam
   :init
   (setq org-roam-v2-ack t)
+  ;; https://www.orgroam.com/manual.html#Configuring-the-Org_002droam-buffer-display
+  (add-to-list 'display-buffer-alist
+               '("\\*org-roam\\*"
+                 (display-buffer-in-side-window)
+                 (side . right)
+                 (slot . 0)
+                 (window-width . 0.33)
+                 (window-parameters . ((no-other-window . t)
+                                       (no-delete-other-windows . t)))))
   (map! :leader :nm
         "r r" #'org-roam-node-find
         "r a" #'org-roam-node-random
@@ -1147,42 +1107,42 @@ generations (this defaults to 1)."
           (life-expand-plane-if-needed)
           (life-increment-generation))))))
 
-(use-package outline
-  :after org-super-agenda
-  :config
+;; (use-package outline
+;;   :after org-super-agenda
+;;   :config
 
-  (defvar ketan0/outline-agenda-hidden nil)
-  (defun ketan0/outline-toggle-all ()
-    (interactive)
-    (if ketan0/outline-agenda-hidden (outline-show-all) (outline-hide-body))
-    (setq ketan0/outline-agenda-hidden (not ketan0/outline-agenda-hidden)))
-  (map! :map evil-org-agenda-mode-map "<S-tab>" #'ketan0/outline-toggle-all)
-  (map! :map org-super-agenda-header-map "<tab>" #'outline-toggle-children)
-  (defvar org-super-agenda-auto-fold-groups '("Stuck Tasks" "Other items" "Notice"))
+;;   (defvar ketan0/outline-agenda-hidden nil)
+;;   (defun ketan0/outline-toggle-all ()
+;;     (interactive)
+;;     (if ketan0/outline-agenda-hidden (outline-show-all) (outline-hide-body))
+;;     (setq ketan0/outline-agenda-hidden (not ketan0/outline-agenda-hidden)))
+;;   (map! :map evil-org-agenda-mode-map "<S-tab>" #'ketan0/outline-toggle-all)
+;;   (map! :map org-super-agenda-header-map "<tab>" #'outline-toggle-children)
+;;   (defvar org-super-agenda-auto-fold-groups '("Stuck Tasks" "Other items" "Notice"))
 
-  ;; function borrowed from new fork of origami.el https://github.com/emacs-origami/origami.el/blob/master/origami.el#L1024
-  (defun outline-auto-agenda (pattern-or-patterns function)
-    "Search buffer and apply the FUNCTION on each line.
-PATTERN-OR-PATTERNS is a string or a list of strings to search"
-    (interactive)
-    (let ((patterns (if (listp pattern-or-patterns) pattern-or-patterns (list pattern-or-patterns))))
-      (save-excursion
-        (dolist (pattern patterns)
-          (goto-char (point-min))
-          (while (re-search-forward pattern nil t 1)
-            (unless (outline-invisible-p)
-              (funcall function)))))))
-  (setq org-super-agenda-header-prefix "* ️")
+;;   ;; function borrowed from new fork of origami.el https://github.com/emacs-origami/origami.el/blob/master/origami.el#L1024
+;;   (defun outline-auto-agenda (pattern-or-patterns function)
+;;     "Search buffer and apply the FUNCTION on each line.
+;; PATTERN-OR-PATTERNS is a string or a list of strings to search"
+;;     (interactive)
+;;     (let ((patterns (if (listp pattern-or-patterns) pattern-or-patterns (list pattern-or-patterns))))
+;;       (save-excursion
+;;         (dolist (pattern patterns)
+;;           (goto-char (point-min))
+;;           (while (re-search-forward pattern nil t 1)
+;;             (unless (outline-invisible-p)
+;;               (funcall function)))))))
+;;   (setq org-super-agenda-header-prefix "* ️")
 
-  (defun outline-agenda-setup ()
-    (setq-local outline-regexp org-super-agenda-header-prefix)
-    (setq-local outline-level #'outline-level)
-    (setq-local outline-heading-alist
-                `((,org-super-agenda-header-prefix . 1)))
-    (outline-auto-agenda org-super-agenda-auto-fold-groups #'outline-hide-subtree))
+;;   (defun outline-agenda-setup ()
+;;     (setq-local outline-regexp org-super-agenda-header-prefix)
+;;     (setq-local outline-level #'outline-level)
+;;     (setq-local outline-heading-alist
+;;                 `((,org-super-agenda-header-prefix . 1)))
+;;     (outline-auto-agenda org-super-agenda-auto-fold-groups #'outline-hide-subtree))
 
-  :hook ((org-agenda-mode . outline-minor-mode)
-         (org-agenda-finalize . outline-agenda-setup)))
+;;   :hook ((org-agenda-mode . outline-minor-mode)
+;;          (org-agenda-finalize . outline-agenda-setup)))
 
 (defun codex (&optional b e)
   (interactive "r")
@@ -1192,3 +1152,16 @@ PATTERN-OR-PATTERNS is a string or a list of strings to search"
              b e "codex.py" standard-output nil))))
 
 (use-package! citeproc)
+
+(defun my/center (width)
+  (interactive "nBuffer width: ")
+  (let* ((adj          (- (window-text-width)
+                          width))
+         (total-margin (+ adj
+                          left-margin-width
+                          right-margin-width)))
+    (setq left-margin-width  (/ total-margin 2))
+    (setq right-margin-width (- total-margin left-margin-width)))
+  (set-window-buffer (selected-window) (current-buffer)))
+
+(centered-window-mode)
