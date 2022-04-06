@@ -4,7 +4,6 @@
 export PATH=/Library/TeX/texbin:$PATH
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 export PATH=$HOME/.emacs.d/bin:$PATH
-export PATH=/c/Users/19139/Documents/emacs/bin:$PATH
 export PATH="/opt/homebrew/opt/findutils/libexec/gnubin:$PATH"
 
 if [ "$HOST" = ketanmba.local ]; then
