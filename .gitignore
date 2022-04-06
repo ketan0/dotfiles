@@ -13,3 +13,5 @@ emacs.d/transient/
 /emacs.d/games/
 .secrets
 doom.d/ketan0-secrets.el
+sshconfig
+.DS_Store
