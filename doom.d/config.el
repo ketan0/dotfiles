@@ -34,7 +34,8 @@
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
 
-(setq doom-font (font-spec :family "Fira Code" :size 12))
+(setq doom-font (font-spec :family "Fira Code" :size 13))
+(setq doom-font-increment 1)
 (setq doom-variable-pitch-font (font-spec :family "SF Pro"))
 
 (setq +latex-viewers '(pdf-tools))
@@ -238,7 +239,7 @@ contextual information."
                               code)
                     (format "<pre class=\"src src-%s\" data-language=\"%s\"%s>%s</pre>"
                             lang lang label code)))))))
-
+  (require 'ox-html)
   (load-file "~/garden-simple/publish-utils.el")
   (defvar yt-iframe-format
     ;; You may want to change your width and height.
@@ -260,7 +261,6 @@ contextual information."
                      path (or desc "")))
        (latex (format "\href{%s}{%s}"
                       path (or desc "video"))))))
-  (require 'ox-html)
   (defun ketan0/org-html-export-after-save ()
     "Function for `after-save-hook' to run `org-publish-current-file'.
 The exporting happens only when Org Capture is not in progress."
