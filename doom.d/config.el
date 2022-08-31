@@ -9,6 +9,30 @@
 (setq user-full-name "Ketan Agrawal"
       user-mail-address "ketanjayagrawal@gmail.com")
 ;; (setq default-directory "~/")
+
+
+;; shortcut to go from org file => browser view of generated HTML file
+;; (using my open_url_smart Applescript -- see karabiner.org for details)
+(defun ketan0/launch-nebula-note-locally-in-browser ()
+  (interactive)
+  (->> (file-name-base (buffer-file-name))
+       (format "osascript ~/.dotfiles/open_url_smart.scpt \
+'http://localhost:3000/%s.html'")
+       (shell-command)))
+
+(defun ketan0/launch-nebula-note-in-browser ()
+  (interactive)
+  (->> (file-name-base (buffer-file-name))
+       (format "osascript ~/.dotfiles/open_url_smart.scpt \
+'http://nebula.ketan.me/%s.html'")
+       (shell-command)))
+
+(map! :leader
+      (:prefix ("k" . "Ketan custom keybinds")
+       :desc "Launch nebula note locally in browser" "l" #'ketan0/launch-nebula-note-locally-in-browser
+       :desc "Launch nebula note in browser" "n" #'ketan0/launch-nebula-note-in-browser
+       ))
+
 (defvar ketan0/dotfiles-dir (file-name-as-directory "~/.dotfiles")
   "Personal dotfiles directory.")
 (defvar ketan0/goodnotes-dir (file-name-as-directory "~/Dropbox/Apps/GoodNotes 5/GoodNotes")
@@ -34,11 +58,12 @@
 ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
 ;; font string. You generally only need these two:
 
-(setq doom-font (font-spec :family "Fira Code" :size 13))
+(setq doom-font (font-spec :family "Fira Code" :size 14))
 (setq doom-font-increment 1)
-(setq doom-variable-pitch-font (font-spec :family "SF Pro"))
+(setq doom-variable-pitch-font (font-spec :family "Fira Sans" :size 14))
 
-(setq +latex-viewers '(pdf-tools))
+(setq +latex-viewers '(skim))
+(setq reftex-default-bibliography "/Users/ketanagrawal/zoterocitations.bib")
 
 ;; needed for font ligatures to work (e.g. in Fira Code)
 (when (boundp 'mac-auto-operator-composition-mode)
@@ -52,7 +77,7 @@ tell appearance preferences to return dark mode
 end tell\')\"")
    "true"))
 (defun ketan0/responsive-theme ()
-  (if (ketan0/dark-mode-active) 'doom-one 'doom-ayu-light))
+  (if (ketan0/dark-mode-active) 'doom-outrun-electric 'doom-solarized-light))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
@@ -161,9 +186,9 @@ end tell\')\"")
   ;; (remove-hook 'org-mode-hook #'ketan0/org-hide-properties)
   (setq org-babel-default-header-args
         (cons '(:exports . "both") ;; export code and results by default
-        (cons '(:eval . "no-export") ;; don't evaluate src blocks when exporting
-              (assq-delete-all :exports
-              (assq-delete-all :eval org-babel-default-header-args)))))
+              (cons '(:eval . "no-export") ;; don't evaluate src blocks when exporting
+                    (assq-delete-all :exports
+                                     (assq-delete-all :eval org-babel-default-header-args)))))
   (setq org-ellipsis "…")
   (setq org-hide-emphasis-markers t)
 
@@ -241,6 +266,8 @@ contextual information."
                             lang lang label code)))))))
   (require 'ox-html)
   (load-file "~/garden-simple/publish-utils.el")
+
+  ;; export youtube links to html as iframes of the video
   (defvar yt-iframe-format
     ;; You may want to change your width and height.
     (concat "<iframe width=\"440\""
@@ -248,7 +275,6 @@ contextual information."
             " src=\"https://www.youtube.com/embed/%s\""
             " frameborder=\"0\""
             " allowfullscreen>%s</iframe>"))
-  (setq org-id-link-to-org-use-id 'create-if-interactive)
   (org-add-link-type
    "yt"
    (lambda (handle)
@@ -261,6 +287,7 @@ contextual information."
                      path (or desc "")))
        (latex (format "\href{%s}{%s}"
                       path (or desc "video"))))))
+
   (defun ketan0/org-html-export-after-save ()
     "Function for `after-save-hook' to run `org-publish-current-file'.
 The exporting happens only when Org Capture is not in progress."
@@ -297,27 +324,30 @@ The exporting happens only when Org Capture is not in progress."
                                ketan0/org-archive-file))
   (setq org-agenda-span 'day)
   (setq org-agenda-start-day "+0d")
+  ;; don't create random IDs when I call org-capture
+  (setq org-id-link-to-org-use-id 'create-if-interactive)
+
   (add-hook 'org-mode-hook #'org-fragtog-mode)
   (defun turn-off-line-numbers ()
     (display-line-numbers-mode 0))
   (add-hook 'org-mode-hook 'turn-off-line-numbers)
   (add-hook 'org-mode-hook 'mixed-pitch-mode)
 
-  (defvar org-created-property-name "CREATED"
-    "The name of the org-mode property that stores the creation date of the entry")
-  (defun org-set-created-property (&optional active NAME)
-    "Set a property on the entry giving the creation time.
-By default the property is called CREATED. If given the `NAME'
-argument will be used instead. If the property already exists, it
-will not be modified."
-    (interactive)
-    (let* ((created (or NAME org-created-property-name))
-           (fmt (if active "<%s>" "[%s]"))
-           (now  (format fmt (format-time-string "%Y-%m-%d %a %H:%M"))))
-      (unless (org-entry-get (point) created nil)
-        (org-set-property created now)
-        )))
-  (add-hook 'org-journal-after-entry-create-hook #'org-set-created-property)
+  ;;   (defvar org-created-property-name "CREATED"
+  ;;     "The name of the org-mode property that stores the creation date of the entry")
+  ;;   (defun org-set-created-property (&optional active NAME)
+  ;;     "Set a property on the entry giving the creation time.
+  ;; By default the property is called CREATED. If given the `NAME'
+  ;; argument will be used instead. If the property already exists, it
+  ;; will not be modified."
+  ;;     (interactive)
+  ;;     (let* ((created (or NAME org-created-property-name))
+  ;;            (fmt (if active "<%s>" "[%s]"))
+  ;;            (now  (format fmt (format-time-string "%Y-%m-%d %a %H:%M"))))
+  ;;       (unless (org-entry-get (point) created nil)
+  ;;         (org-set-property created now)
+  ;;         )))
+  ;;   (add-hook 'org-journal-after-entry-create-hook #'org-set-created-property)
 
   (defun ketan0/create-gtd-project-block (tag-name)
     `(org-ql-block '(and (todo "STRT")
@@ -326,6 +356,7 @@ will not be modified."
                    ((org-ql-block-header ,tag-name))))
   ;; initial inspiration for custom agenda https://github.com/jethrokuan/.emacs.d/blob/master/init.el
   ;; main projects + stuff scheduled for today + stuff I finished
+  ;; NOTE(2022): not actively using this anymore. Instead, see ketan0/new-agenda
   (setq ketan0/main-agenda
         `(" " "Ketan's Focused Agenda"
           ,(append '((agenda ""
@@ -333,7 +364,7 @@ will not be modified."
                               (org-deadline-warning-days 2)
                               (org-agenda-skip-function '(org-agenda-skip-entry-if
                                                           'nottodo '("TODO")))
-                             ))
+                              ))
                      (org-ql-block '(and (ts :to 0) (todo "STRT"))
                                    ((org-ql-block-header "Top Priority")))
                      (org-ql-block '(and (todo "DONE")
@@ -387,13 +418,14 @@ will not be modified."
                       (:name "✅ Finished Today" :todo "DONE"
                        :pred ketan0/repeating-task-last-24-hours
                        :face (:foreground "#00AA00")
-                       :order 3 :forward)
+                       :order 4 :forward)
                       ;; :forward keyword passes along matches, using the patch in
                       ;; https://github.com/alphapapa/org-super-agenda/issues/153
                       ;; discard everything except today agenda
                       (:discard (:todo "DONE" :scheduled future :deadline future))
-                      (:name "❗️ Important" :priority "A" :face (:foreground "#0096FF") :order 1 :forward)
-                      (:auto-outline-path t :order 2))
+                      (:name "⚠️ Overdue" :deadline past :scheduled past :order 1 :forward)
+                      (:name "❗️ Important" :priority>= "B" :face (:foreground "#0096FF") :order 2 :forward)
+                      (:auto-outline-path t :order 3))
       :sort 'date
       :title "My Agenda for today"))
   ;; (map! "<f4>" #'ketan0/new-agenda)
@@ -417,12 +449,12 @@ will not be modified."
   (defun ketan0/weekly-review (arg)
     (interactive "P")
     (let ((days-back (if arg (read-number "How many days to look back: " 7) 7)))
-    (org-ql-search org-agenda-files
-      `(and (ts-inactive :from ,(+ (- days-back) 1) today) )
-      :title "Week in Review"
-      :sort '(date priority todo)
-      :super-groups '((:auto-ts-inactive t)))
-    (goto-char (point-max))))
+      (org-ql-search org-agenda-files
+        `(and (ts-inactive :from ,(+ (- days-back) 1) today) )
+        :title "Week in Review"
+        :sort '(date priority todo)
+        :super-groups '((:auto-ts-inactive t)))
+      (goto-char (point-max))))
   ;; (map! "<f5>" #'ketan0/weekly-review)
 
   ;; Create an agenda view for each PARA "area"
@@ -452,7 +484,9 @@ will not be modified."
   (setq org-agenda-block-separator nil)
   (setq org-agenda-log-mode-items '(closed clock state))
   (setq org-agenda-window-setup 'current-window) ;;agenda take up whole frame
+  ;; set priority in bulk
   (setq org-agenda-bulk-custom-functions '((?P (lambda nil (org-agenda-priority 'set)))))
+
   ;;don't show warnings for deadlines
   (setq org-deadline-warning-days 0) ;;don't show upcoming tasks in today view
 
@@ -464,6 +498,7 @@ will not be modified."
   (defun ketan0/org-agenda-schedule-today ()
     (interactive)
     (org-agenda-schedule nil "+0d"))
+
   (map! :map org-mode-map
         :localleader
         (:prefix ("d" . "date/deadline")
@@ -518,7 +553,9 @@ will not be modified."
   (org-set-modules 'org-modules '(ol-bibtex org-habit))
 
   (plist-put org-format-latex-options :scale 1.0) ;; scale for inline latex fragments
-  (setq org-latex-create-formula-image-program 'dvisvgm) ;; svg is crisper than png on retina
+  (setq org-preview-latex-default-process 'dvisvgm) ;; svg is crisper than png
+
+  (setq org-startup-with-inline-images t) ;; show inline images by default
 
   (setq org-structure-template-alist
         '(("p" . "src python :results output\n")
@@ -541,15 +578,15 @@ will not be modified."
      (mapcar #'(lambda (c) (if (equal c ?\[) ?\( (if (equal c ?\]) ?\) c))) string-to-transform)))
 
   (setq +org-capture-frame-parameters
-    `((name . "doom-capture")
-      (width . (text-pixels . 720))
-      (height . (text-pixels . 220))
-      (left . 504)
-      (top . 340)
-      (transient . t)
-      ,(when (and IS-LINUX (not (getenv "DISPLAY")))
-         `(display . ":0"))
-      ,(if IS-MAC '(menu-bar-lines . 1))))
+        `((name . "doom-capture")
+          (width . (text-pixels . 720))
+          (height . (text-pixels . 220))
+          (left . 504)
+          (top . 340)
+          (transient . t)
+          ,(when (and IS-LINUX (not (getenv "DISPLAY")))
+             `(display . ":0"))
+          ,(if IS-MAC '(menu-bar-lines . 1))))
 
   (setq org-capture-templates
         `(("t" "todo" entry
@@ -624,7 +661,19 @@ will not be modified."
     (let (display-buffer-alist)
       (apply oldfun args))))
 
-
+;; citations completions
+(use-package! citar
+  :after oc
+  :config
+  (map! :map org-mode-map
+        :localleader
+        "R" #'citar-refresh)
+  (map! :map LaTeX-mode-map
+        :localleader
+        "R" #'citar-refresh)
+  (setq citar-bibliography org-cite-global-bibliography)
+  ;; (citar-filenotify-setup '(LaTeX-mode-hook org-mode-hook))
+  )
 
 
 ;; drag-n-drop images
@@ -671,13 +720,35 @@ will not be modified."
         org-journal-carryover-items nil
         org-journal-file-format "%Y%m%d.org"
         org-journal-date-format "%A, %d %B %Y"
-        org-journal-enable-encryption t
-        org-journal-encrypt-journal t)
-
+        org-journal-enable-encryption nil) ;; not using for now
   (defadvice! ketan0/org-journal-new-entry-append (prefix)
     :after #'org-journal-new-entry
     ;; start journal in insert mode
-    (unless prefix (evil-append 1))))
+    (unless prefix (evil-append 1)))
+  :config
+  ;; COMMENTED OUT: code for storing / restoring cursor position in an encrypted block
+  ;; (not using atm, because I'm not using org encryption that much)
+  ;; store point before encryption; restore point after decryption
+  ;; (defvar-local ketan0/last-cursor-position nil)
+  ;; (defun ketan0/store-cursor-position ()
+  ;;   (setq-local ketan0/last-cursor-position (point)))
+
+  ;; (defun ketan0/restore-cursor-position ()
+  ;;   (when ketan0/last-cursor-position
+  ;;     (goto-char ketan0/last-cursor-position)))
+  ;; (advice-add 'org-encrypt-entry :before #'ketan0/store-cursor-position)
+  ;; (advice-remove 'org-decrypt-entries #'ketan0/restore-cursor-position)
+  ;; (advice-add 'org-encrypt-entries :before #'ketan0/store-cursor-position)
+  ;; TODO: this should probably be happening after org-decrypt-entries,
+  ;; but that messes up org-journal-new-entry's positioning of a new header
+  ;; (advice-add 'org-decrypt-entry :after #'ketan0/restore-cursor-position)
+
+  (defun org-journal-encryption-hook ())
+  (defun ketan0/add-id-to-journal-entry ()
+    (save-excursion
+      (goto-char (point-min))
+      (org-id-get-create)))
+  (add-hook 'org-journal-after-header-create-hook #'ketan0/add-id-to-journal-entry))
 
 (use-package! org-ql
   :after org
@@ -711,22 +782,22 @@ will not be modified."
     (ts< (get-text-property 0 'org-super-agenda-ts a)
          (get-text-property 0 'org-super-agenda-ts b)))
   (org-super-agenda--def-auto-group ts-inactive
-   "the date of their latest inactive timestamp anywhere in the entry (formatted according to `org-super-agenda-date-format', which see)"
-   :keyword :auto-ts-inactive
-   :key-form
-   (org-super-agenda--when-with-marker-buffer
-    (org-super-agenda--get-marker item)
-    (let* ((limit (org-entry-end-position))
-           (latest-ts (->> (cl-loop for next-ts =
-                                    (when (re-search-forward org-ql-regexp-ts-inactive limit t)
-                                      (ts-parse-org (match-string 0)))
-                                    while next-ts
-                                    collect next-ts)
-                           (-max-by #'ts>))))
-      (when latest-ts
-        (propertize (ts-format org-super-agenda-date-format latest-ts)
-                    'org-super-agenda-ts latest-ts))))
-   :key-sort-fn ketan0/inactive-sort-fn)
+    "the date of their latest inactive timestamp anywhere in the entry (formatted according to `org-super-agenda-date-format', which see)"
+    :keyword :auto-ts-inactive
+    :key-form
+    (org-super-agenda--when-with-marker-buffer
+      (org-super-agenda--get-marker item)
+      (let* ((limit (org-entry-end-position))
+             (latest-ts (->> (cl-loop for next-ts =
+                                      (when (re-search-forward org-ql-regexp-ts-inactive limit t)
+                                        (ts-parse-org (match-string 0)))
+                                      while next-ts
+                                      collect next-ts)
+                             (-max-by #'ts>))))
+        (when latest-ts
+          (propertize (ts-format org-super-agenda-date-format latest-ts)
+                      'org-super-agenda-ts latest-ts))))
+    :key-sort-fn ketan0/inactive-sort-fn)
   (defconst org-super-agenda-special-selectors
     '(:name :order :face :transformer :forward)
     "Special, non-grouping selectors.")
@@ -786,13 +857,15 @@ see."
   :config
   (require 'org-roam-protocol)
   (setq org-roam-capture-templates
-  '(("d" "default" plain "%?"
-     :if-new (file+head "${slug}.org"
-                        "#+title: ${title}\n")
-     :unnarrowed t)))
-  (setq org-roam-directory "~/garden-simple/org/")
+        '(("d" "default" plain "%?"
+           :if-new (file+head "${slug}.org"
+                              "#+title: ${title}\n")
+           :unnarrowed t)))
+  (setq org-roam-directory org-directory)
   (setq org-roam-db-location (concat org-roam-directory "org-roam.db"))
-  (setq org-id-extra-files (find-lisp-find-files org-roam-directory "\.org$"))
+  (setq org-id-extra-files (append (find-lisp-find-files org-roam-directory "\.org$")
+                                   (find-lisp-find-files ketan0/org-directory-private "\.org$")))
+  (setq org-roam-list-files-commands '(find)) ;; rg and fd don't seem to work for private/ subdir
   (org-roam-db-autosync-mode))
 
 (use-package! apples-mode
@@ -924,17 +997,7 @@ see."
   (setq evil-snipe-scope 'buffer))
 
 ;; ;; secret stuff that I'm not publishing on github
-;; (load-file "~/.doom.d/ketan0-secrets.el")
-
-;; ;; (use-package! counsel-spotify
-;; ;;   :config
-;; ;;   (setq counsel-spotify-client-id ketan0-secrets/spotify-client-id)
-;; ;;   (setq counsel-spotify-client-secret ketan0-secrets/spotify-client-secret))
-
-;; ;; (use-package! spotify
-;; ;;   :config
-;; ;;   (setq spotify-oauth2-client-id ketan0-secrets/spotify-client-id)
-;; ;;   (setq spotify-oauth2-client-secret ketan0-secrets/spotify-client-secret))
+(load-file "~/.doom.d/ketan0-secrets.el")
 
 ;; ;; (use-package! elfeed
 ;; ;;   :config
@@ -968,12 +1031,33 @@ see."
 ;; ;;           (aio-wait-for (call-interactively 'org-twitter-tweet-this-headline)))))
 ;; ;;     (add-hook 'org-capture-prepare-finalize-hook 'ketan0/org-twitter-finalize)))
 
-;; ;; (setq ketan0/org-spotify-package-path "/Users/ketanagrawal/emacs-packages/org-spotify")
-;; ;; (use-package! org-spotify
-;; ;;   :load-path ketan0/org-spotify-package-path
+(use-package! counsel-spotify
+  :config
+  (setq counsel-spotify-client-id ketan0-secrets/spotify-client-id)
+  (setq counsel-spotify-client-secret ketan0-secrets/spotify-client-secret))
+
+;; ;; (use-package! spotify
 ;; ;;   :config
-;; ;;   (setq org-spotify-oauth2-client-id ketan0-secrets/spotify-client-id)
-;; ;;   (setq org-spotify-oauth2-client-secret ketan0-secrets/spotify-client-secret))
+;; ;;   (setq spotify-oauth2-client-id ketan0-secrets/spotify-client-id)
+;; ;;   (setq spotify-oauth2-client-secret ketan0-secrets/spotify-client-secret))
+
+
+(setq ketan0/org-spotify-package-path "/Users/ketanagrawal/org-spotify")
+(use-package! org-spotify
+  :after org
+  :load-path ketan0/org-spotify-package-path
+  :config
+  (map! :map org-mode-map
+        :localleader
+        (:prefix ("S" . "Org Spotify")
+         :desc "Update playlist at point" "u" #'org-spotify-push-playlist-at-point
+         :desc "Insert Spotify track" "t" #'org-spotify-insert-track
+         :desc "Insert Spotify album" "a" #'org-spotify-insert-album
+         :desc "Insert Spotify artist" "r" #'org-spotify-insert-artist
+         :desc "Insert Spotify playlist" "p" #'org-spotify-insert-playlist))
+  (setq org-spotify-user-id ketan0-secrets/spotify-user-id)
+  (setq org-spotify-oauth2-client-id ketan0-secrets/spotify-client-id)
+  (setq org-spotify-oauth2-client-secret ketan0-secrets/spotify-client-secret))
 
 ;; ;; (use-package! gif-screencast
 ;; ;;   :config
@@ -1023,66 +1107,76 @@ see."
 ;;         '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
 ;;       (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
 
+(use-package! conda
+  :config
+  (map! :map doom-leader-code-map
+        :desc "Activate conda env" "A" #'conda-env-activate))
+
 (use-package! lsp
   :config
-;;   (defun lsp-python-ms--get-python-ver-and-syspath (&optional workspace-root)
-;;   "Return list with pyver-string and list of python search paths.
+  (map! :map doom-leader-code-map
+        :desc "Restart LSP workspace" "R" #'lsp-restart-workspace)
+  (add-to-list 'lsp-file-watch-ignored-directories "/Users/ketanagrawal/miniconda3/envs/data-science/lib/python3.9/" )
+  (require 'lsp-pyright)
+  (setq lsp-pyright-stub-path "typings")
+  ;;   (defun lsp-python-ms--get-python-ver-and-syspath (&optional workspace-root)
+  ;;   "Return list with pyver-string and list of python search paths.
 
-;; The WORKSPACE-ROOT will be prepended to the list of python search
-;; paths and then the entire list will be json-encoded."
-;;   (let* ((python (and t (lsp-python-ms-locate-python)))
-;;          (workspace-root (and python (or workspace-root ".")))
-;;          (default-directory (and workspace-root workspace-root))
-;;          (init (and default-directory
-;;                     "from __future__ import print_function; import sys; sys.path = list(filter(lambda p: p != '', sys.path)); import json;"))
-;;          (ver (and init "v=(\"%s.%s\" % (sys.version_info[0], sys.version_info[1]));"))
-;;          (sp (and ver (concat "sys.path.insert(0, '" workspace-root "'); p=sys.path;")))
-;;          (ex (and sp "e=sys.executable;"))
-;;          (val (and ex "print(json.dumps({\"version\":v,\"paths\":p,\"executable\":e}))")))
-;;     (when val
-;;       (with-temp-buffer
-;;         (let ((default-directory (file-name-directory python)))
-;;          (process-file (file-local-name python) nil t nil "-c"
-;;                        (concat init ver sp ex val))
-;;          )
-;;         (let* ((json-array-type 'vector)
-;;                (json-key-type 'string)
-;;                (json-object-type 'hash-table)
-;;                (json-string (buffer-string))
-;;                (json-hash (json-read-from-string json-string)))
-;;           (list
-;;            (gethash "version" json-hash)
-;;            (gethash "paths" json-hash)
-;;            (gethash "executable" json-hash)))))))
+  ;; The WORKSPACE-ROOT will be prepended to the list of python search
+  ;; paths and then the entire list will be json-encoded."
+  ;;   (let* ((python (and t (lsp-python-ms-locate-python)))
+  ;;          (workspace-root (and python (or workspace-root ".")))
+  ;;          (default-directory (and workspace-root workspace-root))
+  ;;          (init (and default-directory
+  ;;                     "from __future__ import print_function; import sys; sys.path = list(filter(lambda p: p != '', sys.path)); import json;"))
+  ;;          (ver (and init "v=(\"%s.%s\" % (sys.version_info[0], sys.version_info[1]));"))
+  ;;          (sp (and ver (concat "sys.path.insert(0, '" workspace-root "'); p=sys.path;")))
+  ;;          (ex (and sp "e=sys.executable;"))
+  ;;          (val (and ex "print(json.dumps({\"version\":v,\"paths\":p,\"executable\":e}))")))
+  ;;     (when val
+  ;;       (with-temp-buffer
+  ;;         (let ((default-directory (file-name-directory python)))
+  ;;          (process-file (file-local-name python) nil t nil "-c"
+  ;;                        (concat init ver sp ex val))
+  ;;          )
+  ;;         (let* ((json-array-type 'vector)
+  ;;                (json-key-type 'string)
+  ;;                (json-object-type 'hash-table)
+  ;;                (json-string (buffer-string))
+  ;;                (json-hash (json-read-from-string json-string)))
+  ;;           (list
+  ;;            (gethash "version" json-hash)
+  ;;            (gethash "paths" json-hash)
+  ;;            (gethash "executable" json-hash)))))))
 
-;;   (lsp-register-client
-;;    (make-lsp-client
-;;     :new-connection (lsp-tramp-connection "Microsoft.Python.LanguageServer")
-;;     :major-modes (append '(python-mode) lsp-python-ms-extra-major-modes)
-;;     :remote? t
-;;     :server-id 'mspyls-remote
-;;     :priority 1
-;;     :initialization-options 'lsp-python-ms--extra-init-params
-;;     :notification-handlers (lsp-ht ("python/languageServerStarted" 'lsp-python-ms--language-server-started-callback)
-;;                                    ("telemetry/event" 'ignore)
-;;                                    ("python/reportProgress" 'lsp-python-ms--report-progress-callback)
-;;                                    ("python/beginProgress" 'lsp-python-ms--begin-progress-callback)
-;;                                    ("python/endProgress" 'lsp-python-ms--end-progress-callback))
-;;     :initialized-fn (lambda (workspace)
-;;                       (with-lsp-workspace workspace
-;;                         (lsp--set-configuration (lsp-configuration-section "python"))))
-;;     ;; :download-server-fn (lambda (client callback error-callback update?)
-;;     ;;                       (when lsp-python-ms-auto-install-server
-;;     ;;                         (lsp-python-ms--install-server client callback error-callback update?)))
-;;     ))
+  ;;   (lsp-register-client
+  ;;    (make-lsp-client
+  ;;     :new-connection (lsp-tramp-connection "Microsoft.Python.LanguageServer")
+  ;;     :major-modes (append '(python-mode) lsp-python-ms-extra-major-modes)
+  ;;     :remote? t
+  ;;     :server-id 'mspyls-remote
+  ;;     :priority 1
+  ;;     :initialization-options 'lsp-python-ms--extra-init-params
+  ;;     :notification-handlers (lsp-ht ("python/languageServerStarted" 'lsp-python-ms--language-server-started-callback)
+  ;;                                    ("telemetry/event" 'ignore)
+  ;;                                    ("python/reportProgress" 'lsp-python-ms--report-progress-callback)
+  ;;                                    ("python/beginProgress" 'lsp-python-ms--begin-progress-callback)
+  ;;                                    ("python/endProgress" 'lsp-python-ms--end-progress-callback))
+  ;;     :initialized-fn (lambda (workspace)
+  ;;                       (with-lsp-workspace workspace
+  ;;                         (lsp--set-configuration (lsp-configuration-section "python"))))
+  ;;     ;; :download-server-fn (lambda (client callback error-callback update?)
+  ;;     ;;                       (when lsp-python-ms-auto-install-server
+  ;;     ;;                         (lsp-python-ms--install-server client callback error-callback update?)))
+  ;;     ))
   )
 
 (use-package! life
   :config
   (setq life-default-sleeptime 0.1)
   (setq life-preferred-pattern '(" @@"
-                                  "@@ "
-                                  " @ "))
+                                 "@@ "
+                                 " @ "))
   (defun life-insert-random-pattern ()
     (insert-rectangle
      (if (boundp 'life-preferred-pattern)
@@ -1151,8 +1245,6 @@ generations (this defaults to 1)."
             (shell-command-on-region
              b e "codex.py" standard-output nil))))
 
-(use-package! citeproc)
-
 (defun my/center (width)
   (interactive "nBuffer width: ")
   (let* ((adj          (- (window-text-width)
@@ -1164,4 +1256,9 @@ generations (this defaults to 1)."
     (setq right-margin-width (- total-margin left-margin-width)))
   (set-window-buffer (selected-window) (current-buffer)))
 
+
+(map! :map evil-window-map
+      "SPC" #'centered-window-mode)
 (centered-window-mode)
+
+(use-package! request)

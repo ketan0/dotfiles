@@ -10,6 +10,7 @@ emacs.d/transient/
 /emacs.d/request/
 /emacs.d/thumbs/
 *.elc
+.ipynb_checkpoints/
 /emacs.d/games/
 .secrets
 doom.d/ketan0-secrets.el

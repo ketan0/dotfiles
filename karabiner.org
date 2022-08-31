@@ -1,9 +1,6 @@
 #+TITLE: <~~karabiner config~~>
 #+AUTHOR: Ketan Agrawal
 #+BABEL: :cache yes
-#+LATEX_HEADER: \usepackage{parskip}
-#+LATEX_HEADER: \usepackage{inconsolata}
-#+LATEX_HEADER: \usepackage[utf8]{inputenc}
 #+PROPERTY: header-args :tangle ~/.dotfiles/karabiner.edn
 Created by Ketan Agrawal
 
@@ -42,7 +39,6 @@ need to prefix C T O S F with ! or #
 :END:
 #+begin_src clojure
 {;;beginning bracket for whole data structure -- don't delete!
-
  :profiles {
             :Ketan {
                     :default true
@@ -76,6 +72,7 @@ need to prefix C T O S F with ! or #
             :wallpaper "osascript -e 'tell application \"Finder\" to set desktop picture to POSIX file \"%s\"'"
             :elisp "/opt/homebrew/Cellar/emacs-mac/emacs-28.1-mac-9.0/bin/emacsclient --eval '(progn (select-frame-set-input-focus (selected-frame))%s)'"
             :yabai "/opt/homebrew/bin/yabai -m %s"
+            :tmux "/opt/homebrew/bin/tmux %s"
             } ;; templates
 
 #+end_src
@@ -117,8 +114,7 @@ need to prefix C T O S F with ! or #
 
 #+end_src
 
-* Main
-** begin main
+* begin main
 :PROPERTIES:
 :ID:       f40c5408-e269-411c-b02a-a2054e452ed3
 :END:
@@ -127,7 +123,7 @@ need to prefix C T O S F with ! or #
         :des "see karabiner.org for documentation.",
         :rules [
 #+end_src
-** right cmd/option => previous app
+* right cmd/option => previous app
 :PROPERTIES:
 :ID:       8a5eb4c8-1434-4c3e-83c1-3325061d5d78
 :END:
@@ -136,15 +132,18 @@ Switch to the previous application with right command/option -- right command hi
 [:right_command :right_command nil {:alone [:elisp "(set-transient-map doom-leader-map)"]}]
 [:right_option :right_option nil {:alone [:km "Previous Application"]}]
 [:!SCm [:km "unminimize"]]
+;; shift + up/down arrows = PageUp/PageDown
+[:!Sup_arrow :page_up]
+[:!Sdown_arrow :page_down]
 #+end_src
-** caps lock alone = escape, with other keys = ctrl
+* caps lock alone = escape, with other keys = ctrl
 :PROPERTIES:
 :ID:       030d326c-05a7-46c3-8da7-9cf3662fa8f6
 :END:
 #+begin_src clojure
 [:##caps_lock :left_control nil {:alone :escape}]
 #+end_src
-** function keys
+* function keys
 #+begin_src apples :tangle ~/.dotfiles/decrease_music_volume.scpt
 tell application "Spotify"
     set vol to sound volume
@@ -183,7 +182,7 @@ In Karabiner-Elements.app, I've checked the box "Use all F1, F2, etc. keys as st
 [:!Sf11  "osascript ~/.dotfiles/decrease_music_volume.scpt"]
 [:!Sf12 "osascript ~/.dotfiles/increase_music_volume.scpt"]
 #+end_src
-** yabai-move-mode (tab + w + {hjkl})
+* yabai-move-mode (tab + w + {hjkl})
 :PROPERTIES:
 :ID:       3462dbc5-e696-41ba-9ff4-c8b693f09017
 :END:
@@ -210,7 +209,7 @@ Move the current window directionally in the yabai tiling setup.
 [:s [:yabai "window --toggle split"]]
 #+end_src
 
-** yabai-focus-mode (tab + f + {hjkl})
+* yabai-focus-mode (tab + f + {hjkl})
 :PROPERTIES:
 :ID:       7da7aa7e-0111-4717-84ea-a58ee9b6741d
 :END:
@@ -225,7 +224,7 @@ Move focus to the left/top/bottom/right of the current window.
 [:semicolon [:yabai "space --focus next"]]
 #+end_src
 
-** yabai-display-mode (currently unused)
+* yabai-display-mode (currently unused)
 :PROPERTIES:
 :ID:       8ccd4df9-2f31-459c-8bea-2f6ea5649e5a
 :END:
@@ -234,7 +233,7 @@ Move focus to the left/top/bottom/right of the current window.
 [:h [:yabai "display --focus prev"]]
 [:l [:yabai "display --focus next"]]
 #+end_src
-** yabai-adjust-mode (tab + d + {hl})
+* yabai-adjust-mode (tab + d + {hl})
 :PROPERTIES:
 :ID:       7d38a8d6-813e-417b-898e-0d023f996dca
 :END:
@@ -246,7 +245,7 @@ Move focus to the left/top/bottom/right of the current window.
 [:l [:yabai "window --ratio rel:0.05"]]
 #+end_src
 
-** chrome-history-mode (tab + g + {hl})
+* chrome-history-mode (tab + g + {hl})
 :PROPERTIES:
 :ID:       3954c336-fc50-49d1-a7a3-9e78eed760dd
 :END:
@@ -256,7 +255,7 @@ Move backward/forward in Chrome history.
 [:h :!Copen_bracket]
 [:l :!Cclose_bracket]
 #+end_src
-** chrome-movement-mode (tab + t + {hl})
+* chrome-movement-mode (tab + t + {hl})
 :PROPERTIES:
 :ID:       957c4af0-e25f-4889-a062-4aec0aadac7f
 :END:
@@ -266,7 +265,7 @@ Move to the tab left/right of the current tab.
 [:h :!TStab]
 [:l :!Ttab]
 #+end_src
-** chrome-rearrange-tab-mode (tab + r + {hl})
+* chrome-rearrange-tab-mode (tab + r + {hl})
 :PROPERTIES:
 :ID:       ce23046b-7c9c-47a5-ba39-ac951d43e157
 :END:
@@ -276,7 +275,7 @@ Move current tab left/right. Need [[https://chrome.google.com/webstore/detail/re
 [:h :!TSleft_arrow]
 [:l :!TSright_arrow]
 #+end_src
-** tab-mode (tab)
+* tab-mode (tab)
 :PROPERTIES:
 :ID:       8ba2437c-ba0d-4bc6-983e-bb5dbf026e95
 :END:
@@ -299,14 +298,16 @@ end tell
 [:comma [:km "Open Messenger" "hide"]]
 [:3 "osascript ~/.dotfiles/toggle_dark_mode.scpt"]
 [:4 [:km "Open Finder"]]
-[:a [:km "Open Music" "hide"]]
-[:x [:km "Open Chrome" "hide"]]
+[:a ["open /Applications/zoom.us.app" :!SCa]]
+;; [:c [:km "Open Chrome" "hide"]]
 [:c [:km "Open Safari" "hide"]]
+[:x [:km "Open Safari" "hide"]]
 [:k [:km "Open Keyboard Maestro" "hide"]]
 [:e [:km "Open Emacs" "hide"]]
 [:i [:km "Open iTerm" "hide"]]
 [:m [:km "Open Messages" "hide"]]
 [:s [:km "Open Spotify" "hide"]]
+[:t [:km "Open Tidal" "hide"]]
 ;; [:n [:km "Open Neo4j" "hide"]]
 [:v [:km "Open Zoom" "hide"]]
 ;; [:q [:km "Open Qutebrowser"]]
@@ -314,7 +315,7 @@ end tell
 ;; [:w [:km "Open Word"]]
 
 #+end_src
-** q-key-mode (q)
+* q-key-mode (q)
 :PROPERTIES:
 :ID:       641cd7e8-71f4-4911-ac7b-85685593a9df
 :END:
@@ -322,9 +323,11 @@ end tell
 :q-key-mode
 [:grave_accent_and_tilde [:km "Open Stickies"]]
 [:a [:km "Open Music"]]
-[:x [:km "Open Chrome"]]
-[:s [:km "Open Spotify"]]
+;; [:c [:km "Open Chrome"]]
 [:c [:km "Open Safari"]]
+[:x [:km "Open Safari"]]
+[:s [:km "Open Spotify"]]
+[:t [:km "Open Tidal"]]
 [:k [:km "Open Keyboard Maestro"]]
 [:e [:km "Open Emacs"]]
 [:i [:km "Open iTerm"]]
@@ -332,8 +335,9 @@ end tell
 [:comma [:km "Open Messenger"]]
 [:n [:km "Open Notes"]]
 [:v [:km "Open Zoom"]]
+[:w [:km "Open Stickies"]]
 #+end_src
-** x-key-mode (x)
+* x-key-mode (x)
 :PROPERTIES:
 :ID:       3f159d2c-587f-4cb0-b305-a1beb3aed923
 :END:
@@ -344,6 +348,22 @@ const currentTab = Application('Safari').windows[0].currentTab
 const url = currentTab.url()
 const name = currentTab.name()
 app.openLocation(`org-protocol://roam-ref?template=r&ref=${encodeURIComponent(url)}&title=${encodeURIComponent(name)}`)
+#+end_src
+
+#+begin_src apples :tangle ~/.dotfiles/copy_topmost_safari_url.scpt
+tell application "Safari"
+    set theURL to URL of current tab of window 1
+    set the clipboard to theURL
+end tell
+#+end_src
+
+This one doesn't seem to keystroke things correctly in Emacs...e.g. the colon in the URL is typed as a semicolon...
+#+begin_src apples :tangle ~/.dotfiles/copy_paste_topmost_safari_url.scpt
+tell application "Safari"
+    set theURL to URL of current tab of window 1
+    set the clipboard to theURL
+    tell application "System Events" to keystroke (the clipboard as text)
+end tell
 #+end_src
 
 #+begin_src clojure
@@ -359,8 +379,13 @@ app.openLocation(`org-protocol://roam-ref?template=r&ref=${encodeURIComponent(ur
 [:spacebar [:elisp "(+org-capture/open-frame)"]]
 [:r [:elisp "(org-roam-node-random)"]]
 [:j [:elisp "(org-journal-new-entry nil)"]]
+[:h [:!S4 :h :spacebar :delete_or_backspace]]
+[:l [:!S4 :l :spacebar :delete_or_backspace]]
+[:u "osascript ~/.dotfiles/copy_topmost_safari_url.scpt"]
+[:v "osascript ~/.dotfiles/copy_paste_topmost_safari_url.scpt"]
+[:z [:!S4 :z :spacebar :delete_or_backspace]]
 #+end_src
-** tilde-mode
+* tilde-mode
 :PROPERTIES:
 :ID:       7a27feb4-076c-43ee-abfd-3add04f4f472
 :END:
@@ -405,6 +430,8 @@ end setDoNoDisturbTo
 
 #+begin_src clojure
 :tilde-mode
+;; switch to profile with default keyboard settings (e.g. if someone else using my computer)
+[:escape "'/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli' --select-profile 'Default keyboard'"]
 [:d "osascript ~/.dotfiles/toggle_dnd.scpt"]
 [:f [:openhide "focus://focus?minutes=60"]]
 [:t [:openhide "focus://toggle"]]
@@ -412,7 +439,7 @@ end setDoNoDisturbTo
 [:comma [:open "focus://preferences"]]
 #+end_src
 
-** comma-mode
+* comma-mode
 :PROPERTIES:
 :ID:       2f839e85-533a-4052-96e8-10c776382f79
 :END:
@@ -423,7 +450,6 @@ Open [[https://chrome.google.com/webstore/detail/history-trends-unlimited/pnmchf
 tell application "Google Chrome" to open location "chrome-extension://pnmchffiealhkdloeffcdnbgdnedheme/search.html"
 #+end_src
 
-Open a URL, but only if it's not already a tab. If it's a tab, then go to that tab.
 Check my calendar; if there's an event with a zoom link, open the zoom link.
 #+begin_src apples :tangle ~/.dotfiles/open_current_zoom_link.scpt
 use script "CalendarLib EC" version "1.1.5"
@@ -478,8 +504,6 @@ else
 end if
 #+end_src
 
-#+RESULTS:
-
 I really like Safari, but sometimes need to use Chrome for various extensions etc. Solution: have Safari => Chrome shortcut.
 #+begin_src apples :tangle ~/.dotfiles/open_in_chrome.scpt
 tell application "Safari"
@@ -497,21 +521,33 @@ tell application "Safari"
 end tell
 #+end_src
 
+#+begin_src apples :tangle ~/.dotfiles/download_video_chrome.scpt
+tell application "Google Chrome"
+    set theURL to URL of active tab of first window
+    display notification "/opt/homebrew/bin/youtube-dl -o \"~/Downloads/%(title)s.%(ext)s\" '" & theURL & "'"
+    do shell script "/opt/homebrew/bin/youtube-dl -o \"~/Downloads/%(title)s.%(ext)s\" '" & theURL & "'"
+end tell
+#+end_src
+
 My [[https://github.com/yqrashawn/GokuRakuJoudo/blob/master/tutorial.md#basic7][predefined template]] ~:smarturl~ uses the following Applescript to either: 1) navigate to the tab that contains the URL if it exists already 2) open the URL if not.
+TODO: fix this. was originally designed to work on Safari, but now I switched back to Chrome
 #+begin_src apples :tangle ~/.dotfiles/open_url_smart.scpt
 on run (clp)
-    -- given "block" argument on command line, block certain sites from 9am to 9pm
+    -- given "block" argument on command line, block certain sites from 9am to 8pm
     if clp's length is 2 and clp's item 2 = "block"
         tell (current date) to set currentHour to (its hours)
-        if currentHour >= 9 and currentHour < 21
+        if currentHour >= 9 and currentHour < 20
             display notification "Blocked!"
             return
         end if
     end if
+    -- tell application "Google Chrome"
     tell application "Safari"
-        repeat with w in windows
+        set window_list to every window
+        repeat with w in window_list
             set i to 1
-            repeat with t in tabs of w
+            set tab_list to every tab of w
+            repeat with t in tab_list
                 if URL of t starts with clp's item 1 then
                     set current tab of w to t
                     -- set active tab index of w to i
@@ -521,6 +557,7 @@ on run (clp)
                     -- delay 0.05
                     -- do shell script "open -a Safari"
                     tell application "System Events"
+                        -- perform action "AXRaise" of front window of application process "Google Chrome"
                         perform action "AXRaise" of front window of application process "Safari"
                     end tell
                     activate
@@ -535,6 +572,13 @@ on run (clp)
 end run
 #+end_src
 
+Activate hypothesis bookmarklet in Safari.
+#+begin_src apples :tangle ~/.dotfiles/activate_hypothesis.scpt
+tell application "Safari"
+    do JavaScript "(function(){window.hypothesisConfig=function(){return{showHighlights:true,appType:'bookmarklet'};};var d=document,s=d.createElement('script');s.setAttribute('src','https://hypothes.is/embed.js');d.body.appendChild(s)})();" in current tab of first window
+end tell
+#+end_src
+
 #+begin_src clojure
 :comma-mode
 [:1 [:withsecretsmarturl "$PSYCH_LECTURE_LINK"]]
@@ -544,42 +588,49 @@ end run
 [:a [:elisp "(setq mac-use-title-bar t)(setq ketan0/old-frame (selected-frame)) (make-frame)(delete-frame ketan0/old-frame)"]]
 [:b "osascript ~/.dotfiles/open_in_chrome.scpt"]
 [:c [:open "/Users/ketanagrawal/garden-simple/org/private/capture.org"]]
-[:d [:open "https://drive.google.com/drive/my-drive"]]
+[:d [:smarturl "https://drive.google.com/"]]
 [:o [:open "http://doc.new"]] ;; new google doc
 [:e [:open "/Users/ketanagrawal/.dotfiles/doom.d/config.el"]]
 [:f [:smarturl "https://www.keyhero.com/free-typing-test/" "block"]]
 ;; [:h [:km "Github => Emacs"]]
-[:h "osascript /Users/ketanagrawal/.dotfiles/open_chrome_history.scpt"]
+;; [:h "osascript /Users/ketanagrawal/.dotfiles/open_chrome_history.scpt"]
+[:h "osascript /Users/ketanagrawal/.dotfiles/activate_hypothesis.scpt"]
 
 [:i [:smarturl "https://www.keyhero.com/typing-instant-death/" "block"]]
 [:j [:smarturl "http://localhost:8888"]] ;; the port I usually run JupyterLab on
-[:k [:smarturl "https://laboratory.ketan.me"]]
 [:l "osascript /Users/ketanagrawal/.dotfiles/open_current_zoom_link.scpt"]
-[:m [:smarturl "https://outlook.office.com/" "block"]]
-[:n [:openwith "Google Chrome" "https://www.netflix.com/title/80199128"]]
+[:m [:smarturl "https://mail.google.com/"]]
+;; [:n [:openwith "Google Chrome" "https://www.netflix.com/title/80199128"]]
+[:n [:smarturl "https://nebula.ketan.me"]]
+[:t "osascript /Users/ketanagrawal/.dotfiles/download_video_chrome.scpt"]
 [:u "osascript /Users/ketanagrawal/.dotfiles/download_video.scpt"]
 [:p [:withsecretsmarturl "$PAC_PROGRESS_DOC_LINK"]]
 [:q [:withsecretsmarturl "$HCI_PROGRESS_DOC_LINK"]]
 [:t [:smarturl "https://twitter.com/i/bookmarks" "block"]]
 [:r [:open "/Users/ketanagrawal/garden-simple/org/private/todos.org"]]
 [:s [:open "/Users/ketanagrawal/.dotfiles/karabiner.org"]]
-;; [:v [:open "https://healthy.verily.com/"]] ;; covid testing
 [:v [:open "https://home.color.com/sign-in?next=%2Fcovid%2Factivation"]]
 ;; [:v [:openwith "Emacs" "/Users/ketanagrawal/Dropbox/Apps/GoodNotes 5/GoodNotes/vision.pdf"]]
 [:y [:openwith "Emacs" "/Users/ketanagrawal/.dotfiles/yabairc"]]
 [:z [:withsecret "open $MY_ZOOM_LINK"]]
 #+end_src
-** period-mode
+* period-mode
 Access various tag-specific Org Agendas.
 #+begin_src clojure
 :period-mode
 [:t [:elisp "(ketan0/area-agenda \"tinker\")"]]
 [:a [:elisp "(ketan0/area-agenda \"academic\")"]]
 [:s [:elisp "(ketan0/area-agenda \"social\")"]]
+;; start JupyterLab server in detached tmux pane
+[:j [:tmux "new-session -d -s jupyter 'cd ~ && /Users/ketanagrawal/miniconda3/bin/jupyter-lab'"]]
+;; start development server for Digital Nebula in detached tmux pane
+;; TODO: this is not working
+[:n [:tmux "new-session -d -s nebula '~/.nvm/versions/node/v14.18.2/bin/live-server --port=3000 ~/garden-simple/html'"]]
 [:k [:elisp "(ketan0/area-agenda \"knowledge\")"]]
 [:p [:elisp "(ketan0/area-agenda \"projects\")"]]
+[:r [:elisp "(ketan0/area-agenda \"research\")"]]
 #+end_src
-** wallpaper-mode
+* wallpaper-mode
 :PROPERTIES:
 :ID:       0a217b5a-4bca-46bf-9482-affde5df2652
 :END:
@@ -591,7 +642,7 @@ Access various tag-specific Org Agendas.
 [:y [:wallpaper "/Users/ketanagrawal/Desktop/wallpapers/background_paint_stains_light_76087_1440x900.jpg"]]
 
 #+end_src
-** vim-mode (z)
+* vim-mode (z)
 :PROPERTIES:
 :ID:       9c2ae9d6-f08b-4538-ab1a-7674f1c7d2c7
 :END:
@@ -605,7 +656,7 @@ Access various tag-specific Org Agendas.
 [:##w :!Oright_arrow]
 [:delete_or_backspace :!Odelete_or_backspace]
 #+end_src
-** end main
+* end main
 :PROPERTIES:
 :ID:       6d6e59dc-0a07-462f-bcf2-0da725ebb0a6
 :END:

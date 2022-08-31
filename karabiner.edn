@@ -1,5 +1,4 @@
 {;;beginning bracket for whole data structure -- don't delete!
-
  :profiles {
             :Ketan {
                     :default true
@@ -27,6 +26,7 @@
             :wallpaper "osascript -e 'tell application \"Finder\" to set desktop picture to POSIX file \"%s\"'"
             :elisp "/opt/homebrew/Cellar/emacs-mac/emacs-28.1-mac-9.0/bin/emacsclient --eval '(progn (select-frame-set-input-focus (selected-frame))%s)'"
             :yabai "/opt/homebrew/bin/yabai -m %s"
+            :tmux "/opt/homebrew/bin/tmux %s"
             } ;; templates
 
 :layers {
@@ -66,6 +66,9 @@
 [:right_command :right_command nil {:alone [:elisp "(set-transient-map doom-leader-map)"]}]
 [:right_option :right_option nil {:alone [:km "Previous Application"]}]
 [:!SCm [:km "unminimize"]]
+;; shift + up/down arrows = PageUp/PageDown
+[:!Sup_arrow :page_up]
+[:!Sdown_arrow :page_down]
 
 [:##caps_lock :left_control nil {:alone :escape}]
 
@@ -139,14 +142,16 @@
 [:comma [:km "Open Messenger" "hide"]]
 [:3 "osascript ~/.dotfiles/toggle_dark_mode.scpt"]
 [:4 [:km "Open Finder"]]
-[:a [:km "Open Music" "hide"]]
-[:x [:km "Open Chrome" "hide"]]
+[:a ["open /Applications/zoom.us.app" :!SCa]]
+;; [:c [:km "Open Chrome" "hide"]]
 [:c [:km "Open Safari" "hide"]]
+[:x [:km "Open Safari" "hide"]]
 [:k [:km "Open Keyboard Maestro" "hide"]]
 [:e [:km "Open Emacs" "hide"]]
 [:i [:km "Open iTerm" "hide"]]
 [:m [:km "Open Messages" "hide"]]
 [:s [:km "Open Spotify" "hide"]]
+[:t [:km "Open Tidal" "hide"]]
 ;; [:n [:km "Open Neo4j" "hide"]]
 [:v [:km "Open Zoom" "hide"]]
 ;; [:q [:km "Open Qutebrowser"]]
@@ -156,9 +161,11 @@
 :q-key-mode
 [:grave_accent_and_tilde [:km "Open Stickies"]]
 [:a [:km "Open Music"]]
-[:x [:km "Open Chrome"]]
-[:s [:km "Open Spotify"]]
+;; [:c [:km "Open Chrome"]]
 [:c [:km "Open Safari"]]
+[:x [:km "Open Safari"]]
+[:s [:km "Open Spotify"]]
+[:t [:km "Open Tidal"]]
 [:k [:km "Open Keyboard Maestro"]]
 [:e [:km "Open Emacs"]]
 [:i [:km "Open iTerm"]]
@@ -166,6 +173,7 @@
 [:comma [:km "Open Messenger"]]
 [:n [:km "Open Notes"]]
 [:v [:km "Open Zoom"]]
+[:w [:km "Open Stickies"]]
 
 :x-key-mode
 [:a [:elisp "(ketan0/new-agenda)"]]
@@ -179,8 +187,15 @@
 [:spacebar [:elisp "(+org-capture/open-frame)"]]
 [:r [:elisp "(org-roam-node-random)"]]
 [:j [:elisp "(org-journal-new-entry nil)"]]
+[:h [:!S4 :h :spacebar :delete_or_backspace]]
+[:l [:!S4 :l :spacebar :delete_or_backspace]]
+[:u "osascript ~/.dotfiles/copy_topmost_safari_url.scpt"]
+[:v "osascript ~/.dotfiles/copy_paste_topmost_safari_url.scpt"]
+[:z [:!S4 :z :spacebar :delete_or_backspace]]
 
 :tilde-mode
+;; switch to profile with default keyboard settings (e.g. if someone else using my computer)
+[:escape "'/Library/Application Support/org.pqrs/Karabiner-Elements/bin/karabiner_cli' --select-profile 'Default keyboard'"]
 [:d "osascript ~/.dotfiles/toggle_dnd.scpt"]
 [:f [:openhide "focus://focus?minutes=60"]]
 [:t [:openhide "focus://toggle"]]
@@ -195,26 +210,27 @@
 [:a [:elisp "(setq mac-use-title-bar t)(setq ketan0/old-frame (selected-frame)) (make-frame)(delete-frame ketan0/old-frame)"]]
 [:b "osascript ~/.dotfiles/open_in_chrome.scpt"]
 [:c [:open "/Users/ketanagrawal/garden-simple/org/private/capture.org"]]
-[:d [:open "https://drive.google.com/drive/my-drive"]]
+[:d [:smarturl "https://drive.google.com/"]]
 [:o [:open "http://doc.new"]] ;; new google doc
 [:e [:open "/Users/ketanagrawal/.dotfiles/doom.d/config.el"]]
 [:f [:smarturl "https://www.keyhero.com/free-typing-test/" "block"]]
 ;; [:h [:km "Github => Emacs"]]
-[:h "osascript /Users/ketanagrawal/.dotfiles/open_chrome_history.scpt"]
+;; [:h "osascript /Users/ketanagrawal/.dotfiles/open_chrome_history.scpt"]
+[:h "osascript /Users/ketanagrawal/.dotfiles/activate_hypothesis.scpt"]
 
 [:i [:smarturl "https://www.keyhero.com/typing-instant-death/" "block"]]
 [:j [:smarturl "http://localhost:8888"]] ;; the port I usually run JupyterLab on
-[:k [:smarturl "https://laboratory.ketan.me"]]
 [:l "osascript /Users/ketanagrawal/.dotfiles/open_current_zoom_link.scpt"]
-[:m [:smarturl "https://outlook.office.com/" "block"]]
-[:n [:openwith "Google Chrome" "https://www.netflix.com/title/80199128"]]
+[:m [:smarturl "https://mail.google.com/"]]
+;; [:n [:openwith "Google Chrome" "https://www.netflix.com/title/80199128"]]
+[:n [:smarturl "https://nebula.ketan.me"]]
+[:t "osascript /Users/ketanagrawal/.dotfiles/download_video_chrome.scpt"]
 [:u "osascript /Users/ketanagrawal/.dotfiles/download_video.scpt"]
 [:p [:withsecretsmarturl "$PAC_PROGRESS_DOC_LINK"]]
 [:q [:withsecretsmarturl "$HCI_PROGRESS_DOC_LINK"]]
 [:t [:smarturl "https://twitter.com/i/bookmarks" "block"]]
 [:r [:open "/Users/ketanagrawal/garden-simple/org/private/todos.org"]]
 [:s [:open "/Users/ketanagrawal/.dotfiles/karabiner.org"]]
-;; [:v [:open "https://healthy.verily.com/"]] ;; covid testing
 [:v [:open "https://home.color.com/sign-in?next=%2Fcovid%2Factivation"]]
 ;; [:v [:openwith "Emacs" "/Users/ketanagrawal/Dropbox/Apps/GoodNotes 5/GoodNotes/vision.pdf"]]
 [:y [:openwith "Emacs" "/Users/ketanagrawal/.dotfiles/yabairc"]]
@@ -224,8 +240,14 @@
 [:t [:elisp "(ketan0/area-agenda \"tinker\")"]]
 [:a [:elisp "(ketan0/area-agenda \"academic\")"]]
 [:s [:elisp "(ketan0/area-agenda \"social\")"]]
+;; start JupyterLab server in detached tmux pane
+[:j [:tmux "new-session -d -s jupyter 'cd ~ && /Users/ketanagrawal/miniconda3/bin/jupyter-lab'"]]
+;; start development server for Digital Nebula in detached tmux pane
+;; TODO: this is not working
+[:n [:tmux "new-session -d -s nebula '~/.nvm/versions/node/v14.18.2/bin/live-server --port=3000 ~/garden-simple/html'"]]
 [:k [:elisp "(ketan0/area-agenda \"knowledge\")"]]
 [:p [:elisp "(ketan0/area-agenda \"projects\")"]]
+[:r [:elisp "(ketan0/area-agenda \"research\")"]]
 
 :wallpaper-mode
 [:g [:wallpaper "/System/Library/Desktop Pictures/Solar Gradients.heic"]]

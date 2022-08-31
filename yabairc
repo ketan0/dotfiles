@@ -6,19 +6,22 @@ yabai -m config layout bsp
 # always float these apps:
 yabai -m rule --add app="^System Preferences$" manage=off
 yabai -m rule --add app="^Stickies$" manage=off
-yabai -m rule --add app="^Messenger$" manage=off
 yabai -m rule --add app="^Finder$" manage=off
 yabai -m rule --add app="^Spotify$" manage=off
+yabai -m rule --add app="^Messages$" manage=off
+yabai -m rule --add app="^Messenger$" manage=off
 yabai -m rule --add app="^Music$" manage=off
 yabai -m rule --add app="^Digital Color Meter$" manage=off
+yabai -m rule --add app="^Activity Monitor$" manage=off
+yabai -m rule --add app="^TIDAL$" manage=off
 yabai -m rule --add title="^About This Mac$" manage=off
 
 # float hotkey iTerm window
 yabai -m rule --add title="^Hotkey Window" manage=off
-# float capture windows
+# float org-capture windows
 yabai -m rule --add title="^doom-capture$" manage=off
 yabai -m rule --add title="^CAPTURE-.*\.org – Doom Emacs" manage=off
-# float calendar popup window
+# float the little popup event detail windows in Calendar
 yabai -m rule --add title="^$" app="^Calendar$" manage=off
 
 # make emacs slightly translucent (cuz it looks cool)
@@ -57,11 +60,11 @@ yabai -m config normal_window_opacity 0.95
 
 #status bar settings
 yabai -m config status_bar                   off #for now I wanna go minimalist
-yabai -m config status_bar_text_font         "Fira Code:Bold:12.0"
-yabai -m config status_bar_icon_font         "Font Awesome 5 Pro:Solid:12.0"
-yabai -m config status_bar_background_color  0xff202020
-yabai -m config status_bar_foreground_color  0xffa8a8a8
-yabai -m config status_bar_space_icon_strip          
-yabai -m config status_bar_power_icon_strip   
-yabai -m config status_bar_space_icon        
-yabai -m config status_bar_clock_icon        
+# yabai -m config status_bar_text_font         "Fira Code:Bold:12.0"
+# yabai -m config status_bar_icon_font         "Font Awesome 5 Pro:Solid:12.0"
+# yabai -m config status_bar_background_color  0xff202020
+# yabai -m config status_bar_foreground_color  0xffa8a8a8
+# yabai -m config status_bar_space_icon_strip          
+# yabai -m config status_bar_power_icon_strip   
+# yabai -m config status_bar_space_icon        
+# yabai -m config status_bar_clock_icon        
