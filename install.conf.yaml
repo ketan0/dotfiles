@@ -12,3 +12,5 @@
     ~/.zshrc:
 - shell:
     - [git submodule update --init --recursive, Installing submodules]
+    - [defaults write -g KeyRepeat -int 1 && defaults write -g InitialKeyRepeat -int 10, changing key repeat speed]
+    # TODO: installing emacs + doom
