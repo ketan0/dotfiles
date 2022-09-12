@@ -61,10 +61,11 @@ need to prefix C T O S F with ! or #
 #+begin_src clojure
 :templates {
             :km "osascript -e 'tell application \"Keyboard Maestro Engine\" to do script \"%s\" with parameter \"%s\"'"
-            ;; Removed the quotes around %s because it makes it not able to open files too
+            ;; Remod the quotes around %s because it makes it not able to open files too
             :open "open '%s'"
             :smarturl "osascript ~/.dotfiles/open_url_smart.scpt '%s' %s"
             :openwith "open -a '%s' '%s'"
+            :app "open -a '%s'"
             :openhide "open '%s' -gj"
             :withsecret "source ~/.dotfiles/.secrets && %s"
             :withsecretsmarturl "source ~/.dotfiles/.secrets && osascript ~/.dotfiles/open_url_smart.scpt %s"
@@ -94,7 +95,7 @@ need to prefix C T O S F with ! or #
 
          :yabai-move-mode {:key :w :condi :tab-mode}
          :yabai-focus-mode {:key :f :condi :tab-mode}
-         ;; :yabai-display-mode {:key :d :condi :tab-mode}
+         :yabai-display-mode {:key :s :condi :tab-mode}
          :yabai-adjust-mode {:key :d :condi :tab-mode}
          :chrome-movement-mode {:key :t :condi :tab-mode} ;;TODO make this work
          :chrome-history-mode {:key :g :condi :tab-mode} ;;TODO make this work
@@ -128,6 +129,29 @@ need to prefix C T O S F with ! or #
 :ID:       8a5eb4c8-1434-4c3e-83c1-3325061d5d78
 :END:
 Switch to the previous application with right command/option -- right command hides the current app, right option doesn't.
+
+#+begin_src apples :tangle ~/.dotfiles/only_current_app.scpt
+tell application "System Events"
+    set activeApp to name of application processes whose frontmost is true
+    set visibleApps to every process whose visible is true and name is not activeApp
+    repeat with theApp in visibleApps
+        set visible of theApp to false
+    end repeat
+end tell
+#+end_src
+
+# TODO: make this work
+#+begin_src apples :tangle ~/.dotfiles/hide_current_window.scpt
+tell application "System Events"
+    set frontApp to first application process whose frontmost is true
+    set frontAppName to name of frontApp
+    tell process frontAppName
+        set currentWindow to (1st window whose value of attribute "AXMain" is true)
+        set visible of currentWindow to false
+    end tell
+end tell
+#+end_src
+
 #+begin_src clojure
 [:right_command :right_command nil {:alone [:elisp "(set-transient-map doom-leader-map)"]}]
 [:right_option :right_option nil {:alone [:km "Previous Application"]}]
@@ -135,6 +159,17 @@ Switch to the previous application with right command/option -- right command hi
 ;; shift + up/down arrows = PageUp/PageDown
 [:!Sup_arrow :page_up]
 [:!Sdown_arrow :page_down]
+;; hide all other apps except current one
+[:!COh  "osascript ~/.dotfiles/only_current_app.scpt"]
+
+;; for Slack; navigating up/down between unread channels
+;; https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts
+;; TODO: for slack only - map C-o and C-i to cmd-[ and cmd-], respectively
+;; need to make a slack mode(?) or something for that
+[:!SOj :!SOdown_arrow]
+[:!SOk :!SOup_arrow]
+
+;; [:!Ch  "osascript ~/.dotfiles/hide_current_window.scpt"]
 #+end_src
 * caps lock alone = escape, with other keys = ctrl
 :PROPERTIES:
@@ -190,6 +225,7 @@ Move the current window directionally in the yabai tiling setup.
 #+begin_src clojure
 :yabai-move-mode
 [:c [:yabai "window --grid 16:10:3:1:4:12"]]
+[:f [:yabai "window --grid 16:10:3:2:4:12"]]
 [:h [:yabai "window --warp west"]]
 [:j [:yabai "window --warp south"]]
 [:k [:yabai "window --warp north"]]
@@ -206,7 +242,7 @@ Move the current window directionally in the yabai tiling setup.
 [:8 [:yabai "window --opacity 0.8"]]
 [:9 [:yabai "window --opacity 0.9"]]
 [:grave_accent_and_tilde [:yabai "window --opacity 1.0"]]
-[:s [:yabai "window --toggle split"]]
+[:e [:yabai "window --toggle split"]]
 #+end_src
 
 * yabai-focus-mode (tab + f + {hjkl})
@@ -224,14 +260,16 @@ Move focus to the left/top/bottom/right of the current window.
 [:semicolon [:yabai "space --focus next"]]
 #+end_src
 
-* yabai-display-mode (currently unused)
+* yabai-display-mode
 :PROPERTIES:
 :ID:       8ccd4df9-2f31-459c-8bea-2f6ea5649e5a
 :END:
 #+begin_src clojure
 :yabai-display-mode
-[:h [:yabai "display --focus prev"]]
-[:l [:yabai "display --focus next"]]
+[:h [:yabai "window --display prev && /opt/homebrew/bin/yabai -m display --focus prev"]]
+[:l [:yabai "window --display next && /opt/homebrew/bin/yabai -m display --focus next"]]
+;; [:h [:yabai "display --focus prev"]]
+;; [:l [:yabai "display --focus next"]]
 #+end_src
 * yabai-adjust-mode (tab + d + {hl})
 :PROPERTIES:
@@ -300,14 +338,17 @@ end tell
 ;; [:c [:km "Open Chrome" "hide"]]
 [:3 "osascript ~/.dotfiles/toggle_dark_mode.scpt"]
 [:a "open /System/Library/CoreServices/Finder.app"]
-[:c "open /Applications/Safari.app"]
+[:c "open /Applications/Google\\ Chrome.app"]
 [:x "open /Applications/Safari.app"]
 [:k "open /Applications/Keyboard\\ Maestro.app"]
-[:e "open /Applications/Emacs.app"]
-[:m "open /System/Applications/Messages.app"]
+[:e [:app 'Emacs']]
+[:m "open /Applications/Slack.app"]
+[:l "open /Applications/Linear.app"]
+[:n "open /Applications/Notion.app"]
 [:s "open /Applications/Spotify.app"]
 [:t "open /Applications/TIDAL.app"]
 [:v "open /Applications/zoom.us.app"]
+[:w "open /System/Applications/Stickies.app"]
 ;; [:n [:km "Open Neo4j" "hide"]]
 ;; [:q [:km "Open Qutebrowser"]]
 ;; [:x [:km "Open Xcode"]]
@@ -320,12 +361,15 @@ end tell
 :END:
 #+begin_src clojure
 :q-key-mode
-[:a "open /System/Library/CoreServices/Finder.app"]
-[:c "open /Applications/Safari.app"]
-[:x "open /Applications/Safari.app"]
-[:k "open /Applications/Keyboard\\ Maestro.app"]
-[:e "open /Applications/Emacs.app"]
-[:m "open /System/Applications/Messages.app"]
+[:a [:app 'Finder']]
+[:x "open -a 'Google Chrome'"]
+[:c "open /Applications/Google\\ Chrome.app"]
+;; [:x [:app 'Safari']]
+;; [:k "open /Applications/Keyboard\\ Maestro.app"]
+[:e [:app 'Emacs']]
+[:m "open /Applications/Slack.app"]
+[:l "open /Applications/Linear.app"]
+[:n "open /Applications/Notion.app"]
 [:s "open /Applications/Spotify.app"]
 [:t "open /Applications/TIDAL.app"]
 [:v "open /Applications/zoom.us.app"]
@@ -535,24 +579,24 @@ on run (clp)
             return
         end if
     end if
-    -- tell application "Google Chrome"
-    tell application "Safari"
+    tell application "Google Chrome"
+    -- tell application "Safari"
         set window_list to every window
         repeat with w in window_list
             set i to 1
             set tab_list to every tab of w
             repeat with t in tab_list
                 if URL of t starts with clp's item 1 then
-                    set current tab of w to t
-                    -- set active tab index of w to i
+                    -- set current tab of w to t
+                    set active tab index of w to i
                     tell w
                         set index to 1
                     end tell
                     -- delay 0.05
                     -- do shell script "open -a Safari"
                     tell application "System Events"
-                        -- perform action "AXRaise" of front window of application process "Google Chrome"
-                        perform action "AXRaise" of front window of application process "Safari"
+                        perform action "AXRaise" of front window of application process "Google Chrome"
+                        -- perform action "AXRaise" of front window of application process "Safari"
                     end tell
                     activate
                     return
@@ -581,19 +625,21 @@ end tell
 ;; (I use the --with-no-title-bars patch for emacs-mac, but sometimes I like the title bar)
 [:a [:elisp "(setq mac-use-title-bar t)(setq ketan0/old-frame (selected-frame)) (make-frame)(delete-frame ketan0/old-frame)"]]
 [:b "osascript ~/.dotfiles/open_in_chrome.scpt"]
-[:c [:open "/Users/ketanagrawal/garden-simple/org/private/capture.org"]]
 [:d [:smarturl "https://drive.google.com/"]]
 [:o [:open "http://doc.new"]] ;; new google doc
 [:e [:open "/Users/ketanagrawal/.dotfiles/doom.d/config.el"]]
 [:f [:smarturl "https://www.keyhero.com/free-typing-test/" "block"]]
+[:g [:withsecretsmarturl "$GITHUB_REPO_URL"]]
 ;; [:h [:km "Github => Emacs"]]
 ;; [:h "osascript /Users/ketanagrawal/.dotfiles/open_chrome_history.scpt"]
 [:h "osascript /Users/ketanagrawal/.dotfiles/activate_hypothesis.scpt"]
 
 [:i [:smarturl "https://www.keyhero.com/typing-instant-death/" "block"]]
 [:j [:smarturl "http://localhost:8888"]] ;; the port I usually run JupyterLab on
-[:l "osascript /Users/ketanagrawal/.dotfiles/open_current_zoom_link.scpt"]
+[:l [:smarturl "http://localhost:8080"]]
+;; [:l "osascript /Users/ketanagrawal/.dotfiles/open_current_zoom_link.scpt"]
 [:m [:smarturl "https://mail.google.com/"]]
+[:c [:smarturl "https://calendar.google.com/"]]
 ;; [:n [:openwith "Google Chrome" "https://www.netflix.com/title/80199128"]]
 [:n [:smarturl "https://nebula.ketan.me"]]
 [:t "osascript /Users/ketanagrawal/.dotfiles/download_video_chrome.scpt"]
@@ -606,7 +652,8 @@ end tell
 [:v [:open "https://home.color.com/sign-in?next=%2Fcovid%2Factivation"]]
 ;; [:v [:openwith "Emacs" "/Users/ketanagrawal/Dropbox/Apps/GoodNotes 5/GoodNotes/vision.pdf"]]
 [:y [:openwith "Emacs" "/Users/ketanagrawal/.dotfiles/yabairc"]]
-[:z [:withsecret "open $MY_ZOOM_LINK"]]
+;; [:z [:withsecret "open $MY_ZOOM_LINK"]]
+[:z [:openwith "Emacs" "/Users/ketanagrawal/.zshrc"]]
 #+end_src
 * period-mode
 Access various tag-specific Org Agendas.

@@ -41,6 +41,7 @@
 (package! org-fragtog)
 (package! hydra)
 (package! aio)
+(package! pyvenv)
 ;; (package! prettier)
 ;; (package! lsp-mode :recipe (:host github :repo "emacs-lsp/lsp-mode"))
 ;; Doom's packages are pinned to a specific commit and updated from release to

@@ -77,7 +77,7 @@ tell appearance preferences to return dark mode
 end tell\')\"")
    "true"))
 (defun ketan0/responsive-theme ()
-  (if (ketan0/dark-mode-active) 'doom-outrun-electric 'doom-solarized-light))
+  (if (ketan0/dark-mode-active) 'doom-ephemeral 'doom-ayu-light))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
@@ -118,6 +118,9 @@ end tell\')\"")
 (setq global-auto-revert-mode t)
 
 (setq enable-local-variables t)
+
+;; now can change compile-command on a per-directory basis
+(make-variable-buffer-local 'compile-command)
 
 (setq org-crypt-key "ketanjayagrawal@gmail.com")
 ;; GPG key to use for encryption
@@ -265,7 +268,7 @@ contextual information."
                     (format "<pre class=\"src src-%s\" data-language=\"%s\"%s>%s</pre>"
                             lang lang label code)))))))
   (require 'ox-html)
-  (load-file "~/garden-simple/publish-utils.el")
+  ;; (load-file "~/garden-simple/publish-utils.el")
 
   ;; export youtube links to html as iframes of the video
   (defvar yt-iframe-format
@@ -997,7 +1000,7 @@ see."
   (setq evil-snipe-scope 'buffer))
 
 ;; ;; secret stuff that I'm not publishing on github
-(load-file "~/.doom.d/ketan0-secrets.el")
+;; (load-file "~/.doom.d/ketan0-secrets.el")
 
 ;; ;; (use-package! elfeed
 ;; ;;   :config
@@ -1031,33 +1034,33 @@ see."
 ;; ;;           (aio-wait-for (call-interactively 'org-twitter-tweet-this-headline)))))
 ;; ;;     (add-hook 'org-capture-prepare-finalize-hook 'ketan0/org-twitter-finalize)))
 
-(use-package! counsel-spotify
-  :config
-  (setq counsel-spotify-client-id ketan0-secrets/spotify-client-id)
-  (setq counsel-spotify-client-secret ketan0-secrets/spotify-client-secret))
+;; (use-package! counsel-spotify
+;;   :config
+;;   (setq counsel-spotify-client-id ketan0-secrets/spotify-client-id)
+;;   (setq counsel-spotify-client-secret ketan0-secrets/spotify-client-secret))
 
-;; ;; (use-package! spotify
-;; ;;   :config
-;; ;;   (setq spotify-oauth2-client-id ketan0-secrets/spotify-client-id)
-;; ;;   (setq spotify-oauth2-client-secret ketan0-secrets/spotify-client-secret))
+;; ;; ;; (use-package! spotify
+;; ;; ;;   :config
+;; ;; ;;   (setq spotify-oauth2-client-id ketan0-secrets/spotify-client-id)
+;; ;; ;;   (setq spotify-oauth2-client-secret ketan0-secrets/spotify-client-secret))
 
 
-(setq ketan0/org-spotify-package-path "/Users/ketanagrawal/org-spotify")
-(use-package! org-spotify
-  :after org
-  :load-path ketan0/org-spotify-package-path
-  :config
-  (map! :map org-mode-map
-        :localleader
-        (:prefix ("S" . "Org Spotify")
-         :desc "Update playlist at point" "u" #'org-spotify-push-playlist-at-point
-         :desc "Insert Spotify track" "t" #'org-spotify-insert-track
-         :desc "Insert Spotify album" "a" #'org-spotify-insert-album
-         :desc "Insert Spotify artist" "r" #'org-spotify-insert-artist
-         :desc "Insert Spotify playlist" "p" #'org-spotify-insert-playlist))
-  (setq org-spotify-user-id ketan0-secrets/spotify-user-id)
-  (setq org-spotify-oauth2-client-id ketan0-secrets/spotify-client-id)
-  (setq org-spotify-oauth2-client-secret ketan0-secrets/spotify-client-secret))
+;; (setq ketan0/org-spotify-package-path "/Users/ketanagrawal/org-spotify")
+;; (use-package! org-spotify
+;;   :after org
+;;   :load-path ketan0/org-spotify-package-path
+;;   :config
+;;   (map! :map org-mode-map
+;;         :localleader
+;;         (:prefix ("S" . "Org Spotify")
+;;          :desc "Update playlist at point" "u" #'org-spotify-push-playlist-at-point
+;;          :desc "Insert Spotify track" "t" #'org-spotify-insert-track
+;;          :desc "Insert Spotify album" "a" #'org-spotify-insert-album
+;;          :desc "Insert Spotify artist" "r" #'org-spotify-insert-artist
+;;          :desc "Insert Spotify playlist" "p" #'org-spotify-insert-playlist))
+;;   (setq org-spotify-user-id ketan0-secrets/spotify-user-id)
+;;   (setq org-spotify-oauth2-client-id ketan0-secrets/spotify-client-id)
+;;   (setq org-spotify-oauth2-client-secret ketan0-secrets/spotify-client-secret))
 
 ;; ;; (use-package! gif-screencast
 ;; ;;   :config
@@ -1066,10 +1069,10 @@ see."
 ;; ;;   (setq gif-screencast-cropping-program "mogrify")
 ;; ;;   (setq gif-screencast-capture-format "ppm"))
 
-(use-package! conda
-  :config
-  (setq conda-anaconda-home "/Users/ketanagrawal/miniconda3")
-  (setq conda-env-home-directory "/Users/ketanagrawal/miniconda3"))
+;; (use-package! conda
+;;   :config
+;;   (setq conda-anaconda-home "/Users/ketanagrawal/miniconda3")
+;;   (setq conda-env-home-directory "/Users/ketanagrawal/miniconda3"))
 
 ;; (defun ketan0/parse-csv-file (file sep)
 ;;   "parse FILE representing a CSV table into a list of lists."
@@ -1107,18 +1110,48 @@ see."
 ;;         '(pdf-tools-handle-upgrades nil)) ; Use brew upgrade pdf-tools instead.
 ;;       (setq pdf-info-epdfinfo-program "/usr/local/bin/epdfinfo"))
 
-(use-package! conda
+;; (use-package! conda
+;;   :config
+;;   (map! :map doom-leader-code-map
+;;         :desc "Activate conda env" "A" #'conda-env-activate))
+
+(use-package! pyvenv
+  :after python
   :config
+  (pyvenv-activate "/Users/ketanagrawal/rime/python/rime/.venv"))
+
+(use-package! py-isort
+  :config
+  ;; HACK -- more mature approach would be to add a var to py-isort package where one can manually specify the settings path
+  (defun py-isort--find-settings-path ()
+    (expand-file-name "~/rime/python/ri_python_linter/ri_python_linter/")))
+
+(use-package! flycheck
+  :config
+  ;; so I can set pylintrc per-directory, in a .dir-locals.el file fo
+  (make-variable-buffer-local 'flycheck-pylintrc)
   (map! :map doom-leader-code-map
-        :desc "Activate conda env" "A" #'conda-env-activate))
+        :desc "List Flycheck errors" "x" #'flycheck-list-errors))
 
 (use-package! lsp
   :config
+  (defvar-local ketan0/flycheck-local-cache nil)
+
+  (defun ketan0/flycheck-checker-get (fn checker property)
+    (or (alist-get property (alist-get checker ketan0/flycheck-local-cache))
+	(funcall fn checker property)))
+
+  (advice-add 'flycheck-checker-get :around 'ketan0/flycheck-checker-get)
+
+  (add-hook 'lsp-managed-mode-hook
+	    (lambda ()
+	      (when (derived-mode-p 'python-mode)
+		(setq ketan0/flycheck-local-cache '((lsp . ((next-checkers . (python-pylint)))))))))
   (map! :map doom-leader-code-map
         :desc "Restart LSP workspace" "R" #'lsp-restart-workspace)
-  (add-to-list 'lsp-file-watch-ignored-directories "/Users/ketanagrawal/miniconda3/envs/data-science/lib/python3.9/" )
-  (require 'lsp-pyright)
-  (setq lsp-pyright-stub-path "typings")
+  ;; (add-to-list 'lsp-file-watch-ignored-directories "/Users/ketanagrawal/miniconda3/envs/data-science/lib/python3.9/" )
+  ;; (require 'lsp-pyright)
+  ;; (setq lsp-pyright-stub-path "typings")
   ;;   (defun lsp-python-ms--get-python-ver-and-syspath (&optional workspace-root)
   ;;   "Return list with pyver-string and list of python search paths.
 
