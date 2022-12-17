@@ -3,6 +3,7 @@
 	email = ketan@robustintelligence.com
 [core]
 	editor = vim
+	excludesfile = /Users/ketanagrawal/.gitignore
 [init]
 	defaultBranch = main
 [pull]

@@ -42,6 +42,8 @@
 (package! hydra)
 (package! aio)
 (package! pyvenv)
+(package! protobuf-mode)
+(package! flycheck-projectile)
 ;; (package! prettier)
 ;; (package! lsp-mode :recipe (:host github :repo "emacs-lsp/lsp-mode"))
 ;; Doom's packages are pinned to a specific commit and updated from release to

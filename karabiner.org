@@ -88,7 +88,8 @@ need to prefix C T O S F with ! or #
          :tab-mode {:key :tab
                     :afterup [{:set ["yabai-move-mode" 0]}
                               {:set ["yabai-focus-mode" 0]}
-                              {:set ["yabai-display-mode" 0]}
+
+                        {:set ["yabai-display-mode" 0]}
                               {:set ["yabai-adjust-mode" 0]}
                               {:set ["chrome-movement-mode" 0]}
                               {:set ["chrome-rearrange-tab-mode" 0]}]}
@@ -266,8 +267,8 @@ Move focus to the left/top/bottom/right of the current window.
 :END:
 #+begin_src clojure
 :yabai-display-mode
-[:h [:yabai "window --display prev && /opt/homebrew/bin/yabai -m display --focus prev"]]
-[:l [:yabai "window --display next && /opt/homebrew/bin/yabai -m display --focus next"]]
+[:l [:yabai "window --display prev && /opt/homebrew/bin/yabai -m display --focus prev"]]
+[:h [:yabai "window --display next && /opt/homebrew/bin/yabai -m display --focus next"]]
 ;; [:h [:yabai "display --focus prev"]]
 ;; [:l [:yabai "display --focus next"]]
 #+end_src
@@ -324,7 +325,7 @@ Toggle system dark mode, as well as the emacs theme. (See [[file:doom.d/config.e
 tell application "System Events"
     tell appearance preferences
         set dark mode to not dark mode
-        do shell script "/opt/homebrew/Cellar/emacs-mac/emacs-28.1-mac-9.0/bin/emacsclient --eval '(load-theme (ketan0/responsive-theme) t)'"
+        do shell script "/opt/homebrew/bin/emacsclient --eval '(load-theme (ketan0/responsive-theme) t)'"
     end tell
 end tell
 #+end_src
@@ -625,10 +626,10 @@ end tell
 ;; (I use the --with-no-title-bars patch for emacs-mac, but sometimes I like the title bar)
 [:a [:elisp "(setq mac-use-title-bar t)(setq ketan0/old-frame (selected-frame)) (make-frame)(delete-frame ketan0/old-frame)"]]
 [:b "osascript ~/.dotfiles/open_in_chrome.scpt"]
+;; [:d [:smarturl "https://drive.google.com/"]]
 [:d [:smarturl "https://drive.google.com/"]]
 [:o [:open "http://doc.new"]] ;; new google doc
 [:e [:open "/Users/ketanagrawal/.dotfiles/doom.d/config.el"]]
-[:f [:smarturl "https://www.keyhero.com/free-typing-test/" "block"]]
 [:g [:withsecretsmarturl "$GITHUB_REPO_URL"]]
 ;; [:h [:km "Github => Emacs"]]
 ;; [:h "osascript /Users/ketanagrawal/.dotfiles/open_chrome_history.scpt"]
@@ -636,6 +637,7 @@ end tell
 
 [:i [:smarturl "https://www.keyhero.com/typing-instant-death/" "block"]]
 [:j [:smarturl "http://localhost:8888"]] ;; the port I usually run JupyterLab on
+[:k [:open "/Users/ketanagrawal/.dotfiles/karabiner.org"]]
 [:l [:smarturl "http://localhost:8080"]]
 ;; [:l "osascript /Users/ketanagrawal/.dotfiles/open_current_zoom_link.scpt"]
 [:m [:smarturl "https://mail.google.com/"]]
@@ -644,22 +646,28 @@ end tell
 [:n [:smarturl "https://nebula.ketan.me"]]
 [:t "osascript /Users/ketanagrawal/.dotfiles/download_video_chrome.scpt"]
 [:u "osascript /Users/ketanagrawal/.dotfiles/download_video.scpt"]
-[:p [:withsecretsmarturl "$PAC_PROGRESS_DOC_LINK"]]
+[:p [:withsecretsmarturl "$GITHUB_MY_PRS_URL"]]
 [:q [:withsecretsmarturl "$HCI_PROGRESS_DOC_LINK"]]
 [:t [:smarturl "https://twitter.com/i/bookmarks" "block"]]
-[:r [:open "/Users/ketanagrawal/garden-simple/org/private/todos.org"]]
-[:s [:open "/Users/ketanagrawal/.dotfiles/karabiner.org"]]
+[:r [:withsecretsmarturl "$AUTOTEST_URL"]]
+[:s [:openwith "Emacs" "/Users/ketanagrawal/.dotfiles/.secrets"]]
 [:v [:open "https://home.color.com/sign-in?next=%2Fcovid%2Factivation"]]
 ;; [:v [:openwith "Emacs" "/Users/ketanagrawal/Dropbox/Apps/GoodNotes 5/GoodNotes/vision.pdf"]]
+[:w [:openwith "Emacs" "/Users/ketanagrawal/.dotfiles/work-shortcuts.sh"]]
 [:y [:openwith "Emacs" "/Users/ketanagrawal/.dotfiles/yabairc"]]
 ;; [:z [:withsecret "open $MY_ZOOM_LINK"]]
 [:z [:openwith "Emacs" "/Users/ketanagrawal/.zshrc"]]
 #+end_src
 * period-mode
-Access various tag-specific Org Agendas.
+Open various rime cluster URLs
 #+begin_src clojure
 :period-mode
-[:t [:elisp "(ketan0/area-agenda \"tinker\")"]]
+[:l [:withsecretsmarturl "$LATEST_URL"] ]
+[:a [:withsecretsmarturl "$AUTOTEST_URL"] ]
+[:s [:withsecretsmarturl "$STAGING_URL"] ]
+[:d [:withsecretsmarturl "$DEMO_URL"] ]
+[:t [:withsecretsmarturl "$STABLE_URL"] ]
+[:g [:withsecretsmarturl "$GALLERY_URL"] ]
 [:a [:elisp "(ketan0/area-agenda \"academic\")"]]
 [:s [:elisp "(ketan0/area-agenda \"social\")"]]
 ;; start JupyterLab server in detached tmux pane

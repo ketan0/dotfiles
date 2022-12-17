@@ -77,7 +77,7 @@ tell appearance preferences to return dark mode
 end tell\')\"")
    "true"))
 (defun ketan0/responsive-theme ()
-  (if (ketan0/dark-mode-active) 'doom-ephemeral 'doom-ayu-light))
+  (if (ketan0/dark-mode-active) 'doom-spacegrey 'doom-ayu-light))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
@@ -145,6 +145,9 @@ end tell\')\"")
 
 (map! :map evil-motion-state-map "gb" 'revert-all-buffers)
 
+(map! :nm "H" 'evil-first-non-blank)
+(map! :nm "L" 'evil-last-non-blank)
+
 (map! :map prog-mode-map :nm "<tab>" '+fold/toggle)
 
 (map! :map prog-mode-map :nm "<S-tab>" 'ketan0/fold-toggle-all)
@@ -168,7 +171,7 @@ end tell\')\"")
 (use-package! org
   :mode ("\\.org\\'" . org-mode)
   :init
-  (setq org-directory  "~/garden-simple/org/")
+  (setq org-directory  "~/org/")
   (setq ketan0/org-directory-private  (concat org-directory "private/"))
   :config
   (require 'evil-org-agenda)
@@ -331,9 +334,10 @@ The exporting happens only when Org Capture is not in progress."
   (setq org-id-link-to-org-use-id 'create-if-interactive)
 
   (add-hook 'org-mode-hook #'org-fragtog-mode)
-  (defun turn-off-line-numbers ()
-    (display-line-numbers-mode 0))
-  (add-hook 'org-mode-hook 'turn-off-line-numbers)
+  (setq display-line-numbers t)
+  ;; (defun turn-off-line-numbers ()
+  ;;   (display-line-numbers-mode 0))
+  ;; (add-hook 'org-mode-hook 'turn-off-line-numbers)
   (add-hook 'org-mode-hook 'mixed-pitch-mode)
 
   ;;   (defvar org-created-property-name "CREATED"
@@ -888,6 +892,51 @@ see."
     (message (concat "Goku output: " (shell-command-to-string "goku")))))
 (add-hook 'after-save-hook 'ketan0/tangle-karabiner)
 
+;; source: https://www.reddit.com/r/emacs/comments/ft84xy/run_shell_command_in_new_vterm/
+(defun run-in-vterm-kill (process event)
+  "A process sentinel. Kills PROCESS's buffer if it is live."
+  (let ((b (process-buffer process)))
+    (and (buffer-live-p b)
+         (kill-buffer b))))
+
+(defun run-in-vterm (command)
+  "Execute string COMMAND in a new vterm.
+
+Interactively, prompt for COMMAND with the current buffer's file
+name supplied. When called from Dired, supply the name of the
+file at point.
+
+Like `async-shell-command`, but run in a vterm for full terminal features.
+
+The new vterm buffer is named in the form `*foo bar.baz*`, the
+command and its arguments in earmuffs.
+
+When the command terminates, the shell remains open, but when the
+shell exits, the buffer is killed."
+  (interactive
+   (list
+    (let* ((f (cond (buffer-file-name)
+                    ((eq major-mode 'dired-mode)
+                     (dired-get-filename nil t))))
+           (filename (concat " " (shell-quote-argument (and f (file-relative-name f))))))
+      (read-shell-command "Terminal command: "
+                          (cons filename 0)
+                          (cons 'shell-command-history 1)
+                          (list filename)))))
+  (with-current-buffer "*doom:vterm-popup:main*"
+    ;; (set-process-sentinel vterm--process #'run-in-vterm-kill)
+    (vterm-send-string command)
+    (vterm-send-return)))
+
+(defun ketan0/source-shortcuts ()
+  "If the current buffer is 'yabairc' then yabai is relaunched with the new config."
+  (when (equal (buffer-file-name)
+               (expand-file-name (concat ketan0/dotfiles-dir "work-shortcuts.sh")))
+    ;; Avoid running hooks when tangling.
+    (message "Sourcing shell shortcuts...")
+    (run-in-vterm "source ~/.dotfiles/work-shortcuts.sh")))
+(add-hook 'after-save-hook 'ketan0/source-shortcuts)
+
 (defun ketan0/source-yabairc ()
   "If the current buffer is 'yabairc' then yabai is relaunched with the new config."
   (when (equal (buffer-file-name)
@@ -1115,16 +1164,22 @@ see."
 ;;   (map! :map doom-leader-code-map
 ;;         :desc "Activate conda env" "A" #'conda-env-activate))
 
-(use-package! pyvenv
-  :after python
+(use-package! python
   :config
-  (pyvenv-activate "/Users/ketanagrawal/rime/python/rime/.venv"))
+  (setq python-shell-completion-native-enable nil)
+  ;; show a vertical line at the line length limit
+  (add-hook 'python-mode-hook 'display-fill-column-indicator-mode))
+
+(use-package! pyvenv
+  :config
+  (pyvenv-activate (expand-file-name "~/rime/python/rime/.venv")))
 
 (use-package! py-isort
   :config
   ;; HACK -- more mature approach would be to add a var to py-isort package where one can manually specify the settings path
   (defun py-isort--find-settings-path ()
-    (expand-file-name "~/rime/python/ri_python_linter/ri_python_linter/")))
+    (expand-file-name "~/isort-config/"))
+  (add-hook 'before-save-hook 'py-isort-before-save))
 
 (use-package! flycheck
   :config
@@ -1133,8 +1188,15 @@ see."
   (map! :map doom-leader-code-map
         :desc "List Flycheck errors" "x" #'flycheck-list-errors))
 
+(use-package! flycheck-projectile)
+
+(use-package! doom-modeline-core
+  :config
+  (setq doom-modeline-vcs-max-length 40))
+
 (use-package! lsp
   :config
+  (setq lsp-file-watch-threshold 10000)
   (defvar-local ketan0/flycheck-local-cache nil)
 
   (defun ketan0/flycheck-checker-get (fn checker property)
@@ -1146,63 +1208,10 @@ see."
   (add-hook 'lsp-managed-mode-hook
 	    (lambda ()
 	      (when (derived-mode-p 'python-mode)
-		(setq ketan0/flycheck-local-cache '((lsp . ((next-checkers . (python-pylint)))))))))
+		(setq ketan0/flycheck-local-cache
+                      '((lsp . ((next-checkers . (python-pylint python-mypy)))))))))
   (map! :map doom-leader-code-map
-        :desc "Restart LSP workspace" "R" #'lsp-restart-workspace)
-  ;; (add-to-list 'lsp-file-watch-ignored-directories "/Users/ketanagrawal/miniconda3/envs/data-science/lib/python3.9/" )
-  ;; (require 'lsp-pyright)
-  ;; (setq lsp-pyright-stub-path "typings")
-  ;;   (defun lsp-python-ms--get-python-ver-and-syspath (&optional workspace-root)
-  ;;   "Return list with pyver-string and list of python search paths.
-
-  ;; The WORKSPACE-ROOT will be prepended to the list of python search
-  ;; paths and then the entire list will be json-encoded."
-  ;;   (let* ((python (and t (lsp-python-ms-locate-python)))
-  ;;          (workspace-root (and python (or workspace-root ".")))
-  ;;          (default-directory (and workspace-root workspace-root))
-  ;;          (init (and default-directory
-  ;;                     "from __future__ import print_function; import sys; sys.path = list(filter(lambda p: p != '', sys.path)); import json;"))
-  ;;          (ver (and init "v=(\"%s.%s\" % (sys.version_info[0], sys.version_info[1]));"))
-  ;;          (sp (and ver (concat "sys.path.insert(0, '" workspace-root "'); p=sys.path;")))
-  ;;          (ex (and sp "e=sys.executable;"))
-  ;;          (val (and ex "print(json.dumps({\"version\":v,\"paths\":p,\"executable\":e}))")))
-  ;;     (when val
-  ;;       (with-temp-buffer
-  ;;         (let ((default-directory (file-name-directory python)))
-  ;;          (process-file (file-local-name python) nil t nil "-c"
-  ;;                        (concat init ver sp ex val))
-  ;;          )
-  ;;         (let* ((json-array-type 'vector)
-  ;;                (json-key-type 'string)
-  ;;                (json-object-type 'hash-table)
-  ;;                (json-string (buffer-string))
-  ;;                (json-hash (json-read-from-string json-string)))
-  ;;           (list
-  ;;            (gethash "version" json-hash)
-  ;;            (gethash "paths" json-hash)
-  ;;            (gethash "executable" json-hash)))))))
-
-  ;;   (lsp-register-client
-  ;;    (make-lsp-client
-  ;;     :new-connection (lsp-tramp-connection "Microsoft.Python.LanguageServer")
-  ;;     :major-modes (append '(python-mode) lsp-python-ms-extra-major-modes)
-  ;;     :remote? t
-  ;;     :server-id 'mspyls-remote
-  ;;     :priority 1
-  ;;     :initialization-options 'lsp-python-ms--extra-init-params
-  ;;     :notification-handlers (lsp-ht ("python/languageServerStarted" 'lsp-python-ms--language-server-started-callback)
-  ;;                                    ("telemetry/event" 'ignore)
-  ;;                                    ("python/reportProgress" 'lsp-python-ms--report-progress-callback)
-  ;;                                    ("python/beginProgress" 'lsp-python-ms--begin-progress-callback)
-  ;;                                    ("python/endProgress" 'lsp-python-ms--end-progress-callback))
-  ;;     :initialized-fn (lambda (workspace)
-  ;;                       (with-lsp-workspace workspace
-  ;;                         (lsp--set-configuration (lsp-configuration-section "python"))))
-  ;;     ;; :download-server-fn (lambda (client callback error-callback update?)
-  ;;     ;;                       (when lsp-python-ms-auto-install-server
-  ;;     ;;                         (lsp-python-ms--install-server client callback error-callback update?)))
-  ;;     ))
-  )
+        :desc "Restart LSP workspace" "R" #'lsp-restart-workspace))
 
 (use-package! life
   :config
@@ -1295,3 +1304,11 @@ generations (this defaults to 1)."
 (centered-window-mode)
 
 (use-package! request)
+
+(use-package! undo-fu-session
+  :config
+  (push "/Users/ketanagrawal/org/thoughts.org" undo-fu-session-incompatible-files))
+
+(use-package! magit
+  :config
+  (setq magit-list-refs-sortby "-creatordate"))

@@ -13,6 +13,7 @@ emacs.d/transient/
 .ipynb_checkpoints/
 /emacs.d/games/
 .secrets
+work-shortcuts.sh
 doom.d/ketan0-secrets.el
 sshconfig
 .DS_Store
