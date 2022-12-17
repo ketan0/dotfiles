@@ -9,7 +9,14 @@
  '(org-agenda-files
    '("/Users/ketanagrawal/garden-simple/org/private/capture.org" "/Users/ketanagrawal/garden-simple/org/private/todos.org" "/Users/ketanagrawal/garden-simple/org/private/archive.org"))
  '(safe-local-variable-values
-   '((LaTeX-using-Biber . t)
+   '((org-roam-capture-templates
+      '(("d" "default" plain "%?" :target
+         (file+head "pages/${slug}.org" "#+title: ${title}
+")
+         :unnarrowed t)))
+     (org-roam-db-location . "/Users/ketanagrawal/logseq_notes/org-roam.db")
+     (org-roam-directory . "/Users/ketanagrawal/logseq_notes")
+     (LaTeX-using-Biber . t)
      (ketan0/org-html-auto-export-mode . t))))
 (custom-theme-set-faces!
  'leuven

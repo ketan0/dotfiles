@@ -77,7 +77,7 @@ tell appearance preferences to return dark mode
 end tell\')\"")
    "true"))
 (defun ketan0/responsive-theme ()
-  (if (ketan0/dark-mode-active) 'doom-outrun-electric 'doom-solarized-light))
+  (if (ketan0/dark-mode-active) 'doom-Iosvkem 'doom-ayu-light))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
@@ -867,6 +867,25 @@ see."
                                    (find-lisp-find-files ketan0/org-directory-private "\.org$")))
   (setq org-roam-list-files-commands '(find)) ;; rg and fd don't seem to work for private/ subdir
   (org-roam-db-autosync-mode))
+
+(use-package! org-transclusion
+  :after org
+  :config
+  (map! :map org-mode-map
+        :localleader
+        :prefix ("z" . "org-transclusion")
+        :desc "add transclusion" "a" #'org-transclusion-add
+        :desc "add transclusion" "m" #'org-transclusion-make-from-link
+        :desc "add transclusion (all)" "A" #'org-transclusion-add-all
+        :desc "edit transclusion" "e" #'org-transclusion-live-sync-start
+        :desc "remove transclusion" "d" #'org-transclusion-remove
+        :desc "open transclusion source" "o" #'org-transclusion-open-source
+        :desc "refresh transclusion" "r" #'org-transclusion-refresh)
+  (map!
+   :map global-map "<f6>" #'org-transclusion-add
+   :leader
+   :prefix "n"
+   :desc "Org Transclusion Mode" "t" #'org-transclusion-mode))
 
 (use-package! apples-mode
   :init (add-to-list 'auto-mode-alist '("\\.\\(applescri\\|sc\\)pt\\'" . apples-mode)))

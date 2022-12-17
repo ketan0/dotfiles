@@ -21,6 +21,7 @@
 (package! request)
 (package! evil-matchit)
 (package! color-theme-buffer-local)
+(package! org-transclusion)
 
 ;; (package! smsn-mode :recipe (:host github :repo "synchrony/smsn-mode"))
 ;; (package! indent-guide)
