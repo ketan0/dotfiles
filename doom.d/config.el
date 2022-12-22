@@ -111,6 +111,12 @@ end tell\')\"")
 ;; You can also try 'gd' (or 'C-c g d') to jump to their definition and see how
 ;; they are implemented.
 
+(setq-default frame-title-format
+              '(:eval (format "%s (%s)"
+                              (buffer-name)
+                              (car (vc-git-branches)))))
+
+
 ;; use visual lines + relative numbering
 (setq vc-handled-backends '(Git))
 
