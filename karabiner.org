@@ -70,7 +70,7 @@ need to prefix C T O S F with ! or #
             :withsecretsmarturl "source ~/.dotfiles/.secrets && osascript ~/.dotfiles/open_url_smart.scpt %s"
             :alfred "osascript -e 'tell application \"Alfred 4\" to run trigger \"%s\" in workflow \"%s\" with argument \"%s\"'"
             :wallpaper "osascript -e 'tell application \"Finder\" to set desktop picture to POSIX file \"%s\"'"
-            :elisp "/opt/homebrew/Cellar/emacs-mac/emacs-28.1-mac-9.0/bin/emacsclient --eval '(progn (select-frame-set-input-focus (selected-frame))%s)'"
+            :elisp "/opt/homebrew/bin/emacsclient --eval '(progn (select-frame-set-input-focus (selected-frame))%s)'"
             :yabai "/opt/homebrew/bin/yabai -m %s"
             :tmux "/opt/homebrew/bin/tmux %s"
             } ;; templates
