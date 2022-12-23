@@ -112,9 +112,10 @@ end tell\')\"")
 ;; they are implemented.
 
 (setq-default frame-title-format
-              '(:eval (format "%s (%s)"
+              '(:eval (format "%s%s"
                               (buffer-name)
-                              (car (vc-git-branches)))))
+                              (if-let ((current-branch (car (vc-git-branches))))
+                                  (format " (%s)" current-branch) ""))))
 
 
 ;; use visual lines + relative numbering
