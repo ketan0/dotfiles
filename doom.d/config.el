@@ -125,10 +125,11 @@ end tell\')\"")
 (setq global-auto-revert-mode t)
 
 (setq enable-local-variables t)
+(make-variable-buffer-local 'compile-command)
 
-(setq org-crypt-key "ketanjayagrawal@gmail.com")
 ;; GPG key to use for encryption
 ;; Either the Key ID or set to nil to use symmetric encryption.
+(setq org-crypt-key "ketanjayagrawal@gmail.com")
 
 (setq auto-save-default nil)
 ;; Auto-saving does not cooperate with org-crypt.el: so you need to

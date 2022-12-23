@@ -15,6 +15,7 @@ yabai -m rule --add app="^Digital Color Meter$" manage=off
 yabai -m rule --add app="^Activity Monitor$" manage=off
 yabai -m rule --add app="^TIDAL$" manage=off
 yabai -m rule --add title="^About This Mac$" manage=off
+yabai -m rule --add title="^Install.*$" manage=off
 
 # float hotkey iTerm window
 yabai -m rule --add title="^Hotkey Window" manage=off

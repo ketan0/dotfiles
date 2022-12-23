@@ -19,6 +19,7 @@
             :open "open '%s'"
             :smarturl "osascript ~/.dotfiles/open_url_smart.scpt '%s' %s"
             :openwith "open -a '%s' '%s'"
+            :app "open -a '%s'"
             :openhide "open '%s' -gj"
             :withsecret "source ~/.dotfiles/.secrets && %s"
             :withsecretsmarturl "source ~/.dotfiles/.secrets && osascript ~/.dotfiles/open_url_smart.scpt %s"
@@ -41,7 +42,7 @@
 
          :yabai-move-mode {:key :w :condi :tab-mode}
          :yabai-focus-mode {:key :f :condi :tab-mode}
-         ;; :yabai-display-mode {:key :d :condi :tab-mode}
+         :yabai-display-mode {:key :s :condi :tab-mode}
          :yabai-adjust-mode {:key :d :condi :tab-mode}
          :chrome-movement-mode {:key :t :condi :tab-mode} ;;TODO make this work
          :chrome-history-mode {:key :g :condi :tab-mode} ;;TODO make this work
@@ -69,6 +70,17 @@
 ;; shift + up/down arrows = PageUp/PageDown
 [:!Sup_arrow :page_up]
 [:!Sdown_arrow :page_down]
+;; hide all other apps except current one
+[:!COh  "osascript ~/.dotfiles/only_current_app.scpt"]
+
+;; for Slack; navigating up/down between unread channels
+;; https://slack.com/help/articles/201374536-Slack-keyboard-shortcuts
+;; TODO: for slack only - map C-o and C-i to cmd-[ and cmd-], respectively
+;; need to make a slack mode(?) or something for that
+[:!SOj :!SOdown_arrow]
+[:!SOk :!SOup_arrow]
+
+;; [:!Ch  "osascript ~/.dotfiles/hide_current_window.scpt"]
 
 [:##caps_lock :left_control nil {:alone :escape}]
 
@@ -104,7 +116,7 @@
 [:8 [:yabai "window --opacity 0.8"]]
 [:9 [:yabai "window --opacity 0.9"]]
 [:grave_accent_and_tilde [:yabai "window --opacity 1.0"]]
-[:s [:yabai "window --toggle split"]]
+[:e [:yabai "window --toggle split"]]
 
 :yabai-focus-mode
 [:g [:yabai "space --focus prev"]]
@@ -115,8 +127,8 @@
 [:semicolon [:yabai "space --focus next"]]
 
 :yabai-display-mode
-[:h [:yabai "display --focus prev"]]
-[:l [:yabai "display --focus next"]]
+[:h [:yabai "window --display prev && /opt/homebrew/bin/yabai -m display --focus prev"]]
+[:l [:yabai "window --display next && /opt/homebrew/bin/yabai -m display --focus next"]]
 
 :yabai-adjust-mode
 [:h [:yabai "window --ratio rel:-0.05"]]
@@ -206,7 +218,7 @@
 ;; (I use the --with-no-title-bars patch for emacs-mac, but sometimes I like the title bar)
 [:a [:elisp "(setq mac-use-title-bar t)(setq ketan0/old-frame (selected-frame)) (make-frame)(delete-frame ketan0/old-frame)"]]
 [:b "osascript ~/.dotfiles/open_in_chrome.scpt"]
-[:c [:open "/Users/ketanagrawal/garden-simple/org/private/capture.org"]]
+[:c [:smarturl "https://calendar.google.com/"]]
 [:d [:smarturl "https://drive.google.com/"]]
 [:o [:open "http://doc.new"]] ;; new google doc
 [:e [:open "/Users/ketanagrawal/.dotfiles/doom.d/config.el"]]
