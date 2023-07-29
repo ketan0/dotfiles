@@ -91,12 +91,12 @@ source $ZSH/oh-my-zsh.sh
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 source ~/.dotfiles/.secrets
 source ~/.dotfiles/work-shortcuts.sh
-alias e=emacsclient
+alias e="emacsclient --no-wait"
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-export PATH="/opt/homebrew/opt/go@1.18/bin:$PATH"
+nvm use 18
 alias ibrew="arch -x86_64 /usr/local/bin/brew"
 
 # The next line updates PATH for the Google Cloud SDK.
@@ -105,8 +105,9 @@ if [ -f '/Users/ketanagrawal/rime/google-cloud-sdk/path.zsh.inc' ]; then . '/Use
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/ketanagrawal/rime/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/ketanagrawal/rime/google-cloud-sdk/completion.zsh.inc'; fi
 export PATH="${HOME}/mongodb-macos-x86_64-4.4.13/bin:${HOME}/mongosh-1.3.1-darwin-arm64/bin:${PATH}"
-export GOPATH="`go env GOPATH`"
-export PATH="${PATH}:${GOPATH}/bin"
+eval "$(goenv init -)"
+export PATH="$GOROOT/bin:$PATH"
+export PATH="$PATH:$GOPATH/bin"
 export MYPYPATH=~/python-type-stubs/sklearn-stubs
 
 export ZSH_AUTOSUGGEST_STRATEGY=(history completion)
