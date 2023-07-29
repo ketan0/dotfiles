@@ -25,7 +25,7 @@
             :withsecretsmarturl "source ~/.dotfiles/.secrets && osascript ~/.dotfiles/open_url_smart.scpt %s"
             :alfred "osascript -e 'tell application \"Alfred 4\" to run trigger \"%s\" in workflow \"%s\" with argument \"%s\"'"
             :wallpaper "osascript -e 'tell application \"Finder\" to set desktop picture to POSIX file \"%s\"'"
-            :elisp "/opt/homebrew/Cellar/emacs-mac/emacs-28.1-mac-9.0/bin/emacsclient --eval '(progn (select-frame-set-input-focus (selected-frame))%s)'"
+            :elisp "/opt/homebrew/bin/emacsclient --eval '(progn (select-frame-set-input-focus (selected-frame))%s)'"
             :yabai "/opt/homebrew/bin/yabai -m %s"
             :tmux "/opt/homebrew/bin/tmux %s"
             } ;; templates
@@ -55,6 +55,7 @@
 :simlayers {
         :slash-mode {:key :slash}
         :q-key-mode {:key :q}
+        :d-key-mode {:key :d}
         :x-key-mode {:key :x}
         :comma-mode {:key :comma}
         :period-mode {:key :period}
@@ -129,8 +130,11 @@
 [:semicolon [:yabai "space --focus next"]]
 
 :yabai-display-mode
-[:l [:yabai "window --display prev && /opt/homebrew/bin/yabai -m display --focus prev"]]
-[:h [:yabai "window --display next && /opt/homebrew/bin/yabai -m display --focus next"]]
+[:h "bash ~/.dotfiles/move_window_counterclockwise.sh"]
+[:l "bash ~/.dotfiles/move_window_clockwise.sh"]
+[:j "bash ~/.dotfiles/move_window_counterclockwise.sh"]
+[:k "bash ~/.dotfiles/move_window_clockwise.sh"]
+;; [:l [:yabai "window --display next && /opt/homebrew/bin/yabai -m display --focus next"]]
 ;; [:h [:yabai "display --focus prev"]]
 ;; [:l [:yabai "display --focus next"]]
 
@@ -164,11 +168,11 @@
 [:x "open /Applications/Safari.app"]
 [:k "open /Applications/Keyboard\\ Maestro.app"]
 [:e [:app 'Emacs']]
-[:m "open /Applications/Slack.app"]
+;; [:m "open /Applications/Slack.app"]
 [:l "open /Applications/Linear.app"]
 [:n "open /Applications/Notion.app"]
 [:s "open /Applications/Spotify.app"]
-[:t "open /Applications/TIDAL.app"]
+;; [:t "open /Applications/TIDAL.app"]
 [:v "open /Applications/zoom.us.app"]
 [:w "open /System/Applications/Stickies.app"]
 ;; [:n [:km "Open Neo4j" "hide"]]
@@ -180,10 +184,11 @@
 [:a [:app 'Finder']]
 [:x "open -a 'Google Chrome'"]
 [:c "open /Applications/Google\\ Chrome.app"]
+[:v "open /Applications/Visual\\ Studio\\ Code.app/"]
 ;; [:x [:app 'Safari']]
 ;; [:k "open /Applications/Keyboard\\ Maestro.app"]
 [:e [:app 'Emacs']]
-[:m "open /Applications/Slack.app"]
+;; [:m "open /Applications/Slack.app"]
 [:l "open /Applications/Linear.app"]
 [:n "open /Applications/Notion.app"]
 [:s "open /Applications/Spotify.app"]
@@ -245,8 +250,9 @@
 [:n [:smarturl "https://nebula.ketan.me"]]
 [:t "osascript /Users/ketanagrawal/.dotfiles/download_video_chrome.scpt"]
 [:u "osascript /Users/ketanagrawal/.dotfiles/download_video.scpt"]
-[:p [:withsecretsmarturl "$GITHUB_MY_PRS_URL"]]
-[:q [:withsecretsmarturl "$HCI_PROGRESS_DOC_LINK"]]
+[:p [:withsecretsmarturl "$GITHUB_PRS_URL"]]
+[:q [:withsecretsmarturl "$GITHUB_MY_PRS_URL"]]
+;; [:q [:withsecretsmarturl "$HCI_PROGRESS_DOC_LINK"]]
 [:t [:smarturl "https://twitter.com/i/bookmarks" "block"]]
 [:r [:withsecretsmarturl "$AUTOTEST_URL"]]
 [:s [:openwith "Emacs" "/Users/ketanagrawal/.dotfiles/.secrets"]]
@@ -289,6 +295,11 @@
 [:##b :!Oleft_arrow]
 [:##w :!Oright_arrow]
 [:delete_or_backspace :!Odelete_or_backspace]
+
+:d-key-mode
+[:f :!SC7]
+[:slash :!SC8]
+[:s :!SC9]
 
 ]}] ;;end main
 

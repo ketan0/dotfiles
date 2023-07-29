@@ -71,7 +71,7 @@ need to prefix C T O S F with ! or #
             :withsecretsmarturl "source ~/.dotfiles/.secrets && osascript ~/.dotfiles/open_url_smart.scpt %s"
             :alfred "osascript -e 'tell application \"Alfred 4\" to run trigger \"%s\" in workflow \"%s\" with argument \"%s\"'"
             :wallpaper "osascript -e 'tell application \"Finder\" to set desktop picture to POSIX file \"%s\"'"
-            :elisp "/opt/homebrew/Cellar/emacs-mac/emacs-28.1-mac-9.0/bin/emacsclient --eval '(progn (select-frame-set-input-focus (selected-frame))%s)'"
+            :elisp "/opt/homebrew/bin/emacsclient --eval '(progn (select-frame-set-input-focus (selected-frame))%s)'"
             :yabai "/opt/homebrew/bin/yabai -m %s"
             :tmux "/opt/homebrew/bin/tmux %s"
             } ;; templates
@@ -108,6 +108,7 @@ need to prefix C T O S F with ! or #
 :simlayers {
         :slash-mode {:key :slash}
         :q-key-mode {:key :q}
+        :d-key-mode {:key :d}
         :x-key-mode {:key :x}
         :comma-mode {:key :comma}
         :period-mode {:key :period}
@@ -262,13 +263,76 @@ Move focus to the left/top/bottom/right of the current window.
 #+end_src
 
 * yabai-display-mode
+#+begin_src bash :tangle ~/.dotfiles/move_window_clockwise.sh
+#!/bin/bash
+set -euo pipefail
+
+# Get current space, window and display information
+current_space=$(/opt/homebrew/bin/yabai -m query --spaces --space | /opt/homebrew/bin/jq '.index')
+current_window=$(/opt/homebrew/bin/yabai -m query --windows --window | /opt/homebrew/bin/jq '.id')
+current_display=$(/opt/homebrew/bin/yabai -m query --displays --display | /opt/homebrew/bin/jq '.index')
+
+# Get all displays and their count
+displays=($(/opt/homebrew/bin/yabai -m query --displays | /opt/homebrew/bin/jq '.[].index'))
+display_count=${#displays[@]}
+
+# Determine the target display
+target_display=${displays[display_count - 1]}
+for ((i=display_count - 1; i > 0; i--)); do
+    if [[ ${displays[i]} == $current_display ]]; then
+        target_display=${displays[i-1]}
+        break
+    fi
+done
+
+# Move window to the target display
+/opt/homebrew/bin/yabai -m window $current_window --display $target_display
+
+# Focus the moved window and its new space
+/opt/homebrew/bin/yabai -m display --focus $target_display
+/opt/homebrew/bin/yabai -m space --focus $current_space
+#+end_src
+
+#+begin_src bash :tangle ~/.dotfiles/move_window_counterclockwise.sh
+#!/bin/bash
+set -euo pipefail
+
+# Get current space, window and display information
+current_space=$(/opt/homebrew/bin/yabai -m query --spaces --space | /opt/homebrew/bin/jq '.index')
+current_window=$(/opt/homebrew/bin/yabai -m query --windows --window | /opt/homebrew/bin/jq '.id')
+current_display=$(/opt/homebrew/bin/yabai -m query --displays --display | /opt/homebrew/bin/jq '.index')
+
+# Get all displays and their count
+displays=($(/opt/homebrew/bin/yabai -m query --displays | /opt/homebrew/bin/jq '.[].index'))
+display_count=${#displays[@]}
+
+# Determine the target display
+target_display=1
+for ((i=0; i < display_count - 1; i++)); do
+    if [[ ${displays[i]} == $current_display ]]; then
+        target_display=${displays[i+1]}
+        break
+    fi
+done
+
+# Move window to the target display
+/opt/homebrew/bin/yabai -m window $current_window --display $target_display
+
+# Focus the moved window and its new space
+/opt/homebrew/bin/yabai -m display --focus $target_display
+/opt/homebrew/bin/yabai -m space --focus $current_space
+#+end_src
+
 :PROPERTIES:
 :ID:       8ccd4df9-2f31-459c-8bea-2f6ea5649e5a
 :END:
 #+begin_src clojure
 :yabai-display-mode
-[:l [:yabai "window --display prev && /opt/homebrew/bin/yabai -m display --focus prev"]]
-[:h [:yabai "window --display next && /opt/homebrew/bin/yabai -m display --focus next"]]
+[:h "bash ~/.dotfiles/move_window_counterclockwise.sh"]
+[:l "bash ~/.dotfiles/move_window_clockwise.sh"]
+[:j "bash ~/.dotfiles/move_window_counterclockwise.sh"]
+[:k "bash ~/.dotfiles/move_window_clockwise.sh"]
+;; [:l [:yabai "window --display next && /opt/homebrew/bin/yabai -m display --focus next"]]
 ;; [:h [:yabai "display --focus prev"]]
 ;; [:l [:yabai "display --focus next"]]
 #+end_src
@@ -320,12 +384,10 @@ Move current tab left/right. Need [[https://chrome.google.com/webstore/detail/re
 :END:
 Mostly for opening apps, and some other convenient shortcuts like toggling dark mode and emojis.
 
-Toggle system dark mode, as well as the emacs theme. (See [[file:doom.d/config.el::ketan0/responsive-theme][ketan0/responsive-theme]] for details)
 #+begin_src apples :tangle ~/.dotfiles/toggle_dark_mode.scpt
 tell application "System Events"
     tell appearance preferences
         set dark mode to not dark mode
-        do shell script "/opt/homebrew/bin/emacsclient --eval '(load-theme (ketan0/responsive-theme) t)'"
     end tell
 end tell
 #+end_src
@@ -343,11 +405,11 @@ end tell
 [:x "open /Applications/Safari.app"]
 [:k "open /Applications/Keyboard\\ Maestro.app"]
 [:e [:app 'Emacs']]
-[:m "open /Applications/Slack.app"]
+;; [:m "open /Applications/Slack.app"]
 [:l "open /Applications/Linear.app"]
 [:n "open /Applications/Notion.app"]
 [:s "open /Applications/Spotify.app"]
-[:t "open /Applications/TIDAL.app"]
+;; [:t "open /Applications/TIDAL.app"]
 [:v "open /Applications/zoom.us.app"]
 [:w "open /System/Applications/Stickies.app"]
 ;; [:n [:km "Open Neo4j" "hide"]]
@@ -365,10 +427,11 @@ end tell
 [:a [:app 'Finder']]
 [:x "open -a 'Google Chrome'"]
 [:c "open /Applications/Google\\ Chrome.app"]
+[:v "open /Applications/Visual\\ Studio\\ Code.app/"]
 ;; [:x [:app 'Safari']]
 ;; [:k "open /Applications/Keyboard\\ Maestro.app"]
 [:e [:app 'Emacs']]
-[:m "open /Applications/Slack.app"]
+;; [:m "open /Applications/Slack.app"]
 [:l "open /Applications/Linear.app"]
 [:n "open /Applications/Notion.app"]
 [:s "open /Applications/Spotify.app"]
@@ -646,8 +709,9 @@ end tell
 [:n [:smarturl "https://nebula.ketan.me"]]
 [:t "osascript /Users/ketanagrawal/.dotfiles/download_video_chrome.scpt"]
 [:u "osascript /Users/ketanagrawal/.dotfiles/download_video.scpt"]
-[:p [:withsecretsmarturl "$GITHUB_MY_PRS_URL"]]
-[:q [:withsecretsmarturl "$HCI_PROGRESS_DOC_LINK"]]
+[:p [:withsecretsmarturl "$GITHUB_PRS_URL"]]
+[:q [:withsecretsmarturl "$GITHUB_MY_PRS_URL"]]
+;; [:q [:withsecretsmarturl "$HCI_PROGRESS_DOC_LINK"]]
 [:t [:smarturl "https://twitter.com/i/bookmarks" "block"]]
 [:r [:withsecretsmarturl "$AUTOTEST_URL"]]
 [:s [:openwith "Emacs" "/Users/ketanagrawal/.dotfiles/.secrets"]]
@@ -704,6 +768,17 @@ Open various rime cluster URLs
 [:##b :!Oleft_arrow]
 [:##w :!Oright_arrow]
 [:delete_or_backspace :!Odelete_or_backspace]
+#+end_src
+* d-key-mode
+:PROPERTIES:
+:ID:       9c2ae9d6-f08b-4538-ab1a-7674f1c7d2c7
+:END:
+#+begin_src clojure
+:d-key-mode
+[:f :!SC7]
+[:slash :!SC8]
+[:s :!SC9]
+
 #+end_src
 * end main
 :PROPERTIES:

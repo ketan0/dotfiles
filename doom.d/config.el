@@ -10,7 +10,7 @@
       user-mail-address "ketanjayagrawal@gmail.com")
 ;; (setq default-directory "~/")
 
-
+(load-file "~/.doom.d/ketan0-secrets.el")
 ;; shortcut to go from org file => browser view of generated HTML file
 ;; (using my open_url_smart Applescript -- see karabiner.org for details)
 (defun ketan0/launch-nebula-note-locally-in-browser ()
@@ -69,20 +69,46 @@
 (when (boundp 'mac-auto-operator-composition-mode)
   (mac-auto-operator-composition-mode))
 
-(defun ketan0/dark-mode-active ()
+
+;; TODO: wait fix this
+(defun ketan0/toggle-emacs-title-bar-dark-mode ()
   (string=
    (shell-command-to-string
     "printf %s \"$( osascript -e \'tell application \"System Events\"
-tell appearance preferences to return dark mode
+    tell appearance preferences
+        if dark mode then
+            do shell script \"defaults write org.gnu.Emacs TransparentTitleBar DARK\"
+        else
+            do shell script \"defaults write org.gnu.Emacs TransparentTitleBar LIGHT\"
+        end if
+        return dark mode
+    end tell
 end tell\')\"")
    "true"))
-(defun ketan0/responsive-theme ()
-  (if (ketan0/dark-mode-active) 'doom-spacegrey 'doom-ayu-light))
+
+(defun ketan0/load-emacs-responsive-theme ()
+  (load-theme (ketan0/responsive-theme (ketan0/toggle-emacs-title-bar-dark-mode)) t)
+  (let ((old-frame (selected-frame)))
+    (make-frame)
+    (delete-frame old-frame t)))
 
 ;; There are two ways to load a theme. Both assume the theme is installed and
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
-(setq doom-theme (ketan0/responsive-theme))
+(defun ketan0/dark-mode-active ()
+  (string=
+   (shell-command-to-string
+    "printf %s \"$( osascript -e \'tell application \"System Events\"
+    tell appearance preferences to return dark mode
+end tell\')\"")
+   "true"))
+(defun ketan0/responsive-theme (dark-mode-active)
+  (if dark-mode-active 'doom-Iosvkem 'doom-ayu-light))
+(setq doom-theme (ketan0/responsive-theme (ketan0/dark-mode-active)))
+
+;; change color theme in doom emacs based on system dark mode
+(add-hook 'mac-effective-appearance-change-hook
+          'ketan0/load-emacs-responsive-theme)
 
 ;; responsive theme
 
@@ -142,6 +168,7 @@ end tell\')\"")
 
 ;; don't need the /g on the end of :s/old/new
 (setq evil-ex-substitute-global t)
+(setq evil-kill-on-visual-paste nil)
 
 (map! :map evil-motion-state-map "gb" 'revert-all-buffers)
 
@@ -162,11 +189,15 @@ end tell\')\"")
 (map! :map evil-visual-state-map "j" 'evil-next-visual-line)
 (map! :map evil-visual-state-map "k" 'evil-previous-visual-line)
 
+(map! :n "C-u" 'evil-scroll-up)
+
 (map! :map evil-normal-state-map "Q" (kbd "@q"))
 
 (map! :map doom-leader-toggle-map "d" 'toggle-debug-on-error)
+(map! :map doom-leader-code-map "c" 'compile)
 
-(define-key evil-visual-state-map "." 'evil-a-paren)
+(map! :m "." 'evil-a-paren)
+(map! :map doom-leader-map "d" 'save-buffer)
 
 (use-package! org
   :mode ("\\.org\\'" . org-mode)
@@ -947,9 +978,24 @@ shell exits, the buffer is killed."
                       "launchctl kickstart -k \"gui/${UID}/homebrew.mxcl.yabai\"")))))
 (add-hook 'after-save-hook 'ketan0/source-yabairc)
 
+
+
 (use-package! evil-extra-operator
   :init
-  (map! :m "gz" 'evil-operator-google-search))
+  (evil-define-operator evil-operator-open-url (beg end type)
+    "Evil operator for google search."
+    :move-point nil
+    (interactive "<R>")
+    (browse-url (.eeo/make-url-args beg end type)))
+  (evil-define-operator evil-operator-python-string-fill (beg end type)
+    "Evil operator for filling python strings."
+    :move-point nil
+    (interactive "<R>")
+    (let ((fill-column (- fill-column 3)))
+      (evil-fill beg end)))
+  (map! :m "gz" 'evil-operator-google-search)
+  (map! :m "gZ" 'evil-operator-open-url)
+  (map! :m "gh" 'evil-operator-python-string-fill))
 
 ;; taken from magnars
 (defun toggle-window-split ()
@@ -1049,7 +1095,7 @@ shell exits, the buffer is killed."
   (setq evil-snipe-scope 'buffer))
 
 ;; ;; secret stuff that I'm not publishing on github
-;; (load-file "~/.doom.d/ketan0-secrets.el")
+
 
 ;; ;; (use-package! elfeed
 ;; ;;   :config
@@ -1168,25 +1214,58 @@ shell exits, the buffer is killed."
   :config
   (setq python-shell-completion-native-enable nil)
   ;; show a vertical line at the line length limit
+  (setq-default fill-column 88)
   (add-hook 'python-mode-hook 'display-fill-column-indicator-mode))
 
 (use-package! pyvenv
   :config
-  (pyvenv-activate (expand-file-name "~/rime/python/rime/.venv")))
+  (pyvenv-activate (expand-file-name ketan0/my-venv)))
 
 (use-package! py-isort
   :config
   ;; HACK -- more mature approach would be to add a var to py-isort package where one can manually specify the settings path
   (defun py-isort--find-settings-path ()
-    (expand-file-name "~/isort-config/"))
+    (expand-file-name ketan0/my-linter-path))
   (add-hook 'before-save-hook 'py-isort-before-save))
 
 (use-package! flycheck
   :config
-  ;; so I can set pylintrc per-directory, in a .dir-locals.el file fo
-  (make-variable-buffer-local 'flycheck-pylintrc)
+  (setq flycheck-python-mypy-config (expand-file-name "~/mypy-config/mypy.ini"))
+  (setq flycheck-python-ruff-executable ketan0/my-ruff-executable)
+  (flycheck-define-checker python-ruff
+    "A Python syntax and style checker using the ruff utility.
+To override the path to the ruff executable, set
+`flycheck-python-ruff-executable'.
+See URL `http://pypi.python.org/pypi/ruff'."
+    :command ("ruff"
+	      (eval (format "--config=%s" ketan0/my-ruff-toml))
+	      "--format=text"
+	      (eval (when buffer-file-name
+		      (concat "--stdin-filename=" buffer-file-name)))
+	      "-")
+    :standard-input t
+    :error-filter (lambda (errors)
+		    (let ((errors (flycheck-sanitize-errors errors)))
+		      (seq-map #'flycheck-flake8-fix-error-level errors)))
+    :error-patterns
+    ((warning line-start
+	      (file-name) ":" line ":" (optional column ":") " "
+	      (id (one-or-more (any alpha)) (one-or-more digit)) " "
+	      (message (one-or-more not-newline))
+	      line-end))
+    :modes python-mode)
+  (add-to-list 'flycheck-checkers 'python-ruff)
+  (defun setup-flycheck-checkers ()
+    (setq flycheck-disabled-checkers '(lsp))
+    (flycheck-select-checker 'python-ruff)
+    (flycheck-add-next-checker 'python-ruff 'python-mypy))
+
+  (add-hook 'python-mode-hook #'setup-flycheck-checkers)
+
   (map! :map doom-leader-code-map
-        :desc "List Flycheck errors" "x" #'flycheck-list-errors))
+        :desc "List Flycheck errors" "x" #'flycheck-list-errors)
+
+  )
 
 (use-package! flycheck-projectile)
 
@@ -1194,10 +1273,12 @@ shell exits, the buffer is killed."
   :config
   (setq doom-modeline-vcs-max-length 40))
 
+(defvar-local ketan0/flycheck-local-cache nil)
 (use-package! lsp
   :config
+  (setq lsp-modeline-diagnostics-enable nil)
   (setq lsp-file-watch-threshold 10000)
-  (defvar-local ketan0/flycheck-local-cache nil)
+
 
   (defun ketan0/flycheck-checker-get (fn checker property)
     (or (alist-get property (alist-get checker ketan0/flycheck-local-cache))
@@ -1205,43 +1286,50 @@ shell exits, the buffer is killed."
 
   (advice-add 'flycheck-checker-get :around 'ketan0/flycheck-checker-get)
 
-  (add-hook 'lsp-managed-mode-hook
-	    (lambda ()
-	      (when (derived-mode-p 'python-mode)
-		(setq ketan0/flycheck-local-cache
-                      '((lsp . ((next-checkers . (python-pylint python-mypy)))))))))
+  ;; (add-hook 'lsp-managed-mode-hook
+  ;;           (lambda ()
+  ;;             (when (derived-mode-p 'python-mode)
+  ;;               (setq flycheck-disabled-checkers '(lsp))
+  ;;               (flycheck-select-checker 'python-mypy)
+  ;;               (flycheck-add-next-checker 'python-mypy 'python-ruff)
+  ;;       	;; (setq ketan0/flycheck-local-cache
+  ;;               ;;       '((lsp . ((next-checkers . (python-ruff python-mypy))))))
+  ;;               )))
   (map! :map doom-leader-code-map
         :desc "Restart LSP workspace" "R" #'lsp-restart-workspace))
 
-(use-package! life
-  :config
-  (setq life-default-sleeptime 0.1)
-  (setq life-preferred-pattern '(" @@"
-                                 "@@ "
-                                 " @ "))
-  (defun life-insert-random-pattern ()
-    (insert-rectangle
-     (if (boundp 'life-preferred-pattern)
-         life-preferred-pattern
-       (elt life-patterns (random (length life-patterns)))))
-    (insert ?\n))
-  (defun life (&optional sleeptime)
-    "Run Conway's Life simulation.
-The starting pattern is randomly selected.  Prefix arg (optional first
-arg non-nil from a program) is the number of seconds to sleep between
-generations (this defaults to 1)."
-    (interactive "p")
-    ;; (message "sleeptime is %s" sleeptime)
-    ;; (or sleeptime (setq sleeptime life-default-sleeptime))
-    (life-setup)
-    (catch 'life-exit
-      (while t
-        (let ((inhibit-quit t)
-              (inhibit-read-only t))
-          (life-display-generation life-default-sleeptime)
-          (life-grim-reaper)
-          (life-expand-plane-if-needed)
-          (life-increment-generation))))))
+(after! dap-mode
+  (setq dap-python-debugger 'debugpy))
+
+;; (use-package! life
+;;   :config
+;;   (setq life-default-sleeptime 0.1)
+;;   (setq life-preferred-pattern '(" @@"
+;;                                  "@@ "
+;;                                  " @ "))
+;;   (defun life-insert-random-pattern ()
+;;     (insert-rectangle
+;;      (if (boundp 'life-preferred-pattern)
+;;          life-preferred-pattern
+;;        (elt life-patterns (random (length life-patterns)))))
+;;     (insert ?\n))
+;;   (defun life (&optional sleeptime)
+;;     "Run Conway's Life simulation.
+;; The starting pattern is randomly selected.  Prefix arg (optional first
+;; arg non-nil from a program) is the number of seconds to sleep between
+;; generations (this defaults to 1)."
+;;     (interactive "p")
+;;     ;; (message "sleeptime is %s" sleeptime)
+;;     ;; (or sleeptime (setq sleeptime life-default-sleeptime))
+;;     (life-setup)
+;;     (catch 'life-exit
+;;       (while t
+;;         (let ((inhibit-quit t)
+;;               (inhibit-read-only t))
+;;           (life-display-generation life-default-sleeptime)
+;;           (life-grim-reaper)
+;;           (life-expand-plane-if-needed)
+;;           (life-increment-generation))))))
 
 ;; (use-package outline
 ;;   :after org-super-agenda
@@ -1312,3 +1400,36 @@ generations (this defaults to 1)."
 (use-package! magit
   :config
   (setq magit-list-refs-sortby "-creatordate"))
+
+(after! python
+  (defadvice! ketan0/org-journal-new-entry-append (prefix)
+    :after #'org-journal-new-entry
+    ;; start journal in insert mode
+    (unless prefix (evil-append 1)))
+
+  ;; remove the __PYTHON_EL things from completion candidates in python shell
+  (defadvice! python-shell-completion-get-completions-filter-python-el-symbols (completions)
+    :filter-return #'python-shell-completion-get-completions
+    (--filter (not (string-match-p "__PYTHON_EL" it)) completions)))
+
+(defun file-notify-rm-all-watches ()
+  "Remove all existing file notification watches from Emacs."
+  (interactive)
+  (maphash
+   (lambda (key _value)
+     (file-notify-rm-watch key))
+   file-notify-descriptors))
+
+(setq +format-on-save-enabled-modes '(not emacs-lisp-mode sql-mode tex-mode latex-mode yaml-mode markdown-mode))
+
+(use-package! copilot
+  :hook (prog-mode . copilot-mode)
+  :config
+  (map! :map doom-leader-code-map "m" 'copilot-complete)
+  (defun ketan/copilot-tab ()
+    (interactive)
+    (or (copilot-accept-completion)
+        (indent-for-tab-command)))
+  (map! :map copilot-completion-map "<tab>" 'ketan/copilot-tab)
+  (map! :map copilot-completion-map "<up>" 'copilot-previous-completion)
+  (map! :map copilot-completion-map "<down>" 'copilot-next-completion))

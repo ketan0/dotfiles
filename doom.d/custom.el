@@ -5,7 +5,7 @@
  ;; If there is more than one, they won't work right.
  '(centered-window-mode t)
  '(custom-safe-themes
-   '("aba75724c5d4d0ec0de949694bce5ce6416c132bb031d4e7ac1c4f2dbdd3d580" "835868dcd17131ba8b9619d14c67c127aa18b90a82438c8613586331129dda63" default))
+   '("ff24d14f5f7d355f47d53fd016565ed128bf3af30eb7ce8cae307ee4fe7f3fd0" "aba75724c5d4d0ec0de949694bce5ce6416c132bb031d4e7ac1c4f2dbdd3d580" "835868dcd17131ba8b9619d14c67c127aa18b90a82438c8613586331129dda63" default))
  '(org-agenda-files
    '("/Users/ketanagrawal/garden-simple/org/private/capture.org" "/Users/ketanagrawal/garden-simple/org/private/todos.org" "/Users/ketanagrawal/garden-simple/org/private/archive.org"))
  '(safe-local-variable-values

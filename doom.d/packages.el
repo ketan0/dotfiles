@@ -21,6 +21,7 @@
 (package! request)
 (package! evil-matchit)
 (package! color-theme-buffer-local)
+(package! flymake-ruff)
 
 ;; (package! smsn-mode :recipe (:host github :repo "synchrony/smsn-mode"))
 ;; (package! indent-guide)
@@ -44,6 +45,9 @@
 (package! pyvenv)
 (package! protobuf-mode)
 (package! flycheck-projectile)
+(package! copilot
+  :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
+(package! cherry-blossom-theme)
 ;; (package! prettier)
 ;; (package! lsp-mode :recipe (:host github :repo "emacs-lsp/lsp-mode"))
 ;; Doom's packages are pinned to a specific commit and updated from release to
