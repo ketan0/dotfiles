@@ -101,7 +101,8 @@
 [:!Sf12 "osascript ~/.dotfiles/increase_music_volume.scpt"]
 
 :yabai-move-mode
-[:c [:yabai "window --grid 16:10:3:1:4:12"]]
+;; [:c [:yabai "window --grid 16:10:3:1:4:12"]]
+[:c "bash ~/.dotfiles/center_window.sh"]
 [:f [:yabai "window --grid 16:10:3:2:4:12"]]
 [:h [:yabai "window --warp west"]]
 [:j [:yabai "window --warp south"]]
@@ -120,6 +121,8 @@
 [:9 [:yabai "window --opacity 0.9"]]
 [:grave_accent_and_tilde [:yabai "window --opacity 1.0"]]
 [:e [:yabai "window --toggle split"]]
+[:p "bash ~/.dotfiles/move_window_topright.sh"]
+;; [:p "bash ~/.dotfiles/get_window_title.sh"]
 
 :yabai-focus-mode
 [:g [:yabai "space --focus prev"]]
@@ -231,26 +234,27 @@
 [:a [:elisp "(setq mac-use-title-bar t)(setq ketan0/old-frame (selected-frame)) (make-frame)(delete-frame ketan0/old-frame)"]]
 [:b "osascript ~/.dotfiles/open_in_chrome.scpt"]
 ;; [:d [:smarturl "https://drive.google.com/"]]
-[:d [:smarturl "https://drive.google.com/"]]
-[:o [:open "http://doc.new"]] ;; new google doc
+[:c [:smarturl "https://calendar.google.com/"]]
+[:d [:smarturl "https://www.doordash.com/"]]
 [:e [:open "/Users/ketanagrawal/.dotfiles/doom.d/config.el"]]
 [:g [:withsecretsmarturl "$GITHUB_REPO_URL"]]
 ;; [:h [:km "Github => Emacs"]]
 ;; [:h "osascript /Users/ketanagrawal/.dotfiles/open_chrome_history.scpt"]
 [:h "osascript /Users/ketanagrawal/.dotfiles/activate_hypothesis.scpt"]
 
-[:i [:smarturl "https://www.keyhero.com/typing-instant-death/" "block"]]
+[:i "open /System/Applications/Stickies.app && bash ~/.dotfiles/focus_window_with_title.sh intentions"]
+[:n "open /System/Applications/Stickies.app && bash ~/.dotfiles/focus_window_with_title.sh scratchpad"]
 [:j [:smarturl "http://localhost:8888"]] ;; the port I usually run JupyterLab on
 [:k [:open "/Users/ketanagrawal/.dotfiles/karabiner.org"]]
-[:l [:smarturl "http://localhost:8080"]]
+[:l [:smarturl "https://chat.openai.com"]]
 ;; [:l "osascript /Users/ketanagrawal/.dotfiles/open_current_zoom_link.scpt"]
 [:m [:smarturl "https://mail.google.com/"]]
-[:c [:smarturl "https://calendar.google.com/"]]
 ;; [:n [:openwith "Google Chrome" "https://www.netflix.com/title/80199128"]]
-[:n [:smarturl "https://nebula.ketan.me"]]
+[:o [:open "http://doc.new"]] ;; new google doc
 [:t "osascript /Users/ketanagrawal/.dotfiles/download_video_chrome.scpt"]
 [:u "osascript /Users/ketanagrawal/.dotfiles/download_video.scpt"]
-[:p [:withsecretsmarturl "$GITHUB_PRS_URL"]]
+[:p [:smarturl "https://www.perplexity.ai/"]]
+;; [:p [:withsecretsmarturl "$GITHUB_PRS_URL"]]
 [:q [:withsecretsmarturl "$GITHUB_MY_PRS_URL"]]
 ;; [:q [:withsecretsmarturl "$HCI_PROGRESS_DOC_LINK"]]
 [:t [:smarturl "https://twitter.com/i/bookmarks" "block"]]

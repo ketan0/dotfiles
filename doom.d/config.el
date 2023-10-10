@@ -156,6 +156,7 @@ end tell\')\"")
 (make-variable-buffer-local 'compile-command)
 
 (setq org-crypt-key "ketanjayagrawal@gmail.com")
+(fset 'epg-wait-for-status 'ignore)
 ;; GPG key to use for encryption
 ;; Either the Key ID or set to nil to use symmetric encryption.
 
@@ -1427,7 +1428,8 @@ See URL `http://pypi.python.org/pypi/ruff'."
      (file-notify-rm-watch key))
    file-notify-descriptors))
 
-(setq +format-on-save-enabled-modes '(not emacs-lisp-mode sql-mode tex-mode latex-mode yaml-mode markdown-mode))
+(setq +format-on-save-enabled-modes '(not emacs-lisp-mode sql-mode tex-mode latex-mode yaml-mode markdown-mode json-mode))
+(setq js-indent-level 1)
 
 (use-package! copilot
   :hook (prog-mode . copilot-mode)
@@ -1439,4 +1441,29 @@ See URL `http://pypi.python.org/pypi/ruff'."
         (indent-for-tab-command)))
   (map! :map copilot-completion-map "<tab>" 'ketan/copilot-tab)
   (map! :map copilot-completion-map "<up>" 'copilot-previous-completion)
-  (map! :map copilot-completion-map "<down>" 'copilot-next-completion))
+  (map! :map copilot-completion-map "<down>" 'copilot-next-completion)
+  )
+
+(defun copilot-accept-completion (&optional transform-fn)
+    "Accept completion. Return t if there is a completion.
+Use TRANSFORM-FN to transform completion if provided."
+    (interactive)
+    (when (copilot--overlay-visible)
+      (let* ((completion (overlay-get copilot--overlay 'completion))
+             (start (overlay-get copilot--overlay 'start))
+             (uuid (overlay-get copilot--overlay 'uuid))
+             (t-completion (funcall (or transform-fn #'identity) completion)))
+        (copilot--async-request 'notifyAccepted (list :uuid uuid))
+        (copilot-clear-overlay)
+        (if (eq major-mode 'vterm-mode)
+            (vterm-delete-region start (line-end-position))
+          (delete-region start (line-end-position)))
+
+        ;; if major mode is vterm, use vterm-insert instead of insert
+        (if (eq major-mode 'vterm-mode)
+            (vterm-insert t-completion)
+          (insert t-completion))
+                                        ; trigger completion again if not fully accepted
+        (unless (equal completion t-completion)
+          (copilot-complete))
+        t)))

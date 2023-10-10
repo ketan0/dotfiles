@@ -224,9 +224,61 @@ In Karabiner-Elements.app, I've checked the box "Use all F1, F2, etc. keys as st
 :ID:       3462dbc5-e696-41ba-9ff4-c8b693f09017
 :END:
 Move the current window directionally in the yabai tiling setup.
+
+#+begin_src bash :tangle ~/.dotfiles/move_window_topright.sh
+#!/bin/bash
+set -euo pipefail
+# Query the size of the first display (modify if you have multiple displays and need a specific one)
+display_info=$(/opt/homebrew/bin/yabai -m query --displays | /opt/homebrew/bin/jq '.[0]')
+display_width=$(echo $display_info | /opt/homebrew/bin/jq '.frame.w')
+display_height=$(echo $display_info | /opt/homebrew/bin/jq '.frame.h')
+
+# Query the dimensions of the current window
+window_info=$(/opt/homebrew/bin/yabai -m query --windows --window)
+window_width=$(echo $window_info | /opt/homebrew/bin/jq '.frame.w')
+window_height=$(echo $window_info | /opt/homebrew/bin/jq '.frame.h')
+
+# Calculate x and y position for the top-right corner
+x_position=$(expr $display_width - $window_width)
+y_position=0
+
+# Move the window
+/opt/homebrew/bin/yabai -m window --move abs:$x_position:$y_position
+#+end_src
+
+#+begin_src bash :tangle ~/.dotfiles/get_window_title.sh
+#!/bin/bash
+set -euo pipefail
+title=$(/opt/homebrew/bin/yabai -m query --windows --window | /opt/homebrew/bin/jq -r '.title')
+osascript -e "display notification \"Current window title: $title\" with title \"Window Info\""
+#+end_src
+
+#+begin_src bash :tangle ~/.dotfiles/center_window.sh
+#!/bin/bash
+
+# Fetch the current space's id
+space_id=$(/opt/homebrew/bin/yabai -m query --spaces --space | /opt/homebrew/bin/jq '.index')
+
+# Get the dimensions of the screen for the current space
+screen_width=$(/opt/homebrew/bin/yabai -m query --displays --space $space_id | /opt/homebrew/bin/jq '.frame.w')
+screen_height=$(/opt/homebrew/bin/yabai -m query --displays --space $space_id | /opt/homebrew/bin/jq '.frame.h')
+
+# Get the dimensions and position of the current window
+window_width=$(/opt/homebrew/bin/yabai -m query --windows --window | /opt/homebrew/bin/jq '.frame.w')
+window_height=$(/opt/homebrew/bin/yabai -m query --windows --window | /opt/homebrew/bin/jq '.frame.h')
+
+# Calculate the centered x and y coordinates
+centered_x=$(( ($screen_width / 2) - ($window_width / 2) ))
+centered_y=$(( ($screen_height / 2) - ($window_height / 2) ))
+
+# Move and resize the window to the calculated centered position
+/opt/homebrew/bin/yabai -m window --move abs:$centered_x:$centered_y
+#+end_src
+
 #+begin_src clojure
 :yabai-move-mode
-[:c [:yabai "window --grid 16:10:3:1:4:12"]]
+;; [:c [:yabai "window --grid 16:10:3:1:4:12"]]
+[:c "bash ~/.dotfiles/center_window.sh"]
 [:f [:yabai "window --grid 16:10:3:2:4:12"]]
 [:h [:yabai "window --warp west"]]
 [:j [:yabai "window --warp south"]]
@@ -245,6 +297,8 @@ Move the current window directionally in the yabai tiling setup.
 [:9 [:yabai "window --opacity 0.9"]]
 [:grave_accent_and_tilde [:yabai "window --opacity 1.0"]]
 [:e [:yabai "window --toggle split"]]
+[:p "bash ~/.dotfiles/move_window_topright.sh"]
+;; [:p "bash ~/.dotfiles/get_window_title.sh"]
 #+end_src
 
 * yabai-focus-mode (tab + f + {hjkl})
@@ -631,6 +685,20 @@ tell application "Google Chrome"
 end tell
 #+end_src
 
+#+begin_src bash :tangle ~/.dotfiles/focus_window_with_title.sh
+#!/bin/bash
+
+# Query all windows and filter those whose title contains the arg, then get the first one's ID
+window_id=$(/opt/homebrew/bin/yabai -m query --windows | /opt/homebrew/bin/jq '.[] | select(.title | test('"\"$1\""'; "i")) | .id' | head -n 1)
+
+# If a window was found, focus it
+if [ ! -z "$window_id" ]; then
+    /opt/homebrew/bin/yabai -m window --focus $window_id
+else
+    echo "No window with '$1' in the title found."
+fi
+#+end_src
+
 My [[https://github.com/yqrashawn/GokuRakuJoudo/blob/master/tutorial.md#basic7][predefined template]] ~:smarturl~ uses the following Applescript to either: 1) navigate to the tab that contains the URL if it exists already 2) open the URL if not.
 TODO: fix this. was originally designed to work on Safari, but now I switched back to Chrome
 #+begin_src apples :tangle ~/.dotfiles/open_url_smart.scpt
@@ -690,26 +758,27 @@ end tell
 [:a [:elisp "(setq mac-use-title-bar t)(setq ketan0/old-frame (selected-frame)) (make-frame)(delete-frame ketan0/old-frame)"]]
 [:b "osascript ~/.dotfiles/open_in_chrome.scpt"]
 ;; [:d [:smarturl "https://drive.google.com/"]]
-[:d [:smarturl "https://drive.google.com/"]]
-[:o [:open "http://doc.new"]] ;; new google doc
+[:c [:smarturl "https://calendar.google.com/"]]
+[:d [:smarturl "https://www.doordash.com/"]]
 [:e [:open "/Users/ketanagrawal/.dotfiles/doom.d/config.el"]]
 [:g [:withsecretsmarturl "$GITHUB_REPO_URL"]]
 ;; [:h [:km "Github => Emacs"]]
 ;; [:h "osascript /Users/ketanagrawal/.dotfiles/open_chrome_history.scpt"]
 [:h "osascript /Users/ketanagrawal/.dotfiles/activate_hypothesis.scpt"]
 
-[:i [:smarturl "https://www.keyhero.com/typing-instant-death/" "block"]]
+[:i "open /System/Applications/Stickies.app && bash ~/.dotfiles/focus_window_with_title.sh intentions"]
+[:n "open /System/Applications/Stickies.app && bash ~/.dotfiles/focus_window_with_title.sh scratchpad"]
 [:j [:smarturl "http://localhost:8888"]] ;; the port I usually run JupyterLab on
 [:k [:open "/Users/ketanagrawal/.dotfiles/karabiner.org"]]
-[:l [:smarturl "http://localhost:8080"]]
+[:l [:smarturl "https://chat.openai.com"]]
 ;; [:l "osascript /Users/ketanagrawal/.dotfiles/open_current_zoom_link.scpt"]
 [:m [:smarturl "https://mail.google.com/"]]
-[:c [:smarturl "https://calendar.google.com/"]]
 ;; [:n [:openwith "Google Chrome" "https://www.netflix.com/title/80199128"]]
-[:n [:smarturl "https://nebula.ketan.me"]]
+[:o [:open "http://doc.new"]] ;; new google doc
 [:t "osascript /Users/ketanagrawal/.dotfiles/download_video_chrome.scpt"]
 [:u "osascript /Users/ketanagrawal/.dotfiles/download_video.scpt"]
-[:p [:withsecretsmarturl "$GITHUB_PRS_URL"]]
+[:p [:smarturl "https://www.perplexity.ai/"]]
+;; [:p [:withsecretsmarturl "$GITHUB_PRS_URL"]]
 [:q [:withsecretsmarturl "$GITHUB_MY_PRS_URL"]]
 ;; [:q [:withsecretsmarturl "$HCI_PROGRESS_DOC_LINK"]]
 [:t [:smarturl "https://twitter.com/i/bookmarks" "block"]]
