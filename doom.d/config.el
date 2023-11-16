@@ -61,6 +61,8 @@
 (setq doom-font (font-spec :family "Fira Code" :size 14))
 (setq doom-font-increment 1)
 (setq doom-variable-pitch-font (font-spec :family "Fira Sans" :size 14))
+(map! "s-0" 'doom/reset-font-size) ;; cmd-0 is used in many other apps for reset to default size
+
 
 (setq +latex-viewers '(skim))
 (setq reftex-default-bibliography "/Users/ketanagrawal/zoterocitations.bib")
@@ -102,8 +104,9 @@ end tell\')\"")
     tell appearance preferences to return dark mode
 end tell\')\"")
    "true"))
+
 (defun ketan0/responsive-theme (dark-mode-active)
-  (if dark-mode-active 'doom-Iosvkem 'doom-ayu-light))
+  (if dark-mode-active 'doom-challenger-deep 'doom-solarized-light))
 (setq doom-theme (ketan0/responsive-theme (ketan0/dark-mode-active)))
 
 ;; change color theme in doom emacs based on system dark mode
@@ -173,6 +176,9 @@ end tell\')\"")
       (when (and (buffer-file-name) (file-exists-p (buffer-file-name)) (not (buffer-modified-p)))
         (revert-buffer t t t) )))
   (message "Refreshed open files.") )
+
+;; use macOS Spotlight for searching
+(setq consult-locate-args "mdfind -name")
 
 ;; don't need the /g on the end of :s/old/new
 (setq evil-ex-substitute-global t)
@@ -1467,3 +1473,10 @@ Use TRANSFORM-FN to transform completion if provided."
         (unless (equal completion t-completion)
           (copilot-complete))
         t)))
+
+(defun ketan0/remove-formatting-on-save-for-this-buffer ()
+  ;; useful when you want to save a file without formatting
+  (interactive)
+  (remove-hook 'before-save-hook 'format-all-buffer--from-hook t))
+
+(fset 'epg-wait-for-status 'ignore)
