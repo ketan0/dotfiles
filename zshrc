@@ -96,7 +96,7 @@ alias e="emacsclient --no-wait"
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-nvm use 18
+nvm use 20 > /dev/null
 alias ibrew="arch -x86_64 /usr/local/bin/brew"
 
 # The next line updates PATH for the Google Cloud SDK.
@@ -105,12 +105,13 @@ if [ -f '/Users/ketanagrawal/rime/google-cloud-sdk/path.zsh.inc' ]; then . '/Use
 # The next line enables shell command completion for gcloud.
 if [ -f '/Users/ketanagrawal/rime/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/ketanagrawal/rime/google-cloud-sdk/completion.zsh.inc'; fi
 export PATH="${HOME}/mongodb-macos-x86_64-4.4.13/bin:${HOME}/mongosh-1.3.1-darwin-arm64/bin:${PATH}"
-eval "$(goenv init -)"
-export PATH="$GOROOT/bin:$PATH"
-export PATH="$PATH:$GOPATH/bin"
+export PATH="$PATH:$(go env GOROOT)/bin"
+export PATH="$PATH:$(go env GOPATH)/bin"
 export MYPYPATH=~/python-type-stubs/sklearn-stubs
 
 export ZSH_AUTOSUGGEST_STRATEGY=(history completion)
+
+eval "$(direnv hook zsh)"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

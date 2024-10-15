@@ -235,6 +235,7 @@ end tell\')\"")
 
   ;; (add-hook 'org-mode-hook #'ketan0/org-hide-properties)
   ;; (remove-hook 'org-mode-hook #'ketan0/org-hide-properties)
+  ;;
   (setq org-babel-default-header-args
         (cons '(:exports . "both") ;; export code and results by default
               (cons '(:eval . "no-export") ;; don't evaluate src blocks when exporting
@@ -405,18 +406,18 @@ The exporting happens only when Org Capture is not in progress."
     `(org-ql-block '(and (todo "STRT")
                          (path "todos.org")
                          (tags ,tag-name))
-                   ((org-ql-block-header ,tag-name))))
+      ((org-ql-block-header ,tag-name))))
   ;; initial inspiration for custom agenda https://github.com/jethrokuan/.emacs.d/blob/master/init.el
   ;; main projects + stuff scheduled for today + stuff I finished
   ;; NOTE(2022): not actively using this anymore. Instead, see ketan0/new-agenda
   (setq ketan0/main-agenda
         `(" " "Ketan's Focused Agenda"
           ,(append '((agenda ""
-                             ((org-agenda-span 'day)
-                              (org-deadline-warning-days 2)
-                              (org-agenda-skip-function '(org-agenda-skip-entry-if
-                                                          'nottodo '("TODO")))
-                              ))
+                      ((org-agenda-span 'day)
+                       (org-deadline-warning-days 2)
+                       (org-agenda-skip-function '(org-agenda-skip-entry-if
+                                                   'nottodo '("TODO")))
+                       ))
                      (org-ql-block '(and (ts :to 0) (todo "STRT"))
                                    ((org-ql-block-header "Top Priority")))
                      (org-ql-block '(and (todo "DONE")
@@ -554,13 +555,13 @@ The exporting happens only when Org Capture is not in progress."
   (map! :map org-mode-map
         :localleader
         (:prefix ("d" . "date/deadline")
-         "t" #'ketan0/org-schedule-today
-         "S" #'org-time-stamp))
+                 "t" #'ketan0/org-schedule-today
+                 "S" #'org-time-stamp))
   (map! :after org-agenda
         :map org-agenda-mode-map
         :localleader
         (:prefix ("d" . "date/deadline")
-         "t" #'ketan0/org-agenda-schedule-today))
+                 "t" #'ketan0/org-agenda-schedule-today))
 
   (setq org-edit-src-content-indentation 0) ;;don't indent src blocks further
 
@@ -889,6 +890,7 @@ see."
 
 (use-package! org-roam
   :init
+  (setq org-roam-directory org-directory)
   (setq org-roam-v2-ack t)
   ;; https://www.orgroam.com/manual.html#Configuring-the-Org_002droam-buffer-display
   (add-to-list 'display-buffer-alist
@@ -905,7 +907,6 @@ see."
         "r i" #'org-roam-node-insert
         "r u" #'org-roam-unlinked-references-section
         "r b" #'org-roam-buffer-toggle)
-  :after org
   :config
   (require 'org-roam-protocol)
   (setq org-roam-capture-templates
@@ -913,7 +914,6 @@ see."
            :if-new (file+head "${slug}.org"
                               "#+title: ${title}\n")
            :unnarrowed t)))
-  (setq org-roam-directory org-directory)
   (setq org-roam-db-location (concat org-roam-directory "org-roam.db"))
   (setq org-id-extra-files (append (find-lisp-find-files org-roam-directory "\.org$")
                                    (find-lisp-find-files ketan0/org-directory-private "\.org$")))
@@ -944,6 +944,13 @@ see."
     (and (buffer-live-p b)
          (kill-buffer b))))
 
+(defun buffer-has-subprocesses-p (buffer)
+  (->> buffer
+       (get-buffer-process)
+       (process-id)
+       (format "pgrep -P %d")
+       (shell-command-to-string)))
+
 (defun run-in-vterm (command)
   "Execute string COMMAND in a new vterm.
 
@@ -968,10 +975,12 @@ shell exits, the buffer is killed."
                           (cons filename 0)
                           (cons 'shell-command-history 1)
                           (list filename)))))
-  (with-current-buffer "*doom:vterm-popup:main*"
-    ;; (set-process-sentinel vterm--process #'run-in-vterm-kill)
-    (vterm-send-string command)
-    (vterm-send-return)))
+  (when (get-buffer "*doom:vterm-popup:main*")
+    (with-current-buffer "*doom:vterm-popup:main*"
+      (when (string-empty-p (buffer-has-subprocesses-p "*doom:vterm-popup:main*"))
+        (vterm-send-string "\C-u") ;; clear the line
+        (vterm-send-string command)
+        (vterm-send-return)))))
 
 (defun ketan0/source-shortcuts ()
   "If the current buffer is 'yabairc' then yabai is relaunched with the new config."
@@ -992,6 +1001,21 @@ shell exits, the buffer is killed."
                       "launchctl kickstart -k \"gui/${UID}/homebrew.mxcl.yabai\"")))))
 (add-hook 'after-save-hook 'ketan0/source-yabairc)
 
+(defun ketan0/open-in-vscode ()
+  "Open the current file at the current cursor position in VSCode (well, actually Cursor)."
+  (interactive)
+  (let* ((file-name (buffer-file-name))
+         (line-number (line-number-at-pos))
+         (column-number (current-column))
+         (position-string (format "%s:%d:%d" file-name line-number (1+ column-number))))
+    (if file-name
+        (shell-command (concat "code --goto " position-string))
+      (message "Buffer is not visiting a file."))))
+
+(map! :leader
+      (:prefix ("o" . "open")
+       :desc "Open in VSCode" "v" #'ketan0/open-in-vscode))
+
 
 
 (use-package! evil-extra-operator
@@ -1007,9 +1031,20 @@ shell exits, the buffer is killed."
     (interactive "<R>")
     (let ((fill-column (- fill-column 3)))
       (evil-fill beg end)))
+
+  (evil-define-operator evil-operator-toggle-boolean-literals (beg end type)
+    "Evil operator for filling python strings."
+    :move-point nil
+    (interactive "<R>")
+    (save-excursion
+      (goto-char beg)
+      (while (re-search-forward "\\b\\(True\\|False\\)\\b" end t)
+        (replace-match (if (string= (match-string 0) "True") "False" "True") nil t))))
+
   (map! :m "gz" 'evil-operator-google-search)
   (map! :m "gZ" 'evil-operator-open-url)
-  (map! :m "gh" 'evil-operator-python-string-fill))
+  (map! :m "gh" 'evil-operator-python-string-fill)
+  (map! :nm "gt" 'evil-operator-toggle-boolean-literals))
 
 ;; taken from magnars
 (defun toggle-window-split ()
@@ -1240,11 +1275,14 @@ shell exits, the buffer is killed."
   ;; HACK -- more mature approach would be to add a var to py-isort package where one can manually specify the settings path
   (defun py-isort--find-settings-path ()
     (expand-file-name ketan0/my-linter-path))
-  (add-hook 'before-save-hook 'py-isort-before-save))
+  (defun ketan0/add-py-isort-before-save ()
+    (add-hook 'before-save-hook 'py-isort-before-save nil t))
+  (add-hook 'python-mode-hook 'ketan0/add-py-isort-before-save))
 
 (use-package! flycheck
   :config
-  (setq flycheck-python-mypy-config (expand-file-name "~/mypy-config/mypy.ini"))
+  (setq flycheck-checker-error-threshold 1000)
+  (setq flycheck-python-mypy-config ketan0/my-mypy-config)
   (setq flycheck-python-ruff-executable ketan0/my-ruff-executable)
   (flycheck-define-checker python-ruff
     "A Python syntax and style checker using the ruff utility.
@@ -1252,25 +1290,27 @@ To override the path to the ruff executable, set
 `flycheck-python-ruff-executable'.
 See URL `http://pypi.python.org/pypi/ruff'."
     :command ("ruff"
-	      (eval (format "--config=%s" ketan0/my-ruff-toml))
-	      "--format=text"
-	      (eval (when buffer-file-name
-		      (concat "--stdin-filename=" buffer-file-name)))
-	      "-")
+              "check"
+              (eval (format "--config=%s" ketan0/my-ruff-toml))
+              "--output-format=concise"
+              (eval (when buffer-file-name
+                      (concat "--stdin-filename=" buffer-file-name)))
+              "-")
     :standard-input t
     :error-filter (lambda (errors)
-		    (let ((errors (flycheck-sanitize-errors errors)))
-		      (seq-map #'flycheck-flake8-fix-error-level errors)))
+                    (let ((errors (flycheck-sanitize-errors errors)))
+                      (seq-map #'flycheck-flake8-fix-error-level errors)))
     :error-patterns
     ((warning line-start
-	      (file-name) ":" line ":" (optional column ":") " "
-	      (id (one-or-more (any alpha)) (one-or-more digit)) " "
-	      (message (one-or-more not-newline))
-	      line-end))
+              (file-name) ":" line ":" (optional column ":") " "
+              (id (one-or-more (any alpha)) (one-or-more digit)) " "
+              (message (one-or-more not-newline))
+              line-end))
+    :working-directory flycheck-python-find-project-root
     :modes python-mode)
   (add-to-list 'flycheck-checkers 'python-ruff)
   (defun setup-flycheck-checkers ()
-    (setq flycheck-disabled-checkers '(lsp))
+    (setq flycheck-disabled-checkers '(lsp)) ;; don't want to use pyright for linting
     (flycheck-select-checker 'python-ruff)
     (flycheck-add-next-checker 'python-ruff 'python-mypy))
 
@@ -1288,6 +1328,11 @@ See URL `http://pypi.python.org/pypi/ruff'."
   (setq doom-modeline-vcs-max-length 40))
 
 (defvar-local ketan0/flycheck-local-cache nil)
+
+;; want to use individual LSP servers for each python project
+;; for some reason this needs to be set before lsp-mode is loaded
+(setq lsp-pyright-multi-root nil)
+
 (use-package! lsp
   :config
   (setq lsp-modeline-diagnostics-enable nil)
@@ -1438,8 +1483,11 @@ See URL `http://pypi.python.org/pypi/ruff'."
 (setq js-indent-level 1)
 
 (use-package! copilot
+  :init
+  (setq copilot-indent-offset-warning-disable t)
   :hook (prog-mode . copilot-mode)
   :config
+  (map! :map doom-leader-code-map "p" 'copilot-mode)
   (map! :map doom-leader-code-map "m" 'copilot-complete)
   (defun ketan/copilot-tab ()
     (interactive)
@@ -1451,32 +1499,36 @@ See URL `http://pypi.python.org/pypi/ruff'."
   )
 
 (defun copilot-accept-completion (&optional transform-fn)
-    "Accept completion. Return t if there is a completion.
+  "Accept completion. Return t if there is a completion.
 Use TRANSFORM-FN to transform completion if provided."
-    (interactive)
-    (when (copilot--overlay-visible)
-      (let* ((completion (overlay-get copilot--overlay 'completion))
-             (start (overlay-get copilot--overlay 'start))
-             (uuid (overlay-get copilot--overlay 'uuid))
-             (t-completion (funcall (or transform-fn #'identity) completion)))
-        (copilot--async-request 'notifyAccepted (list :uuid uuid))
-        (copilot-clear-overlay)
-        (if (eq major-mode 'vterm-mode)
-            (vterm-delete-region start (line-end-position))
-          (delete-region start (line-end-position)))
+  (interactive)
+  (when (copilot--overlay-visible)
+    (let* ((completion (overlay-get copilot--overlay 'completion))
+           (start (overlay-get copilot--overlay 'start))
+           (uuid (overlay-get copilot--overlay 'uuid))
+           (t-completion (funcall (or transform-fn #'identity) completion)))
+      (copilot--async-request 'notifyAccepted (list :uuid uuid))
+      (copilot-clear-overlay)
+      (if (eq major-mode 'vterm-mode)
+          (vterm-delete-region start (line-end-position))
+        (delete-region start (line-end-position)))
 
-        ;; if major mode is vterm, use vterm-insert instead of insert
-        (if (eq major-mode 'vterm-mode)
-            (vterm-insert t-completion)
-          (insert t-completion))
+      ;; if major mode is vterm, use vterm-insert instead of insert
+      (if (eq major-mode 'vterm-mode)
+          (vterm-insert t-completion)
+        (insert t-completion))
                                         ; trigger completion again if not fully accepted
-        (unless (equal completion t-completion)
-          (copilot-complete))
-        t)))
+      (unless (equal completion t-completion)
+        (copilot-complete))
+      t)))
 
 (defun ketan0/remove-formatting-on-save-for-this-buffer ()
   ;; useful when you want to save a file without formatting
   (interactive)
+  (remove-hook 'after-save-hook #'apheleia-format-after-save t)
+  (remove-hook 'before-save-hook 'lsp--before-save t)
+  (remove-hook 'before-save-hook 'py-isort-before-save t)
+  (remove-hook 'before-save-hook 'ws-butler-before-save t)
   (remove-hook 'before-save-hook 'format-all-buffer--from-hook t))
 
 (fset 'epg-wait-for-status 'ignore)
